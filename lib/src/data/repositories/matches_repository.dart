@@ -1,62 +1,96 @@
 import 'package:matchmaker/src/data/entities/match_entity.dart';
-import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:result/result.dart';
-import 'package:sqlite3/sqlite3.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class MatchesRepository {
-  const MatchesRepository(this._db);
+class InsertOneMatchParams {
+  final int eventId;
+  final String name;
+  final int firstTeamId;
+  final int secondTeamId;
+  final int maxScore;
+  final int enqueue;
+  final int dequeue;
 
-  final Database _db;
+  const InsertOneMatchParams({
+    required this.eventId,
+    required this.name,
+    required this.firstTeamId,
+    required this.secondTeamId,
+    required this.maxScore,
+    required this.enqueue,
+    required this.dequeue,
+  });
+}
 
-  AsyncResult<MatchEntity> findOne(String id) async {
-    final result = _db.select(
-      '''SELECT em.*,
-        et1.id as first_team_id,
-        et1.event_id as first_team_event_id,
-        et1.name as first_team_name,
-        et1.created_at as first_team_created_at,
-        et1.updated_at as first_team_updated_at,
-        et2.id as second_team_id,
-        et2.event_id as second_team_event_id,
-        et2.name as second_team_name,
-        et2.created_at as second_team_created_at,
-        et2.updated_at as second_team_updated_at
-      FROM event_matches as em
-      JOIN event_teams as et1 ON em.first_team_id = et1.id
-      JOIN event_teams as et2 ON em.second_team_id = et2.id
-      WHERE em.id = ?;''',
-      [id],
-    );
+class UpdateOneMatchParams {
+  final String? name;
+  final int? maxScore;
+  final bool? ended;
+  final DateTime? endedAt;
+
+  const UpdateOneMatchParams({
+    this.name,
+    this.maxScore,
+    this.ended,
+    this.endedAt,
+  });
+}
+
+abstract interface class MatchesRepository {
+  AsyncResult<MatchEntity> insertOne(InsertOneMatchParams params);
+  AsyncResult<MatchEntity> findOne(int id);
+  AsyncResult<MatchEntity> updateOne(int id, UpdateOneMatchParams params);
+}
+
+class MatchesRepositoryImp implements MatchesRepository {
+  final SupabaseClient _client;
+
+  const MatchesRepositoryImp(this._client);
+
+  @override
+  AsyncResult<MatchEntity> insertOne(InsertOneMatchParams params) async {
+    final result = await _client.from('tb_event_matches').insert({
+      'event_id': params.eventId,
+      'name': params.name,
+      'first_team_id': params.firstTeamId,
+      'second_team_id': params.secondTeamId,
+      'max_score': params.maxScore,
+    }).select();
 
     if (result.isEmpty) {
       return Result.error(Exception('Match not found'));
     }
 
-    final match = MatchEntity.fromSqlite(result.first);
+    await _client.from('tb_event_queue').delete().eq('team_id', params.dequeue);
 
-    final scoresResult = _db.select(
-      'SELECT * FROM match_scores WHERE match_id = ?;',
-      [match.id],
-    );
+    await _client.from('tb_event_queue').insert({'event_id': params.eventId, 'team_id': params.enqueue});
 
-    final scores = scoresResult.map(ScoreEntity.fromSqlite).toList();
-
-    return Result.ok(match.copyWith(scores: scores));
+    return Result.ok(MatchEntity.fromSupabase(result[0]));
   }
 
-  AsyncResult<void> updateOne(MatchEntity match) async {
-    _db.execute(
-      'UPDATE event_matches SET name = ?, max_score = ?, ended = ?, updated_at = ?, ended_at = ? WHERE id = ?',
-      [
-        match.name,
-        match.maxScore,
-        match.ended ? 1 : 0,
-        match.updatedAt.toUtc().toIso8601String(),
-        match.endedAt?.toUtc().toIso8601String(),
-        match.id,
-      ],
-    );
+  @override
+  AsyncResult<MatchEntity> findOne(int id) async {
+    final result = await _client.from('vw_event_match_full').select().eq('id', id);
 
-    return const Result.ok(null);
+    if (result.isEmpty) {
+      return Result.error(Exception('Match not found'));
+    }
+
+    return Result.ok(MatchEntity.fromSupabase(result[0]));
+  }
+
+  @override
+  AsyncResult<MatchEntity> updateOne(int id, UpdateOneMatchParams params) async {
+    await _client
+        .from('tb_event_matches')
+        .update({
+          if (params.name != null) 'name': params.name,
+          if (params.maxScore != null) 'max_score': params.maxScore,
+          if (params.ended != null) 'ended': params.ended,
+          if (params.endedAt != null) 'ended_at': params.endedAt?.toIso8601String(),
+        })
+        .eq('id', id);
+
+    return findOne(id);
   }
 }

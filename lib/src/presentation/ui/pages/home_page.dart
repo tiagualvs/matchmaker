@@ -29,6 +29,10 @@ class _HomePageState extends State<HomePage> {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, child) {
+        if (controller.loading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
         return Scaffold(
           appBar: AppBar(
             title: const Text('Eventos'),
@@ -41,14 +45,20 @@ class _HomePageState extends State<HomePage> {
               return ListTile(
                 onTap: () => context.pushNamed(
                   'event',
-                  pathParameters: {'id': event.id},
+                  pathParameters: {'id': event.id.toString()},
                 ),
                 title: Text(event.name),
               );
             },
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => context.pushNamed('createEvent'),
+            onPressed: () async {
+              final hasCreated = await context.pushNamed<bool>('createEvent');
+
+              if (hasCreated ?? false) {
+                await controller.getEventsList();
+              }
+            },
             child: const Icon(Icons.add_rounded),
           ),
         );

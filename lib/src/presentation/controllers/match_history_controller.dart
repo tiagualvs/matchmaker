@@ -2,41 +2,44 @@ import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/repositories/events_repository.dart';
 
-class HomeController extends ChangeNotifier {
-  HomeController(this._eventsRepository);
+class MatchHistoryController extends ChangeNotifier {
+  final EventsRepository _eventRepository;
 
-  final EventsRepository _eventsRepository;
+  MatchHistoryController(this._eventRepository);
 
   bool _loading = false;
 
   bool get loading => _loading;
 
-  List<EventEntity> _events = [];
+  EventEntity _event = EventEntity.empty();
 
-  List<EventEntity> get events => _events;
+  EventEntity get event => _event;
 
-  Future<void> getEventsList({
+  Future<void> loadDependencies(
+    int eventId, {
     void Function(String error)? onError,
   }) async {
     _loading = true;
 
     notifyListeners();
 
-    final result = await _eventsRepository.findMany();
+    final result = await _eventRepository.findOne(eventId);
 
     return result.fold(
-      (events) {
-        _events = events;
+      (event) {
+        _event = event;
+
         _loading = false;
+
         notifyListeners();
       },
       (error) {
         _loading = false;
+
         notifyListeners();
+
         return onError?.call(error.toString());
       },
     );
   }
-
-  Future<void> newDay() async {}
 }

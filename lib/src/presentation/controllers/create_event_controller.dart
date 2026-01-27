@@ -1,21 +1,24 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:matchmaker/src/common/extensions/shared_preferences_ext.dart';
+import 'package:intl/intl.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/data/repositories/events_repository.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateEventController extends ChangeNotifier {
-  CreateEventController(this._prefs, this._eventsRepository);
+  CreateEventController(this._repository);
 
-  final SharedPreferences _prefs;
+  final EventsRepository _repository;
 
-  final EventsRepository _eventsRepository;
+  bool _loading = false;
 
-  EventEntity _event = EventEntity.create();
+  bool get loading => _loading;
+
+  EventEntity _event = EventEntity.empty().copyWith(
+    name: 'Evento do dia ${DateFormat('dd/MM/yyyy').format(DateTime.now())}',
+  );
 
   EventEntity get event => _event;
 
@@ -51,7 +54,7 @@ class CreateEventController extends ChangeNotifier {
       return onError?.call('Não é possível gerar eventos com menos de 2 times!');
     }
 
-    final teams = List.generate(numTeams, (index) => TeamEntity.create(_event.id, index));
+    final teams = List.generate(numTeams, (index) => TeamEntity.empty('Time ${index + 1}'));
 
     final women = _players.where((player) => player.isWoman).toList()..shuffle();
 
@@ -95,7 +98,7 @@ class CreateEventController extends ChangeNotifier {
 
         final menCount = teams[i].players.where((p) => p.isMan).length;
 
-        final jokerGender = womenCount <= menCount ? const PlayerGender.female() : const PlayerGender.male();
+        final jokerGender = womenCount <= menCount ? PlayerGender.female : PlayerGender.male;
 
         teams[i] = teams[i].copyWith(
           players: [
@@ -115,24 +118,33 @@ class CreateEventController extends ChangeNotifier {
     return onSuccess?.call();
   }
 
-  Future<void> handleSaveEvent({void Function()? onSuccess}) async {
-    for (final player in _event.teams.expand((team) => team.players)) {
-      if (player.isJoker) {
-        continue;
-      }
+  Future<void> handleSaveEvent({
+    void Function()? onSuccess,
+    void Function(String error)? onError,
+  }) async {
+    _loading = true;
 
-      await _prefs.setPlayer(player);
-    }
+    notifyListeners();
 
-    final result = await _eventsRepository.insertOne(_event);
+    final result = await _repository.insertOne(
+      InsertOneEventParams(
+        name: _event.name,
+        maxScore: _event.maxScore,
+        maxPlayerPerTeam: _event.maxPlayerPerTeam,
+        teams: _event.teams,
+      ),
+    );
 
     return result.fold(
       (event) {
-        _prefs.setEvent(event);
         return onSuccess?.call();
       },
       (error) {
-        print(error);
+        _loading = false;
+
+        notifyListeners();
+
+        return onError?.call(error.toString());
       },
     );
   }
@@ -143,11 +155,7 @@ class CreateEventController extends ChangeNotifier {
   }
 
   void handleAddPlayer() {
-    players.add(
-      PlayerEntity.create(nameController.text).copyWith(
-        gender: selectedGender.first,
-      ),
-    );
+    players.add(PlayerEntity.empty(nameController.text, selectedGender.first));
     nameController.clear();
     selectedGender.clear();
     notifyListeners();
@@ -162,6 +170,10 @@ class CreateEventController extends ChangeNotifier {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
+    _loading = true;
+
+    notifyListeners();
+
     final regex = RegExp(r'^(\d+)(\s+)-(\s+)(.+)');
 
     final names =
@@ -183,14 +195,15 @@ class CreateEventController extends ChangeNotifier {
           final match = RegExp(r'(.+)\s+-\s+(H|h|M|m)').firstMatch(name);
 
           if (match == null) {
-            return PlayerEntity.create(name);
+            return PlayerEntity.empty(name, PlayerGender.unknown);
           }
 
           final playerName = match.group(1)!;
           final playerGender = match.group(2)!;
 
-          return PlayerEntity.create(playerName).copyWith(
-            gender: playerGender.toLowerCase() == 'm' ? const PlayerGender.female() : const PlayerGender.male(),
+          return PlayerEntity.empty(
+            playerName,
+            playerGender.toLowerCase() == 'm' ? PlayerGender.female : PlayerGender.male,
           );
         },
       ),
@@ -199,6 +212,8 @@ class CreateEventController extends ChangeNotifier {
     players.sort((a, b) => a.name.compareTo(b.name));
 
     importerController.clear();
+
+    _loading = false;
 
     notifyListeners();
 
@@ -209,6 +224,8 @@ class CreateEventController extends ChangeNotifier {
     importerController.clear();
     nameController.clear();
     selectedGender.clear();
-    players.clear();
+    _players.clear();
+    _event = EventEntity.empty();
+    _loading = false;
   }
 }

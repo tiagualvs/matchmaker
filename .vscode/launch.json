@@ -8,7 +8,13 @@
             "name": "Flutter",
             "type": "dart",
             "request": "launch",
-            "program": "lib/main.dart"
+            "program": "lib/main.dart",
+            "toolArgs": [
+                "--dart-define",
+                "SUPABASE_URL=https://aerwcjictddsfczagcvg.supabase.co",
+                "--dart-define",
+                "SUPABASE_ANON_KEY=sb_publishable_31esrpuhaA43JvQmADwbrw_P-QBy4Ls"
+            ]
         }
     ]
 }

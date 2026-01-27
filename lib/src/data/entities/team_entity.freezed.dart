@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TeamEntity {
 
- String get id;@JsonKey(name: 'event_id') String get eventId; String get name; List<PlayerEntity> get players;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ int get id;@JsonKey(name: 'event_id') int get eventId; String get name; List<PlayerEntity> get players;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
 /// Create a copy of TeamEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $TeamEntityCopyWith<$Res>  {
   factory $TeamEntityCopyWith(TeamEntity value, $Res Function(TeamEntity) _then) = _$TeamEntityCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'event_id') String eventId, String name, List<PlayerEntity> players,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ int id,@JsonKey(name: 'event_id') int eventId, String name, List<PlayerEntity> players,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
@@ -68,8 +68,8 @@ class _$TeamEntityCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? eventId = null,Object? name = null,Object? players = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
-as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as int,eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,players: null == players ? _self.players : players // ignore: cast_nullable_to_non_nullable
 as List<PlayerEntity>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -158,7 +158,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'event_id')  String eventId,  String name,  List<PlayerEntity> players, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'event_id')  int eventId,  String name,  List<PlayerEntity> players, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TeamEntity() when $default != null:
 return $default(_that.id,_that.eventId,_that.name,_that.players,_that.createdAt,_that.updatedAt);case _:
@@ -179,7 +179,7 @@ return $default(_that.id,_that.eventId,_that.name,_that.players,_that.createdAt,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'event_id')  String eventId,  String name,  List<PlayerEntity> players, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'event_id')  int eventId,  String name,  List<PlayerEntity> players, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _TeamEntity():
 return $default(_that.id,_that.eventId,_that.name,_that.players,_that.createdAt,_that.updatedAt);case _:
@@ -199,7 +199,7 @@ return $default(_that.id,_that.eventId,_that.name,_that.players,_that.createdAt,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'event_id')  String eventId,  String name,  List<PlayerEntity> players, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'event_id')  int eventId,  String name,  List<PlayerEntity> players, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _TeamEntity() when $default != null:
 return $default(_that.id,_that.eventId,_that.name,_that.players,_that.createdAt,_that.updatedAt);case _:
@@ -217,8 +217,8 @@ class _TeamEntity extends TeamEntity {
   const _TeamEntity({required this.id, @JsonKey(name: 'event_id') required this.eventId, required this.name, required final  List<PlayerEntity> players, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt}): _players = players,super._();
   factory _TeamEntity.fromJson(Map<String, dynamic> json) => _$TeamEntityFromJson(json);
 
-@override final  String id;
-@override@JsonKey(name: 'event_id') final  String eventId;
+@override final  int id;
+@override@JsonKey(name: 'event_id') final  int eventId;
 @override final  String name;
  final  List<PlayerEntity> _players;
 @override List<PlayerEntity> get players {
@@ -263,7 +263,7 @@ abstract mixin class _$TeamEntityCopyWith<$Res> implements $TeamEntityCopyWith<$
   factory _$TeamEntityCopyWith(_TeamEntity value, $Res Function(_TeamEntity) _then) = __$TeamEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'event_id') String eventId, String name, List<PlayerEntity> players,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ int id,@JsonKey(name: 'event_id') int eventId, String name, List<PlayerEntity> players,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
@@ -283,8 +283,8 @@ class __$TeamEntityCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? eventId = null,Object? name = null,Object? players = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_TeamEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
-as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as int,eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,players: null == players ? _self._players : players // ignore: cast_nullable_to_non_nullable
 as List<PlayerEntity>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable

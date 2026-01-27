@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
-import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/match_controller.dart';
 
@@ -16,7 +17,7 @@ class MatchPage extends StatefulWidget {
     required this.controller,
   });
 
-  final String matchId;
+  final int matchId;
   final MatchController controller;
 
   @override
@@ -67,6 +68,37 @@ class _MatchPageState extends State<MatchPage> {
           );
         }
 
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (match.ended) {
+            final team = match.firstTeamWon ? firstTeam : secondTeam;
+            final max = math.max(match.firstTeamScore, match.secondTeamScore);
+            final min = math.min(match.firstTeamScore, match.secondTeamScore);
+
+            await showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) {
+                return AlertDialog(
+                  title: const Text('Partida encerrada!'),
+                  content: Text(
+                    'O time ${team.name} venceu por $max x $min!',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => context.pop(),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                );
+              },
+            );
+
+            if (!context.mounted) return;
+
+            return context.pop();
+          }
+        });
+
         return SafeArea(
           child: Scaffold(
             body: Padding(
@@ -95,38 +127,38 @@ class _MatchPageState extends State<MatchPage> {
                         spacing: 16.0,
                         children: [
                           Expanded(
-                            child: MaterialButton(
-                              onPressed: () => controller.incrementScore(
-                                ScoreEntity.create(widget.matchId, firstTeam.id),
-                                onEnd: (team) async {
-                                  return showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        title: const Text('Partida encerrada!'),
-                                        content: Text(
-                                          'O time ${team.name} venceu por ${match.firstTeamScore} x ${match.secondTeamScore}!',
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () => context.pop(),
-                                            child: const Text('OK'),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
+                            child: GestureDetector(
+                              onTap: () => controller.incrementScore(
+                                firstTeam.id,
+
+                                onError: (error) {
+                                  return SnackBars.error(error);
                                 },
                               ),
-                              color: Colors.blue,
-                              elevation: 0.0,
-                              child: Center(
-                                child: Text(
-                                  match.firstTeamScore.toString(),
-                                  style: context.textTheme.displayLarge?.copyWith(
-                                    fontWeight: .bold,
-                                    color: Colors.white,
-                                    fontSize: 256.0,
+                              onVerticalDragEnd: (details) async {
+                                if (details.velocity.pixelsPerSecond.dy > 8) {
+                                  return controller.reverseScore(
+                                    firstTeam.id,
+                                    onError: (error) {
+                                      return SnackBars.error(error);
+                                    },
+                                  );
+                                }
+                              },
+                              child: Material(
+                                color: Colors.blue,
+                                elevation: 0.0,
+                                child: Center(
+                                  child: Text(
+                                    match.firstTeamScore.toString(),
+                                    style: context.textTheme.displayLarge?.copyWith(
+                                      fontWeight: .bold,
+                                      color: switch (match.firstTeamScore == match.maxScore - 1) {
+                                        true => Colors.yellow,
+                                        false => Colors.white,
+                                      },
+                                      fontSize: 256.0,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -137,38 +169,37 @@ class _MatchPageState extends State<MatchPage> {
                             style: context.textTheme.headlineLarge,
                           ),
                           Expanded(
-                            child: MaterialButton(
-                              onPressed: () => controller.incrementScore(
-                                ScoreEntity.create(widget.matchId, secondTeam.id),
-                                onEnd: (team) async {
-                                  return showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        title: const Text('Partida encerrada!'),
-                                        content: Text(
-                                          'O time ${team.name} venceu por ${match.firstTeamScore} x ${match.secondTeamScore}!',
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () => context.pop(),
-                                            child: const Text('OK'),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
+                            child: GestureDetector(
+                              onTap: () => controller.incrementScore(
+                                secondTeam.id,
+                                onError: (error) {
+                                  return SnackBars.error(error);
                                 },
                               ),
-                              color: Colors.red,
-                              elevation: 0.0,
-                              child: Center(
-                                child: Text(
-                                  match.secondTeamScore.toString(),
-                                  style: context.textTheme.displayLarge?.copyWith(
-                                    fontWeight: .bold,
-                                    color: Colors.white,
-                                    fontSize: 256.0,
+                              onVerticalDragEnd: (details) async {
+                                if (details.velocity.pixelsPerSecond.dy > 8) {
+                                  return controller.reverseScore(
+                                    secondTeam.id,
+                                    onError: (error) {
+                                      return SnackBars.error(error);
+                                    },
+                                  );
+                                }
+                              },
+                              child: Material(
+                                color: Colors.red,
+                                elevation: 0.0,
+                                child: Center(
+                                  child: Text(
+                                    match.secondTeamScore.toString(),
+                                    style: context.textTheme.displayLarge?.copyWith(
+                                      fontWeight: .bold,
+                                      color: switch (match.secondTeamScore == match.maxScore - 1) {
+                                        true => Colors.yellow,
+                                        false => Colors.white,
+                                      },
+                                      fontSize: 256.0,
+                                    ),
                                   ),
                                 ),
                               ),

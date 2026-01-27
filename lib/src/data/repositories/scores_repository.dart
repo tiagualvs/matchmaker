@@ -1,25 +1,52 @@
 import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:result/result.dart';
-import 'package:sqlite3/sqlite3.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class ScoresRepository {
-  const ScoresRepository(this._db);
+class InsertOneScoreParams {
+  final int matchId;
+  final int teamId;
 
-  final Database _db;
+  const InsertOneScoreParams({required this.matchId, required this.teamId});
+}
 
-  AsyncResult<ScoreEntity> insertOne(ScoreEntity score) async {
-    _db.select(
-      'INSERT INTO match_scores (id, match_id, team_id, reversed, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
-      [
-        score.id,
-        score.matchId,
-        score.teamId,
-        score.reversed ? 1 : 0,
-        score.createdAt.toUtc().toIso8601String(),
-        score.updatedAt.toUtc().toIso8601String(),
-      ],
-    );
+abstract interface class ScoresRepository {
+  AsyncResult<ScoreEntity> insertOne(InsertOneScoreParams params);
+  AsyncResult<ScoreEntity> updateOne(int id, bool reversed);
+}
 
-    return Result.ok(score);
+class ScoresRepositoryImp implements ScoresRepository {
+  const ScoresRepositoryImp(this._client);
+
+  final SupabaseClient _client;
+
+  @override
+  AsyncResult<ScoreEntity> insertOne(InsertOneScoreParams params) async {
+    final result = await _client.from('tb_match_scores').insert({
+      'match_id': params.matchId,
+      'team_id': params.teamId,
+    }).select();
+
+    if (result.isEmpty) {
+      return Result.error(Exception('Falha ao inserir novo score!'));
+    }
+
+    return Result.ok(ScoreEntity.fromSupabase(result[0]));
+  }
+
+  @override
+  AsyncResult<ScoreEntity> updateOne(int id, bool reversed) async {
+    final result = await _client
+        .from('tb_match_scores')
+        .update({
+          'reversed': reversed,
+        })
+        .eq('id', id)
+        .select();
+
+    if (result.isEmpty) {
+      return Result.error(Exception('Falha ao atualizar score!'));
+    }
+
+    return Result.ok(ScoreEntity.fromSupabase(result[0]));
   }
 }

@@ -1,8 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
-import 'package:sqlite3/sqlite3.dart';
-import 'package:uuid/v7.dart';
 
 part 'match_entity.freezed.dart';
 part 'match_entity.g.dart';
@@ -12,8 +10,8 @@ abstract class MatchEntity with _$MatchEntity {
   const MatchEntity._();
 
   const factory MatchEntity({
-    required String id,
-    @JsonKey(name: 'event_id') required String eventId,
+    required int id,
+    @JsonKey(name: 'event_id') required int eventId,
     required String name,
     @JsonKey(name: 'first_team') required TeamEntity firstTeam,
     @JsonKey(name: 'second_team') required TeamEntity secondTeam,
@@ -27,32 +25,26 @@ abstract class MatchEntity with _$MatchEntity {
 
   factory MatchEntity.fromJson(Map<String, dynamic> json) => _$MatchEntityFromJson(json);
 
-  factory MatchEntity.fromSqlite(Row row) {
+  factory MatchEntity.fromSupabase(Map<String, dynamic> data) {
     return MatchEntity(
-      id: row['id'] as String,
-      eventId: row['event_id'] as String,
-      name: row['name'] as String,
-      firstTeam: TeamEntity(
-        id: row['first_team_id'] as String,
-        eventId: row['first_team_event_id'] as String,
-        name: row['first_team_name'] as String,
-        players: [],
-        createdAt: DateTime.parse(row['first_team_created_at'] as String),
-        updatedAt: DateTime.parse(row['first_team_updated_at'] as String),
+      id: data['id'] as int,
+      eventId: data['event_id'] as int,
+      name: data['name'] as String,
+      firstTeam: data['first_team'] != null
+          ? TeamEntity.fromSupabase(data['first_team'] as Map<String, dynamic>)
+          : TeamEntity.empty(''),
+      secondTeam: data['second_team'] != null
+          ? TeamEntity.fromSupabase(data['second_team'] as Map<String, dynamic>)
+          : TeamEntity.empty(''),
+      scores: List.from(
+        (data['scores'] as List<dynamic>?)?.map((e) => ScoreEntity.fromSupabase(e as Map<String, dynamic>)).toList() ??
+            [],
       ),
-      secondTeam: TeamEntity(
-        id: row['second_team_id'] as String,
-        eventId: row['second_team_event_id'] as String,
-        name: row['second_team_name'] as String,
-        players: [],
-        createdAt: DateTime.parse(row['second_team_created_at'] as String),
-        updatedAt: DateTime.parse(row['second_team_updated_at'] as String),
-      ),
-      maxScore: row['max_score'] as int,
-      ended: row['ended'] as int == 1,
-      createdAt: DateTime.parse(row['created_at'] as String),
-      updatedAt: DateTime.parse(row['updated_at'] as String),
-      endedAt: row['ended_at'] != null ? DateTime.parse(row['ended_at'] as String) : null,
+      maxScore: data['max_score'] as int,
+      ended: data['ended'] as bool,
+      createdAt: DateTime.parse(data['created_at'] as String),
+      updatedAt: DateTime.parse(data['updated_at'] as String),
+      endedAt: data['ended_at'] != null ? DateTime.parse(data['ended_at'] as String) : null,
     );
   }
 
@@ -68,7 +60,7 @@ abstract class MatchEntity with _$MatchEntity {
 
   bool get secondTeamWon => secondTeamScore == maxScore;
 
-  bool get isEmpty => id.isEmpty;
+  bool get isEmpty => id == -1;
 
   bool get isNotEmpty => !isEmpty;
 
@@ -81,33 +73,14 @@ abstract class MatchEntity with _$MatchEntity {
 
   factory MatchEntity.empty() {
     return MatchEntity(
-      id: '',
-      eventId: '',
+      id: -1,
+      eventId: -1,
       name: '',
-      firstTeam: TeamEntity.empty(),
-      secondTeam: TeamEntity.empty(),
+      firstTeam: TeamEntity.empty(''),
+      secondTeam: TeamEntity.empty(''),
       maxScore: 0,
       createdAt: DateTime(0),
       updatedAt: DateTime(0),
-    );
-  }
-
-  factory MatchEntity.create({
-    required String eventId,
-    required String name,
-    required TeamEntity firstTeam,
-    required TeamEntity secondTeam,
-    required int maxScore,
-  }) {
-    return MatchEntity(
-      id: const UuidV7().generate(),
-      eventId: eventId,
-      name: name,
-      firstTeam: firstTeam,
-      secondTeam: secondTeam,
-      maxScore: maxScore,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
     );
   }
 }

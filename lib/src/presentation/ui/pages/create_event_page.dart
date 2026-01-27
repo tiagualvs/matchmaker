@@ -5,6 +5,7 @@ import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/create_event_controller.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/label_widget.dart';
+import 'package:matchmaker/src/presentation/ui/widgets/team_card_widget.dart';
 
 class CreateEventPage extends StatefulWidget {
   const CreateEventPage({super.key, required this.controller});
@@ -29,6 +30,12 @@ class _CreateEventPageState extends State<CreateEventPage> {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, child) {
+        if (controller.loading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
         return Scaffold(
           appBar: AppBar(
             leading: IconButton(
@@ -41,86 +48,129 @@ class _CreateEventPageState extends State<CreateEventPage> {
             title: Text(controller.event.name),
             actions: [
               IconButton(
-                onPressed: () => showModalBottomSheet(
-                  context: context,
-                  builder: (context) {
-                    return Padding(
-                      padding: const EdgeInsets.all(16.0).copyWith(bottom: 48.0),
-                      child: Column(
-                        spacing: 16.0,
-                        crossAxisAlignment: .stretch,
-                        mainAxisSize: .min,
-                        children: [
-                          Text(
-                            'Configurações do Evento',
-                            textAlign: .center,
-                            style: context.textTheme.titleMedium,
-                          ),
-                          LabelWidget(
-                            label: 'Nome do evento',
-                            child: TextFormField(
-                              initialValue: controller.event.name,
-                              keyboardType: TextInputType.text,
-                              onChanged: (value) {
-                                return controller.handleEventChanges(
-                                  controller.event.copyWith(name: value),
-                                );
-                              },
-                              decoration: const InputDecoration(
-                                hintText: 'Nome',
+                onPressed: () async {
+                  final result = await showModalBottomSheet<String>(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (context) {
+                      return Padding(
+                        padding: const EdgeInsets.all(16.0).copyWith(bottom: 48.0),
+                        child: Column(
+                          spacing: 16.0,
+                          crossAxisAlignment: .stretch,
+                          mainAxisSize: .min,
+                          children: [
+                            Text(
+                              'Configurações do Evento',
+                              textAlign: .center,
+                              style: context.textTheme.titleMedium,
+                            ),
+                            LabelWidget(
+                              label: 'Nome do evento',
+                              child: TextFormField(
+                                initialValue: controller.event.name,
+                                keyboardType: TextInputType.text,
+                                onChanged: (value) {
+                                  return controller.handleEventChanges(
+                                    controller.event.copyWith(name: value),
+                                  );
+                                },
+                                decoration: const InputDecoration(
+                                  hintText: 'Nome',
+                                ),
                               ),
                             ),
-                          ),
-                          LabelWidget(
-                            label: 'Quantidade de pontos para vencer',
-                            child: TextFormField(
-                              initialValue: controller.event.maxScore.toString(),
-                              keyboardType: TextInputType.number,
-                              onChanged: (value) {
-                                if (value.isEmpty) return;
+                            LabelWidget(
+                              label: 'Quantidade de pontos para vencer',
+                              child: TextFormField(
+                                initialValue: controller.event.maxScore.toString(),
+                                keyboardType: TextInputType.number,
+                                onChanged: (value) {
+                                  if (value.isEmpty) return;
 
-                                return controller.handleEventChanges(
-                                  controller.event.copyWith(maxScore: int.parse(value)),
-                                );
-                              },
-                              decoration: const InputDecoration(
-                                hintText: 'Quantidade',
+                                  return controller.handleEventChanges(
+                                    controller.event.copyWith(maxScore: int.parse(value)),
+                                  );
+                                },
+                                decoration: const InputDecoration(
+                                  hintText: 'Quantidade',
+                                ),
                               ),
                             ),
-                          ),
-                          LabelWidget(
-                            label: 'Quantidade de jogadores por time',
-                            child: TextFormField(
-                              initialValue: controller.event.maxPlayerPerTeam.toString(),
-                              keyboardType: TextInputType.number,
-                              enabled: controller.event.teams.isEmpty,
-                              onChanged: (value) {
-                                if (value.isEmpty) return;
+                            LabelWidget(
+                              label: 'Quantidade de jogadores por time',
+                              child: TextFormField(
+                                initialValue: controller.event.maxPlayerPerTeam.toString(),
+                                keyboardType: TextInputType.number,
+                                enabled: controller.event.teams.isEmpty,
+                                onChanged: (value) {
+                                  if (value.isEmpty) return;
 
-                                return controller.handleEventChanges(
-                                  controller.event.copyWith(maxPlayerPerTeam: int.parse(value)),
-                                );
-                              },
-                              decoration: const InputDecoration(
-                                hintText: 'Quantidade',
+                                  return controller.handleEventChanges(
+                                    controller.event.copyWith(maxPlayerPerTeam: int.parse(value)),
+                                  );
+                                },
+                                decoration: const InputDecoration(
+                                  hintText: 'Quantidade',
+                                ),
                               ),
                             ),
-                          ),
-                          FilledButton(
-                            onPressed: () {
-                              controller.handleEventChanges(
-                                controller.event.copyWith(teams: []),
-                              );
+                            if (controller.event.teams.isEmpty) ...[
+                              FilledButton.icon(
+                                onPressed: () async {
+                                  return context.pop('generate');
+                                },
+                                icon: const Icon(Icons.groups_rounded),
+                                label: const Text('Gerar Times'),
+                              ),
+                            ],
+                            if (controller.event.teams.isNotEmpty) ...[
+                              FilledButton.icon(
+                                onPressed: () {
+                                  return context.pop('reset');
+                                },
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: context.colorScheme.error,
+                                ),
+                                icon: const Icon(Icons.refresh_rounded),
+                                label: const Text('Reiniciar Times'),
+                              ),
+                              FilledButton.icon(
+                                onPressed: () async {
+                                  return context.pop('save');
+                                },
+                                icon: const Icon(Icons.save_rounded),
+                                label: const Text('Salvar Evento'),
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    },
+                  );
 
-                              return context.pop();
-                            },
-                            child: const Text('Reiniciar Times'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                  return switch (result) {
+                    'generate' => controller.handleGenerateTeams(
+                      onError: (error) {
+                        return SnackBars.error(error);
+                      },
+                    ),
+                    'reset' => controller.handleEventChanges(
+                      controller.event.copyWith(teams: []),
+                    ),
+                    'save' => await controller.handleSaveEvent(
+                      onSuccess: () {
+                        context.pop(true);
+
+                        return SnackBars.success('Evento salvo com sucesso!');
+                      },
+                      onError: (error) {
+                        return SnackBars.error(error);
+                      },
+                    ),
+                    _ => null,
+                  };
+                },
                 icon: const Icon(Icons.settings_rounded),
               ),
             ],
@@ -134,75 +184,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
               children: [
                 if (controller.event.teams.isNotEmpty) ...[
                   for (final team in controller.event.teams) ...[
-                    Material(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        side: BorderSide(
-                          color: context.theme.dividerColor,
-                        ),
-                      ),
-
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          spacing: 4.0,
-                          crossAxisAlignment: .stretch,
-                          children: [
-                            Text(
-                              team.name,
-                              textAlign: .center,
-                              style: context.textTheme.titleMedium,
-                            ),
-                            const Divider(),
-                            for (final player in team.players) ...[
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: Row(
-                                  spacing: 8.0,
-                                  children: [
-                                    SizedBox.square(
-                                      dimension: 32.0,
-                                      child: Material(
-                                        shape: const CircleBorder(),
-                                        color: switch (player.gender) {
-                                          PlayerGenderMale _ => Colors.blue.withAlpha((255 * 0.1).toInt()),
-                                          PlayerGenderFemale _ => Colors.pink.withAlpha((255 * 0.1).toInt()),
-                                          _ => Colors.blueGrey.withAlpha((255 * 0.1).toInt()),
-                                        },
-                                        child: Padding(
-                                          padding: const .all(4.0),
-                                          child: switch (player.gender) {
-                                            PlayerGenderMale _ => const Icon(
-                                              Icons.male_rounded,
-                                              color: Colors.blue,
-                                              size: 22.0,
-                                            ),
-                                            PlayerGenderFemale _ => const Icon(
-                                              Icons.female_rounded,
-                                              color: Colors.pink,
-                                              size: 22.0,
-                                            ),
-                                            _ => const Icon(
-                                              Icons.person_rounded,
-                                              color: Colors.blueGrey,
-                                              size: 22.0,
-                                            ),
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      player.name,
-                                      style: context.textTheme.bodyLarge,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ),
+                    TeamCardWidget(team: team, initiallyExpanded: true),
                   ],
                 ],
                 if (controller.event.teams.isEmpty) ...[
@@ -264,8 +246,8 @@ class _CreateEventPageState extends State<CreateEventPage> {
                     child: SegmentedButton<PlayerGender>(
                       emptySelectionAllowed: true,
                       segments: [
-                        const ButtonSegment(value: PlayerGender.male(), label: Text('Masculino')),
-                        const ButtonSegment(value: PlayerGender.female(), label: Text('Feminino')),
+                        const ButtonSegment(value: PlayerGender.male, label: Text('Masculino')),
+                        const ButtonSegment(value: PlayerGender.female, label: Text('Feminino')),
                       ],
                       onSelectionChanged: controller.handleGenderChange,
                       selected: controller.selectedGender,
@@ -324,19 +306,19 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                 Material(
                                   shape: const CircleBorder(),
                                   color: switch (player.gender) {
-                                    PlayerGenderMale _ => Colors.blue.withAlpha((255 * 0.1).toInt()),
-                                    PlayerGenderFemale _ => Colors.pink.withAlpha((255 * 0.1).toInt()),
+                                    PlayerGender.male => Colors.blue.withAlpha((255 * 0.1).toInt()),
+                                    PlayerGender.female => Colors.pink.withAlpha((255 * 0.1).toInt()),
                                     _ => Colors.blueGrey.withAlpha((255 * 0.1).toInt()),
                                   },
                                   child: Padding(
                                     padding: const .all(4.0),
                                     child: switch (player.gender) {
-                                      PlayerGenderMale _ => const Icon(
+                                      PlayerGender.male => const Icon(
                                         Icons.male_rounded,
                                         color: Colors.blue,
                                         size: 22.0,
                                       ),
-                                      PlayerGenderFemale _ => const Icon(
+                                      PlayerGender.female => const Icon(
                                         Icons.female_rounded,
                                         color: Colors.pink,
                                         size: 22.0,
@@ -369,38 +351,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 ],
               ],
             ),
-          ),
-          extendBody: true,
-          bottomNavigationBar: BottomAppBar(
-            color: Colors.transparent,
-            elevation: 0,
-            child: switch (controller.event.teams.isEmpty) {
-              true => FilledButton.icon(
-                onPressed: controller.players.isEmpty
-                    ? null
-                    : () => controller.handleGenerateTeams(
-                        onSuccess: () {
-                          return SnackBars.success('Times gerados com sucesso!');
-                        },
-                        onError: (error) {
-                          return SnackBars.error(error);
-                        },
-                      ),
-                icon: const Icon(Icons.groups_rounded),
-                label: const Text('Gerar Times'),
-              ),
-              false => FilledButton.icon(
-                onPressed: () => controller.handleSaveEvent(
-                  onSuccess: () {
-                    SnackBars.success('Evento salvo com sucesso!');
-
-                    return context.pop();
-                  },
-                ),
-                icon: const Icon(Icons.save_rounded),
-                label: const Text('Salvar Evento'),
-              ),
-            },
           ),
         );
       },

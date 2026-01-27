@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/presentation/ui/pages/create_event_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/event_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/home_page.dart';
+import 'package:matchmaker/src/presentation/ui/pages/match_history_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/match_page.dart';
 import 'package:provider/provider.dart';
 
@@ -32,7 +33,7 @@ abstract class AppRouter {
           return defaultTransition(
             key: state.pageKey,
             page: EventPage(
-              id: state.pathParameters['id'] ?? '',
+              id: int.parse(state.pathParameters['id'] ?? '-1'),
               controller: context.read(),
             ),
           );
@@ -57,7 +58,20 @@ abstract class AppRouter {
           return defaultTransition(
             key: state.pageKey,
             page: MatchPage(
-              matchId: state.pathParameters['matchId'] ?? '',
+              matchId: int.parse(state.pathParameters['matchId'] ?? '-1'),
+              controller: context.read(),
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/matche-history/:eventId',
+        name: 'match-history',
+        pageBuilder: (context, state) {
+          return defaultTransition(
+            key: state.pageKey,
+            page: MatchHistoryPage(
+              eventId: int.parse(state.pathParameters['eventId'] ?? '-1'),
               controller: context.read(),
             ),
           );

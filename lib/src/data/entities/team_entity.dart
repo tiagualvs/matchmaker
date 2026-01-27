@@ -1,7 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
-import 'package:sqlite3/sqlite3.dart';
-import 'package:uuid/v7.dart';
 
 part 'team_entity.freezed.dart';
 part 'team_entity.g.dart';
@@ -11,8 +9,8 @@ abstract class TeamEntity with _$TeamEntity {
   const TeamEntity._();
 
   const factory TeamEntity({
-    required String id,
-    @JsonKey(name: 'event_id') required String eventId,
+    required int id,
+    @JsonKey(name: 'event_id') required int eventId,
     required String name,
     required List<PlayerEntity> players,
     @JsonKey(name: 'created_at') required DateTime createdAt,
@@ -21,38 +19,27 @@ abstract class TeamEntity with _$TeamEntity {
 
   factory TeamEntity.fromJson(Map<String, dynamic> json) => _$TeamEntityFromJson(json);
 
-  factory TeamEntity.fromSqlite(Row row) {
+  factory TeamEntity.fromSupabase(Map<String, dynamic> data) {
     return TeamEntity(
-      id: row['id'] as String,
-      eventId: row['event_id'] as String,
-      name: row['name'] as String,
-      players: [],
-      createdAt: DateTime.parse(row['created_at'] as String),
-      updatedAt: DateTime.parse(row['updated_at'] as String),
+      id: data['id'] as int,
+      eventId: data['event_id'] as int,
+      name: data['name'] as String,
+      players: List.from(
+        (data['players'] as List?)?.map((playerData) => PlayerEntity.fromSupabase(playerData)) ?? [],
+      ),
+      createdAt: DateTime.parse(data['created_at'] as String),
+      updatedAt: DateTime.parse(data['updated_at'] as String),
     );
   }
 
-  factory TeamEntity.empty() {
+  factory TeamEntity.empty(String name) {
     return TeamEntity(
-      id: '',
-      eventId: '',
-      name: '',
+      id: -1,
+      eventId: -1,
+      name: name,
       players: [],
       createdAt: DateTime(0),
       updatedAt: DateTime(0),
-    );
-  }
-
-  String get storageKey => 'team_$id';
-
-  factory TeamEntity.create(String eventId, [int? index]) {
-    return TeamEntity(
-      id: const UuidV7().generate(),
-      eventId: eventId,
-      name: index != null ? 'Time ${index + 1}' : '',
-      players: [],
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
     );
   }
 }

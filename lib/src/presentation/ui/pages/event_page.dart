@@ -7,11 +7,12 @@ import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/event_controller.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/players_dialog.dart';
+import 'package:matchmaker/src/presentation/ui/widgets/team_card_widget.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage({super.key, required this.id, required this.controller});
 
-  final String id;
+  final int id;
   final EventController controller;
 
   @override
@@ -23,18 +24,34 @@ class _EventPageState extends State<EventPage> {
 
   EventEntity get event => controller.event;
 
-  MatchEntity get currentMatch => controller.currentMatch;
+  MatchEntity? get currentMatch => event.currentMatch;
 
-  TeamEntity get firstTeam => event.teams.firstWhere((team) => team.id == currentMatch.firstTeam.id);
+  TeamEntity? get firstTeam {
+    if (currentMatch == null) return null;
 
-  TeamEntity get secondTeam => event.teams.firstWhere((team) => team.id == currentMatch.secondTeam.id);
+    final index = event.teams.indexWhere((team) => team.id == currentMatch?.firstTeam.id);
+
+    if (index == -1) return null;
+
+    return event.teams[index];
+  }
+
+  TeamEntity? get secondTeam {
+    if (currentMatch == null) return null;
+
+    final index = event.teams.indexWhere((team) => team.id == currentMatch?.secondTeam.id);
+
+    if (index == -1) return null;
+
+    return event.teams[index];
+  }
 
   @override
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.loadDependencies(widget.id);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      return await controller.loadDependencies(widget.id);
     });
   }
 
@@ -43,7 +60,7 @@ class _EventPageState extends State<EventPage> {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, child) {
-        if (event.id != widget.id) {
+        if (event.id != widget.id || controller.loading) {
           return const Center(
             child: CircularProgressIndicator(),
           );
@@ -57,6 +74,12 @@ class _EventPageState extends State<EventPage> {
                 constraints: const BoxConstraints(minWidth: 196.0),
                 onSelected: (value) async {
                   return switch (value) {
+                    0 => context.pushNamed<void>(
+                      'match-history',
+                      pathParameters: {
+                        'eventId': event.id.toString(),
+                      },
+                    ),
                     _ => null,
                   };
                 },
@@ -64,7 +87,7 @@ class _EventPageState extends State<EventPage> {
                   return [
                     const PopupMenuItem(
                       value: 0,
-                      child: Text('Colar lista'),
+                      child: Text('Histórico de partidas'),
                     ),
                     const PopupMenuItem(
                       value: 1,
@@ -82,9 +105,10 @@ class _EventPageState extends State<EventPage> {
               spacing: 16.0,
               crossAxisAlignment: .stretch,
               children: [
-                if (!currentMatch.ended) ...[
+                if (currentMatch?.ended == false) ...[
                   Text(
                     'Partida Atual',
+                    textAlign: .start,
                     style: context.textTheme.titleMedium,
                   ),
                   Material(
@@ -94,26 +118,38 @@ class _EventPageState extends State<EventPage> {
                         await context.pushNamed(
                           'match',
                           pathParameters: {
-                            'matchId': currentMatch.id,
+                            'matchId': currentMatch?.id.toString() ?? '',
                           },
                         );
-
                         await controller.loadDependencies(widget.id);
                       },
                       borderRadius: BorderRadius.circular(8.0),
                       child: Card(
                         margin: .zero,
                         child: Column(
-                          spacing: 16.0,
+                          spacing: 8.0,
                           crossAxisAlignment: .stretch,
                           children: [
                             Stack(
                               children: [
                                 AspectRatio(
                                   aspectRatio: 16 / 7,
-                                  child: Image.asset(
-                                    'assets/images/volei-bg.jpg',
-                                    fit: BoxFit.cover,
+                                  child: ShaderMask(
+                                    shaderCallback: (bounds) {
+                                      return const LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Colors.black,
+                                          Colors.transparent,
+                                        ],
+                                      ).createShader(bounds);
+                                    },
+                                    blendMode: BlendMode.dstIn,
+                                    child: Image.asset(
+                                      'assets/images/volei-bg.jpg',
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
                                 ),
                                 Positioned(
@@ -121,11 +157,8 @@ class _EventPageState extends State<EventPage> {
                                   left: 16.0,
                                   right: 16.9,
                                   child: Text(
-                                    currentMatch.name,
-                                    style: context.textTheme.titleMedium?.copyWith(
-                                      fontWeight: .bold,
-                                      color: context.colorScheme.onPrimary,
-                                    ),
+                                    currentMatch?.name ?? '--',
+                                    style: context.textTheme.titleMedium?.copyWith(fontWeight: .bold),
                                   ),
                                 ),
                               ],
@@ -139,13 +172,13 @@ class _EventPageState extends State<EventPage> {
                                   crossAxisAlignment: .center,
                                   children: [
                                     Text(
-                                      firstTeam.name,
+                                      firstTeam?.name ?? '--',
                                       style: context.textTheme.titleMedium?.copyWith(
                                         color: context.colorScheme.primary,
                                       ),
                                     ),
                                     Text(
-                                      '${currentMatch.firstTeamScore}',
+                                      '${currentMatch?.firstTeamScore}',
                                       style: context.textTheme.displayLarge?.copyWith(
                                         fontWeight: .bold,
                                       ),
@@ -161,13 +194,13 @@ class _EventPageState extends State<EventPage> {
                                   crossAxisAlignment: .center,
                                   children: [
                                     Text(
-                                      secondTeam.name,
+                                      secondTeam?.name ?? '--',
                                       style: context.textTheme.titleMedium?.copyWith(
                                         color: context.colorScheme.primary,
                                       ),
                                     ),
                                     Text(
-                                      '${currentMatch.secondTeamScore}',
+                                      '${currentMatch?.secondTeamScore}',
                                       style: context.textTheme.displayLarge?.copyWith(
                                         fontWeight: .bold,
                                       ),
@@ -176,13 +209,6 @@ class _EventPageState extends State<EventPage> {
                                 ),
                               ],
                             ),
-                            // const Divider(),
-                            // if (currentMatch.lastScore.isNotEmpty) ...[
-                            //   Text(
-                            //     'Ultimo ponto: ${currentMatch.lastScore}',
-                            //     style: context.textTheme.titleMedium,
-                            //   ),
-                            // ],
                           ],
                         ),
                       ),
@@ -190,7 +216,28 @@ class _EventPageState extends State<EventPage> {
                   ),
                 ],
                 Text(
-                  'Times',
+                  'Próximo Jogo',
+                  textAlign: .start,
+                  style: context.textTheme.titleMedium,
+                ),
+                Text(
+                  'Vencedor da ${event.matches.first.name} vs. ${event.teams.firstWhere((team) => team.id == event.queue.first).name}',
+                  style: context.textTheme.bodyMedium,
+                ),
+                Text(
+                  'Próximos Times',
+                  textAlign: .start,
+                  style: context.textTheme.titleMedium,
+                ),
+                for (final (index, teamId) in event.queue.indexed) ...[
+                  Text(
+                    '${index + 1}. ${event.teams.firstWhere((team) => team.id == teamId).name}',
+                    style: context.textTheme.bodyMedium,
+                  ),
+                ],
+                Text(
+                  'Times (${event.teams.length})',
+                  textAlign: .start,
                   style: context.textTheme.titleMedium,
                 ),
                 ListView.separated(
@@ -201,75 +248,7 @@ class _EventPageState extends State<EventPage> {
                   itemBuilder: (context, index) {
                     final team = event.teams[index];
 
-                    return Material(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        side: BorderSide(
-                          color: context.theme.dividerColor,
-                        ),
-                      ),
-
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          spacing: 4.0,
-                          crossAxisAlignment: .stretch,
-                          children: [
-                            Text(
-                              team.name,
-                              textAlign: .center,
-                              style: context.textTheme.titleMedium,
-                            ),
-                            const Divider(),
-                            for (final player in team.players) ...[
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: Row(
-                                  spacing: 8.0,
-                                  children: [
-                                    SizedBox.square(
-                                      dimension: 32.0,
-                                      child: Material(
-                                        shape: const CircleBorder(),
-                                        color: switch (player.gender) {
-                                          PlayerGenderMale _ => Colors.blue.withAlpha((255 * 0.1).toInt()),
-                                          PlayerGenderFemale _ => Colors.pink.withAlpha((255 * 0.1).toInt()),
-                                          _ => Colors.blueGrey.withAlpha((255 * 0.1).toInt()),
-                                        },
-                                        child: Padding(
-                                          padding: const .all(4.0),
-                                          child: switch (player.gender) {
-                                            PlayerGenderMale _ => const Icon(
-                                              Icons.male_rounded,
-                                              color: Colors.blue,
-                                              size: 22.0,
-                                            ),
-                                            PlayerGenderFemale _ => const Icon(
-                                              Icons.female_rounded,
-                                              color: Colors.pink,
-                                              size: 22.0,
-                                            ),
-                                            _ => const Icon(
-                                              Icons.person_rounded,
-                                              color: Colors.blueGrey,
-                                              size: 22.0,
-                                            ),
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      player.name,
-                                      style: context.textTheme.bodyLarge,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    );
+                    return TeamCardWidget(team: team);
                   },
                 ),
               ],

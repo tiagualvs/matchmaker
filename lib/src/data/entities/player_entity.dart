@@ -1,79 +1,79 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sqlite3/sqlite3.dart';
-import 'package:uuid/v7.dart';
 
 part 'player_entity.freezed.dart';
 part 'player_entity.g.dart';
 
-@freezed
-sealed class PlayerGender with _$PlayerGender {
-  const PlayerGender._();
-  const factory PlayerGender.male({@Default('male') String value}) = PlayerGenderMale;
-  const factory PlayerGender.female({@Default('female') String value}) = PlayerGenderFemale;
-  const factory PlayerGender.unknown({@Default('unknown') String value}) = PlayerGenderUnknown;
-  factory PlayerGender.fromJson(Map<String, dynamic> json) => _$PlayerGenderFromJson(json);
+@JsonEnum(alwaysCreate: true)
+enum PlayerGender {
+  male('male'),
+  female('female'),
+  unknown('unknown')
+  ;
+
+  final String value;
+
+  const PlayerGender(this.value);
+
+  static PlayerGender fromValue(String value) {
+    return switch (value) {
+      'male' => PlayerGender.male,
+      'female' => PlayerGender.female,
+      _ => PlayerGender.unknown,
+    };
+  }
 }
 
-@freezed
-sealed class PlayerLevel with _$PlayerLevel {
-  const PlayerLevel._();
-  const factory PlayerLevel.basic({@Default('basic') String value}) = _Basic;
-  const factory PlayerLevel.intermediate({@Default('intermediate') String value}) = _Intermediate;
-  const factory PlayerLevel.advanced({@Default('advanced') String value}) = _Advanced;
+enum PlayerLevel {
+  basic('basic'),
+  intermediate('intermediate'),
+  advanced('advanced')
+  ;
 
-  factory PlayerLevel.fromJson(Map<String, dynamic> json) => _$PlayerLevelFromJson(json);
+  final String value;
+
+  const PlayerLevel(this.value);
+
+  static PlayerLevel fromValue(String value) {
+    return switch (value) {
+      'basic' => PlayerLevel.basic,
+      'intermediate' => PlayerLevel.intermediate,
+      'advanced' => PlayerLevel.advanced,
+      _ => PlayerLevel.basic,
+    };
+  }
 }
 
 @freezed
 abstract class PlayerEntity with _$PlayerEntity {
   const PlayerEntity._();
 
-  String get tableName => 'players';
-
   const factory PlayerEntity({
-    required String id,
+    required int id,
     required String name,
     required PlayerGender gender,
-    @Default(PlayerLevel.basic()) PlayerLevel level,
+    @Default(PlayerLevel.basic) PlayerLevel level,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _PlayerEntity;
 
   factory PlayerEntity.fromJson(Map<String, dynamic> json) => _$PlayerEntityFromJson(json);
 
-  factory PlayerEntity.fromSqlite(Row row) {
+  factory PlayerEntity.fromSupabase(Map<String, dynamic> data) {
     return PlayerEntity(
-      id: row['id'] as String,
-      name: row['name'] as String,
-      gender: switch (row['gender']) {
-        'male' => const PlayerGender.male(),
-        'female' => const PlayerGender.female(),
-        _ => const PlayerGender.unknown(),
-      },
-      level: switch (row['level']) {
-        'basic' => const PlayerLevel.basic(),
-        'intermediate' => const PlayerLevel.intermediate(),
-        'advanced' => const PlayerLevel.advanced(),
-        _ => const PlayerLevel.basic(),
-      },
-      createdAt: DateTime.parse(row['created_at'] as String),
-      updatedAt: DateTime.parse(row['updated_at'] as String),
+      id: data['id'] as int,
+      name: data['name'] as String,
+      gender: PlayerGender.fromValue(data['gender'] as String),
+      level: PlayerLevel.fromValue(data['level'] as String),
+      createdAt: DateTime.parse(data['created_at'] as String),
+      updatedAt: DateTime.parse(data['updated_at'] as String),
     );
   }
 
-  String get storageKey => 'player_$id';
-
-  bool get isJoker => id.startsWith('joker_');
-
-  bool get isWoman => gender is PlayerGenderFemale;
-
-  bool get isMan => gender is PlayerGenderMale;
-
-  factory PlayerEntity.create(String name) {
+  factory PlayerEntity.empty(String name, PlayerGender gender) {
     return PlayerEntity(
-      id: const UuidV7().generate(),
+      id: -1,
       name: name,
-      gender: const PlayerGender.unknown(),
+      gender: gender,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
@@ -81,11 +81,10 @@ abstract class PlayerEntity with _$PlayerEntity {
 
   factory PlayerEntity.joker(int index, PlayerGender gender) {
     return PlayerEntity(
-      id: 'joker_${const UuidV7().generate()}',
-
+      id: -99,
       name: switch (gender) {
-        PlayerGenderMale _ => 'Jogador Coringa',
-        PlayerGenderFemale _ => 'Jogadora Coringa',
+        PlayerGender.male => 'Jogador Coringa',
+        PlayerGender.female => 'Jogadora Coringa',
         _ => 'Jogador Coringa',
       },
       gender: gender,
@@ -93,4 +92,10 @@ abstract class PlayerEntity with _$PlayerEntity {
       updatedAt: DateTime.now(),
     );
   }
+
+  bool get isJoker => id == -99;
+
+  bool get isWoman => gender == PlayerGender.female;
+
+  bool get isMan => gender == PlayerGender.male;
 }

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ScoreEntity {
 
- String get id;@JsonKey(name: 'match_id') String get matchId;@JsonKey(name: 'team_id') String get teamId; bool get reversed;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ int get id;@JsonKey(name: 'match_id') int get matchId;@JsonKey(name: 'team_id') int get teamId; bool get reversed;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
 /// Create a copy of ScoreEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ScoreEntityCopyWith<$Res>  {
   factory $ScoreEntityCopyWith(ScoreEntity value, $Res Function(ScoreEntity) _then) = _$ScoreEntityCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'match_id') String matchId,@JsonKey(name: 'team_id') String teamId, bool reversed,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ int id,@JsonKey(name: 'match_id') int matchId,@JsonKey(name: 'team_id') int teamId, bool reversed,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
@@ -68,9 +68,9 @@ class _$ScoreEntityCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? matchId = null,Object? teamId = null,Object? reversed = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,matchId: null == matchId ? _self.matchId : matchId // ignore: cast_nullable_to_non_nullable
-as String,teamId: null == teamId ? _self.teamId : teamId // ignore: cast_nullable_to_non_nullable
-as String,reversed: null == reversed ? _self.reversed : reversed // ignore: cast_nullable_to_non_nullable
+as int,matchId: null == matchId ? _self.matchId : matchId // ignore: cast_nullable_to_non_nullable
+as int,teamId: null == teamId ? _self.teamId : teamId // ignore: cast_nullable_to_non_nullable
+as int,reversed: null == reversed ? _self.reversed : reversed // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
@@ -158,7 +158,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'match_id')  String matchId, @JsonKey(name: 'team_id')  String teamId,  bool reversed, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'match_id')  int matchId, @JsonKey(name: 'team_id')  int teamId,  bool reversed, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ScoreEntity() when $default != null:
 return $default(_that.id,_that.matchId,_that.teamId,_that.reversed,_that.createdAt,_that.updatedAt);case _:
@@ -179,7 +179,7 @@ return $default(_that.id,_that.matchId,_that.teamId,_that.reversed,_that.created
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'match_id')  String matchId, @JsonKey(name: 'team_id')  String teamId,  bool reversed, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'match_id')  int matchId, @JsonKey(name: 'team_id')  int teamId,  bool reversed, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _ScoreEntity():
 return $default(_that.id,_that.matchId,_that.teamId,_that.reversed,_that.createdAt,_that.updatedAt);case _:
@@ -199,7 +199,7 @@ return $default(_that.id,_that.matchId,_that.teamId,_that.reversed,_that.created
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'match_id')  String matchId, @JsonKey(name: 'team_id')  String teamId,  bool reversed, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'match_id')  int matchId, @JsonKey(name: 'team_id')  int teamId,  bool reversed, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ScoreEntity() when $default != null:
 return $default(_that.id,_that.matchId,_that.teamId,_that.reversed,_that.createdAt,_that.updatedAt);case _:
@@ -217,9 +217,9 @@ class _ScoreEntity extends ScoreEntity {
   const _ScoreEntity({required this.id, @JsonKey(name: 'match_id') required this.matchId, @JsonKey(name: 'team_id') required this.teamId, this.reversed = false, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt}): super._();
   factory _ScoreEntity.fromJson(Map<String, dynamic> json) => _$ScoreEntityFromJson(json);
 
-@override final  String id;
-@override@JsonKey(name: 'match_id') final  String matchId;
-@override@JsonKey(name: 'team_id') final  String teamId;
+@override final  int id;
+@override@JsonKey(name: 'match_id') final  int matchId;
+@override@JsonKey(name: 'team_id') final  int teamId;
 @override@JsonKey() final  bool reversed;
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
 @override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
@@ -257,7 +257,7 @@ abstract mixin class _$ScoreEntityCopyWith<$Res> implements $ScoreEntityCopyWith
   factory _$ScoreEntityCopyWith(_ScoreEntity value, $Res Function(_ScoreEntity) _then) = __$ScoreEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'match_id') String matchId,@JsonKey(name: 'team_id') String teamId, bool reversed,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ int id,@JsonKey(name: 'match_id') int matchId,@JsonKey(name: 'team_id') int teamId, bool reversed,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
@@ -277,9 +277,9 @@ class __$ScoreEntityCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? matchId = null,Object? teamId = null,Object? reversed = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_ScoreEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,matchId: null == matchId ? _self.matchId : matchId // ignore: cast_nullable_to_non_nullable
-as String,teamId: null == teamId ? _self.teamId : teamId // ignore: cast_nullable_to_non_nullable
-as String,reversed: null == reversed ? _self.reversed : reversed // ignore: cast_nullable_to_non_nullable
+as int,matchId: null == matchId ? _self.matchId : matchId // ignore: cast_nullable_to_non_nullable
+as int,teamId: null == teamId ? _self.teamId : teamId // ignore: cast_nullable_to_non_nullable
+as int,reversed: null == reversed ? _self.reversed : reversed // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,

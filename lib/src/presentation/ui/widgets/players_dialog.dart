@@ -45,7 +45,7 @@ class _PlayersDialogState extends State<PlayersDialog> {
 
   void handleAddPlayer() {
     setState(() {
-      players.add(PlayerEntity.create(''));
+      players.add(PlayerEntity.empty('', PlayerGender.unknown));
     });
   }
 
@@ -60,7 +60,7 @@ class _PlayersDialogState extends State<PlayersDialog> {
       return SnackBars.error('Todos os jogadores devem ter um nome');
     }
 
-    if (players.any((player) => player.gender is PlayerGenderUnknown)) {
+    if (players.any((player) => player.gender == PlayerGender.unknown)) {
       return SnackBars.error('Todos os jogadores devem ter um gênero definido');
     }
 
@@ -115,11 +115,11 @@ class _PlayersDialogState extends State<PlayersDialog> {
                 suffix: PopupMenuButton<PlayerGender>(
                   constraints: const BoxConstraints(minWidth: 192.0),
                   icon: switch (player.gender) {
-                    PlayerGenderMale _ => const Icon(
+                    PlayerGender.male => const Icon(
                       Icons.male,
                       color: Colors.blue,
                     ),
-                    PlayerGenderFemale _ => const Icon(
+                    PlayerGender.female => const Icon(
                       Icons.female,
                       color: Colors.pink,
                     ),
@@ -129,11 +129,11 @@ class _PlayersDialogState extends State<PlayersDialog> {
                   itemBuilder: (context) {
                     return [
                       const PopupMenuItem(
-                        value: PlayerGender.male(),
+                        value: PlayerGender.male,
                         child: Text('Masculino'),
                       ),
                       const PopupMenuItem(
-                        value: PlayerGender.female(),
+                        value: PlayerGender.female,
                         child: Text('Feminino'),
                       ),
                     ];

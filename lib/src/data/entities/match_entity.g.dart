@@ -7,8 +7,8 @@ part of 'match_entity.dart';
 // **************************************************************************
 
 _MatchEntity _$MatchEntityFromJson(Map<String, dynamic> json) => _MatchEntity(
-  id: json['id'] as String,
-  eventId: json['event_id'] as String,
+  id: (json['id'] as num).toInt(),
+  eventId: (json['event_id'] as num).toInt(),
   name: json['name'] as String,
   firstTeam: TeamEntity.fromJson(json['first_team'] as Map<String, dynamic>),
   secondTeam: TeamEntity.fromJson(json['second_team'] as Map<String, dynamic>),
