@@ -23,7 +23,7 @@ class MatchesLocalRepository implements MatchesRepository {
       return Result.error(Exception('Usuário não autenticado!'));
     }
 
-    final result = _db.select(
+    final result0 = _db.select(
       'INSERT INTO tb_event_matches (user_id, event_id, name, first_team_id, second_team_id, max_score, half_score_to_eliminate) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *',
       [
         userId,
@@ -36,19 +36,26 @@ class MatchesLocalRepository implements MatchesRepository {
       ],
     );
 
-    if (result.isEmpty) {
+    if (result0.isEmpty) {
       return Result.error(Exception('Match not found'));
     }
 
-    _db.execute('DELETE FROM tb_event_queue WHERE team_id = ?', [params.dequeue]);
+    final result1 = _db.select('SELECT queue FROM tb_events WHERE id = ?', [params.eventId]);
 
-    _db.execute('INSERT INTO tb_event_queue (user_id, event_id, team_id) VALUES (?, ?, ?)', [
-      userId,
-      params.eventId,
-      params.enqueue,
-    ]);
+    final queue = (result1.first['queue'] as String).split(',').map(int.parse).toList();
 
-    final match = MatchEntity.fromSqlite(result[0]);
+    params.dequeue.forEach(queue.remove);
+
+    if (params.enqueue.length == 2) {
+      queue.insert(0, params.enqueue.first);
+      queue.add(params.enqueue.last);
+    } else {
+      queue.add(params.enqueue.first);
+    }
+
+    _db.execute('UPDATE tb_events SET queue = ? WHERE id = ?', [queue.join(','), params.eventId]);
+
+    final match = MatchEntity.fromSqlite(result0[0]);
 
     return findOne(match.id);
   }
@@ -74,7 +81,7 @@ class MatchesLocalRepository implements MatchesRepository {
       if (params.maxScore != null) 'max_score': params.maxScore,
       if (params.halfScoreToEliminate != null) 'half_score_to_eliminate': params.halfScoreToEliminate == true ? 1 : 0,
       if (params.ended != null) 'ended': params.ended == true ? 1 : 0,
-      if (params.endedAt != null) 'ended_at': params.endedAt?.toIso8601String(),
+      if (params.ended != null && params.ended == true) 'ended_at': DateTime.now().toIso8601String(),
     };
 
     if (values.isEmpty) {
@@ -92,5 +99,62 @@ class MatchesLocalRepository implements MatchesRepository {
     );
 
     return findOne(id);
+  }
+
+  @override
+  AsyncResult<MatchEntity> updateManyByEventId(int eventId, UpdateOneMatchParams params) async {
+    try {
+      final values = <String, dynamic>{
+        if (params.name != null) 'name': params.name,
+        if (params.maxScore != null) 'max_score': params.maxScore,
+        if (params.halfScoreToEliminate != null) 'half_score_to_eliminate': params.halfScoreToEliminate == true ? 1 : 0,
+        if (params.ended != null) 'ended': params.ended == true ? 1 : 0,
+        if (params.ended != null && params.ended == true) 'ended_at': DateTime.now().toIso8601String(),
+      };
+
+      if (values.isEmpty) {
+        return Result.error(Exception('No values to update'));
+      }
+
+      values['updated_at'] = DateTime.now().toIso8601String();
+
+      _db.select(
+        'UPDATE tb_event_matches SET ${values.keys.map((key) => '$key = ?').join(', ')} WHERE event_id = ?',
+        [
+          ...values.values,
+          eventId,
+        ],
+      );
+
+      return findOne(eventId);
+    } on SqliteException catch (e) {
+      return Result.error(e);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+
+  @override
+  AsyncResult<void> deleteOne(int id) async {
+    try {
+      _db.execute('DELETE FROM tb_event_matches WHERE id = ?', [id]);
+      return const Result.ok(null);
+    } on SqliteException catch (e) {
+      return Result.error(e);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+
+  @override
+  AsyncResult<void> deleteManyByEventId(int eventId) async {
+    try {
+      _db.execute('DELETE FROM tb_event_matches WHERE event_id = ?', [eventId]);
+      return const Result.ok(null);
+    } on SqliteException catch (e) {
+      return Result.error(e);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
   }
 }

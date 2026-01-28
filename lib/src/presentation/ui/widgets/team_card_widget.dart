@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 
 class TeamCardWidget extends StatelessWidget {
@@ -42,10 +43,24 @@ class TeamCardWidget extends StatelessWidget {
           team.players.map(
             (player) => Padding(
               padding: const .only(bottom: 8.0),
-              child: Text(
-                player.name,
-                textAlign: .start,
-                style: context.textTheme.bodyMedium,
+              child: Row(
+                spacing: 8.0,
+
+                children: [
+                  SizedBox(
+                    width: 24.0,
+                    child: switch (player.gender) {
+                      PlayerGender.male => const Icon(Icons.male, color: Colors.blue),
+                      PlayerGender.female => const Icon(Icons.female, color: Colors.pink),
+                      _ => const Icon(Icons.info_outline_rounded),
+                    },
+                  ),
+                  Text(
+                    player.name,
+                    textAlign: .start,
+                    style: context.textTheme.bodyMedium,
+                  ),
+                ],
               ),
             ),
           ),

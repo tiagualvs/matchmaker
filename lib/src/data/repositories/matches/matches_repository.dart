@@ -8,8 +8,8 @@ class InsertOneMatchParams {
   final int secondTeamId;
   final int maxScore;
   final bool halfScoreToEliminate;
-  final int enqueue;
-  final int dequeue;
+  final List<int> enqueue;
+  final List<int> dequeue;
 
   const InsertOneMatchParams({
     required this.eventId,
@@ -28,14 +28,12 @@ class UpdateOneMatchParams {
   final int? maxScore;
   final bool? halfScoreToEliminate;
   final bool? ended;
-  final DateTime? endedAt;
 
   const UpdateOneMatchParams({
     this.name,
     this.maxScore,
     this.halfScoreToEliminate,
     this.ended,
-    this.endedAt,
   });
 }
 
@@ -43,4 +41,7 @@ abstract interface class MatchesRepository {
   AsyncResult<MatchEntity> insertOne(InsertOneMatchParams params);
   AsyncResult<MatchEntity> findOne(int id);
   AsyncResult<MatchEntity> updateOne(int id, UpdateOneMatchParams params);
+  AsyncResult<MatchEntity> updateManyByEventId(int eventId, UpdateOneMatchParams params);
+  AsyncResult<void> deleteOne(int id);
+  AsyncResult<void> deleteManyByEventId(int eventId);
 }

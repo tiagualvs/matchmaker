@@ -49,10 +49,25 @@ class MatchesRepositoryImp implements MatchesRepository {
           if (params.name != null) 'name': params.name,
           if (params.maxScore != null) 'max_score': params.maxScore,
           if (params.ended != null) 'ended': params.ended,
-          if (params.endedAt != null) 'ended_at': params.endedAt?.toIso8601String(),
+          if (params.ended != null && params.ended == true) 'ended_at': DateTime.now().toIso8601String(),
         })
         .eq('id', id);
 
     return findOne(id);
+  }
+
+  @override
+  AsyncResult<MatchEntity> updateManyByEventId(int eventId, UpdateOneMatchParams params) {
+    throw UnimplementedError();
+  }
+
+  @override
+  AsyncResult<void> deleteManyByEventId(int eventId) {
+    throw UnimplementedError();
+  }
+
+  @override
+  AsyncResult<void> deleteOne(int id) {
+    throw UnimplementedError();
   }
 }

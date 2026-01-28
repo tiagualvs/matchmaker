@@ -71,9 +71,14 @@ class EventSettingsController extends ChangeNotifier {
 
     return result.fold(
       (event) async {
-        // if (event.halfScoreToEliminate != _event.halfScoreToEliminate) {
-        //   await _matchesRepository.updateMany();
-        // }
+        if (event.halfScoreToEliminate != _event.halfScoreToEliminate) {
+          final result1 = await _matchesRepository.updateManyByEventId(
+            event.id,
+            UpdateOneMatchParams(halfScoreToEliminate: event.halfScoreToEliminate),
+          );
+
+          if (result1.isError) return onError?.call(result1.failure.toString());
+        }
 
         return onSuccess?.call();
       },

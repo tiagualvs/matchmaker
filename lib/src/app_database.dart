@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS tb_events (
   balanced_by_level BOOLEAN NOT NULL DEFAULT TRUE,
   max_wins_in_a_row INTEGER NOT NULL DEFAULT 0,
   half_score_to_eliminate BOOLEAN NOT NULL DEFAULT FALSE,
+  queue TEXT NOT NULL DEFAULT '',
   ended BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -117,16 +118,6 @@ CREATE TABLE IF NOT EXISTS tb_match_scores (
   FOREIGN KEY (team_id) REFERENCES tb_event_teams(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS tb_event_queue (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id TEXT NOT NULL,
-  event_id INTEGER NOT NULL,
-  team_id INTEGER NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (event_id) REFERENCES tb_events(id) ON DELETE CASCADE,
-  FOREIGN KEY (team_id) REFERENCES tb_event_teams(id) ON DELETE CASCADE
-);
-
 DROP VIEW IF EXISTS vw_events_full;
 
 CREATE VIEW IF NOT EXISTS vw_events_full AS
@@ -139,6 +130,7 @@ SELECT
   e.balanced_by_level,
   e.max_wins_in_a_row,
   e.half_score_to_eliminate,
+  e.queue,
   e.ended,
   e.created_at,
   e.updated_at,
@@ -220,21 +212,7 @@ SELECT
       WHERE m.event_id = e.id
     ),
     json('[]')
-  ) AS matches,
-
-  /* FILA DE PRÓXIMOS TIMES (LISTA DE STRINGS) */
-  COALESCE(
-    (
-      SELECT json_group_array(
-        CAST(q.team_id AS TEXT)
-      )
-      FROM tb_event_queue q
-      WHERE q.event_id = e.id
-      ORDER BY q.created_at ASC
-    ),
-    json('[]')
-  ) AS queue
-
+  ) AS matches
 FROM tb_events e;
 
 DROP VIEW IF EXISTS vw_event_match_full;

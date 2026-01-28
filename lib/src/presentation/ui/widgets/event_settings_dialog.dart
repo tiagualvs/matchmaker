@@ -49,8 +49,8 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
           mainAxisSize: .min,
           children: [
             Text(
-              'Configurações do Evento',
-              textAlign: .center,
+              'Configurações do Evento${event.ended ? ' (Finalizado)' : ''}',
+              textAlign: .start,
               style: context.textTheme.titleMedium,
             ),
             TextFormField(
@@ -59,9 +59,10 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
               onChanged: (value) => handleEventChanges(
                 event.copyWith(name: value),
               ),
+              enabled: !event.ended,
               decoration: const InputDecoration(
                 hintText: 'Nome',
-                labelText: 'Nome do Jogador',
+                labelText: 'Nome do Evento',
                 floatingLabelBehavior: .always,
               ),
             ),
@@ -75,6 +76,7 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
                   event.copyWith(maxScore: int.parse(value)),
                 );
               },
+              enabled: !event.ended,
               decoration: const InputDecoration(
                 hintText: 'Quantidade',
                 labelText: 'Quantidade de pontos para vencer',
@@ -84,7 +86,7 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
             TextFormField(
               initialValue: event.maxPlayerPerTeam.toString(),
               keyboardType: TextInputType.number,
-              enabled: event.teams.isEmpty,
+              enabled: event.teams.isEmpty && !event.ended,
               onChanged: (value) {
                 if (value.isEmpty) return;
 
@@ -108,6 +110,7 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
                   event.copyWith(maxWinsInARow: int.parse(value)),
                 );
               },
+              enabled: !event.ended,
               decoration: const InputDecoration(
                 hintText: 'Quantidade',
                 labelText: 'Máximo de vitórias em sequência',
@@ -120,11 +123,13 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
               materialTapTargetSize: .shrinkWrap,
               title: const Text('Eliminar na metade?'),
               subtitle: Text('Elimina o time que estiver perdendo por ${(event.maxScore / 2).round()} x 0.'),
-              onChanged: (value) {
-                return handleEventChanges(
-                  event.copyWith(halfScoreToEliminate: value),
-                );
-              },
+              onChanged: event.ended
+                  ? null
+                  : (value) {
+                      return handleEventChanges(
+                        event.copyWith(halfScoreToEliminate: value),
+                      );
+                    },
             ),
             SwitchListTile(
               value: event.balancedByGender,
@@ -132,7 +137,7 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
               materialTapTargetSize: .shrinkWrap,
               title: const Text('Balancear por gênero?'),
               subtitle: const Text('Mesma quantidade de homens e mulheres por time.'),
-              onChanged: event.teams.isEmpty
+              onChanged: event.teams.isEmpty || !event.ended
                   ? (value) {
                       return handleEventChanges(
                         event.copyWith(balancedByGender: value),
@@ -152,13 +157,15 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          if (widget.onSave != null) {
-            return widget.onSave?.call(event);
-          }
+        onPressed: event.ended
+            ? null
+            : () async {
+                if (widget.onSave != null) {
+                  return widget.onSave?.call(event);
+                }
 
-          return context.pop(event);
-        },
+                return context.pop(event);
+              },
         label: const Text('Salvar configurações'),
         icon: const Icon(Icons.save_rounded),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/home_controller.dart';
@@ -86,14 +87,16 @@ class _HomePageState extends State<HomePage> {
                     await controller.getEventsList();
                   },
                   title: Text(event.name),
-                  subtitle: switch (currentMatch != null) {
-                    true => Text('${currentMatch?.details}'),
-                    false => const Text('Nenhum jogo em andamento'),
+                  subtitle: switch (event.ended) {
+                    true => Text(
+                      'Evento finalizado em ${DateFormat("dd 'de' MMM 'de' yyyy 'às' HH:mm").format(event.endedAt!)}',
+                    ),
+                    false => switch (currentMatch != null) {
+                      true => Text('${currentMatch?.details}'),
+                      false => const Text('Nenhum jogo em andamento'),
+                    },
                   },
-                  trailing: PulseAnimation(
-                    runningColor: Colors.green,
-                    running: currentMatch?.ended == false,
-                  ),
+                  trailing: event.ended ? null : const PulseAnimation(runningColor: Colors.green),
                 );
               },
             ),

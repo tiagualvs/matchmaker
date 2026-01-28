@@ -107,10 +107,7 @@ class MatchController extends ChangeNotifier {
             );
           }
 
-          final result = await _matchesRepository.updateOne(
-            _match.id,
-            UpdateOneMatchParams(ended: true, endedAt: DateTime.now()),
-          );
+          final result = await _matchesRepository.updateOne(_match.id, const UpdateOneMatchParams(ended: true));
 
           _match = result.fold((ok) => ok.copyWith(scores: _match.scores), (_) => _match);
         }

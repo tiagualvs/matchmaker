@@ -32,6 +32,7 @@ class UpdateOneEventParams {
   final bool? balancedByGender;
   final bool? balancedByLevel;
   final int? maxWinsInARow;
+  final bool? ended;
 
   const UpdateOneEventParams({
     this.name,
@@ -41,6 +42,7 @@ class UpdateOneEventParams {
     this.balancedByGender,
     this.balancedByLevel,
     this.maxWinsInARow,
+    this.ended,
   });
 }
 

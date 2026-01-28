@@ -48,7 +48,9 @@ abstract class EventEntity with _$EventEntity {
     )..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     final queue = List<int>.from(
-      row['queue'] != null ? (json.decode(row['queue']) as List).map((id) => int.parse(id)) : [],
+      row['queue'] != null
+          ? (row['queue'] as String).split(',').where((id) => id.isNotEmpty).map((id) => int.parse(id))
+          : [],
     );
 
     return EventEntity(
@@ -100,10 +102,51 @@ abstract class EventEntity with _$EventEntity {
     );
   }
 
-  MatchEntity? get currentMatch {
-    if (matches.isEmpty) return null;
+  bool teamHasMaxWinsInARow(int teamId) {
+    if (maxWinsInARow == 0) return false;
 
-    return matches.first;
+    final ids = endedMatches.map((match) => match.winner?.id ?? -1).where((id) => !id.isNegative);
+
+    if (ids.length < maxWinsInARow) return false;
+
+    final range = ids.take(maxWinsInARow);
+
+    return range.every((id) => id == teamId);
+  }
+
+  List<MatchEntity> get endedMatches => matches.where((match) => match.ended).toList();
+
+  List<MatchEntity> get notEndedMatches => matches.where((match) => !match.ended).toList();
+
+  MatchEntity? get currentMatch {
+    if (notEndedMatches.isEmpty) return null;
+
+    return notEndedMatches.first;
+  }
+
+  MatchEntity? get lastEndedMatch {
+    if (endedMatches.isEmpty) return null;
+
+    return endedMatches.first;
+  }
+
+  int teamWins(int teamId) {
+    return endedMatches.where((match) => match.winner?.id == teamId).length;
+  }
+
+  int teamLosses(int teamId) {
+    return endedMatches.where((match) => match.loser?.id == teamId).length;
+  }
+
+  List<TeamEntity> get sortedTeams {
+    return List.from(teams)..sort((a, b) {
+      final aWins = teamWins(a.id);
+      final aLosses = teamLosses(a.id);
+      final bWins = teamWins(b.id);
+      final bLosses = teamLosses(b.id);
+
+      return bWins.compareTo(aWins) == 0 ? aLosses.compareTo(bLosses) : bWins.compareTo(aWins);
+    });
   }
 
   bool get isEmpty => id.isNegative;

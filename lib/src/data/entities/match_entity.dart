@@ -114,6 +114,26 @@ abstract class MatchEntity with _$MatchEntity {
 
   bool get isNotEmpty => !isEmpty;
 
+  TeamEntity? get winner {
+    if (!ended) return null;
+
+    if (firstTeamWon) return firstTeam;
+
+    if (secondTeamWon) return secondTeam;
+
+    return null;
+  }
+
+  TeamEntity? get loser {
+    if (!ended) return null;
+
+    if (firstTeamWon) return secondTeam;
+
+    if (secondTeamWon) return firstTeam;
+
+    return null;
+  }
+
   String get details {
     return '$name - ${firstTeam.name} ($firstTeamScore) vs ($secondTeamScore) ${secondTeam.name}';
   }

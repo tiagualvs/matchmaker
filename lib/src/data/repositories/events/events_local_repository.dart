@@ -108,18 +108,15 @@ class EventsLocalRepository implements EventsRepository {
 
     final match = MatchEntity.fromSqlite(result3.first);
 
-    for (final team in teams.skip(2)) {
-      _db.execute(
-        'INSERT INTO tb_event_queue (user_id, event_id, team_id) VALUES (?, ?, ?)',
-        [userId, event.id, team.id],
-      );
-    }
+    final enqueue = teams.skip(2).map((team) => team.id).toList();
+
+    _db.execute('UPDATE tb_events SET queue = ? WHERE id = ?', [enqueue.join(','), event.id]);
 
     return Result.ok(
       event.copyWith(
         teams: teams,
         matches: [match],
-        queue: teams.skip(2).map((team) => team.id).toList(),
+        queue: enqueue,
       ),
     );
   }
@@ -134,6 +131,8 @@ class EventsLocalRepository implements EventsRepository {
       if (params.balancedByGender != null) 'balanced_by_gender': params.balancedByGender == true ? 1 : 0,
       if (params.balancedByLevel != null) 'balanced_by_level': params.balancedByLevel == true ? 1 : 0,
       if (params.maxWinsInARow != null) 'max_wins_in_a_row': params.maxWinsInARow,
+      if (params.ended != null) 'ended': params.ended == true ? 1 : 0,
+      if (params.ended != null && params.ended == true) 'ended_at': DateTime.now().toIso8601String(),
     };
 
     if (values.isEmpty) {
