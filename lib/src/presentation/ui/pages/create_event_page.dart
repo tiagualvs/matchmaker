@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
@@ -18,6 +19,18 @@ class CreateEventPage extends StatefulWidget {
 
 class _CreateEventPageState extends State<CreateEventPage> {
   CreateEventController get controller => widget.controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    });
+  }
 
   @override
   void dispose() {
@@ -209,7 +222,12 @@ class _CreateEventPageState extends State<CreateEventPage> {
                     builder: (context, child) {
                       final disabled = controller.importerController.text.isEmpty;
                       return FilledButton.icon(
-                        onPressed: disabled ? null : controller.importFromRawList,
+                        onPressed: disabled
+                            ? null
+                            : () {
+                                FocusScope.of(context).unfocus();
+                                controller.importFromRawList();
+                              },
                         icon: const Icon(Icons.upload_file_rounded),
                         label: const Text('Importar'),
                       );

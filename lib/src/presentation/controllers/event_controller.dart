@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
-import 'package:matchmaker/src/data/repositories/events_repository.dart';
-import 'package:matchmaker/src/data/repositories/matches_repository.dart';
+import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
+import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
 
 class EventController extends ChangeNotifier {
   EventController(this._eventsRepository, this._matchesRepository);
@@ -66,8 +66,6 @@ class EventController extends ChangeNotifier {
         } else {
           _event = event;
         }
-
-        print('matches ${_event.matches.length}');
 
         _loading = false;
 

@@ -18,6 +18,17 @@ abstract class ScoreEntity with _$ScoreEntity {
 
   factory ScoreEntity.fromJson(Map<String, dynamic> json) => _$ScoreEntityFromJson(json);
 
+  factory ScoreEntity.fromSqlite(Map<String, dynamic> data) {
+    return ScoreEntity(
+      id: data['id'] as int,
+      matchId: data['match_id'] as int,
+      teamId: data['team_id'] as int,
+      reversed: data['reversed'] == 1,
+      createdAt: DateTime.parse(data['created_at'] as String),
+      updatedAt: DateTime.parse(data['updated_at'] as String),
+    );
+  }
+
   factory ScoreEntity.fromSupabase(Map<String, dynamic> data) {
     return ScoreEntity(
       id: data['id'] as int,

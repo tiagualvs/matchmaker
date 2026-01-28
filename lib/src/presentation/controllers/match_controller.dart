@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
-import 'package:matchmaker/src/data/repositories/matches_repository.dart';
-import 'package:matchmaker/src/data/repositories/scores_repository.dart';
+import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
+import 'package:matchmaker/src/data/repositories/scores/scores_repository.dart';
 
 class MatchController extends ChangeNotifier {
   MatchController(this._matchesRepository, this._scoresRepository);
@@ -78,7 +78,7 @@ class MatchController extends ChangeNotifier {
             UpdateOneMatchParams(maxScore: _match.maxScore + 1),
           );
 
-          _match = result.fold((ok) => ok, (_) => _match);
+          _match = result.fold((ok) => ok.copyWith(scores: _match.scores), (_) => _match);
         }
 
         if (_match.firstTeamWon || _match.secondTeamWon) {
@@ -87,7 +87,7 @@ class MatchController extends ChangeNotifier {
             UpdateOneMatchParams(ended: true, endedAt: DateTime.now()),
           );
 
-          _match = result.fold((ok) => ok, (_) => _match);
+          _match = result.fold((ok) => ok.copyWith(scores: _match.scores), (_) => _match);
         }
 
         notifyListeners();
@@ -96,5 +96,9 @@ class MatchController extends ChangeNotifier {
         return onError?.call(error.toString());
       },
     );
+  }
+
+  void resetController() {
+    _match = MatchEntity.empty();
   }
 }

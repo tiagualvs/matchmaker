@@ -48,6 +48,7 @@ class _MatchPageState extends State<MatchPage> {
 
   @override
   void dispose() {
+    controller.resetController();
     scheduleMicrotask(
       () async => await SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
@@ -130,7 +131,6 @@ class _MatchPageState extends State<MatchPage> {
                             child: GestureDetector(
                               onTap: () => controller.incrementScore(
                                 firstTeam.id,
-
                                 onError: (error) {
                                   return SnackBars.error(error);
                                 },

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -24,6 +26,31 @@ abstract class MatchEntity with _$MatchEntity {
   }) = _MatchEntity;
 
   factory MatchEntity.fromJson(Map<String, dynamic> json) => _$MatchEntityFromJson(json);
+
+  factory MatchEntity.fromSqlite(Map<String, dynamic> row) {
+    final scores = switch (row['scores']) {
+      String s => (json.decode(s) as List).map((e) => ScoreEntity.fromSqlite(e as Map<String, dynamic>)).toList(),
+      List l => l.map((e) => ScoreEntity.fromSqlite(e as Map<String, dynamic>)).toList(),
+      _ => <ScoreEntity>[],
+    };
+    return MatchEntity(
+      id: row['id'] as int,
+      eventId: row['event_id'] as int,
+      name: row['name'] as String,
+      maxScore: row['max_score'] as int,
+      firstTeam: row['first_team'] != null
+          ? TeamEntity.fromSqlite(json.decode(row['first_team']) as Map<String, dynamic>)
+          : TeamEntity.empty(''),
+      secondTeam: row['second_team'] != null
+          ? TeamEntity.fromSqlite(json.decode(row['second_team']) as Map<String, dynamic>)
+          : TeamEntity.empty(''),
+      scores: scores..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
+      ended: row['ended'] == 1,
+      createdAt: DateTime.parse(row['created_at'] as String),
+      updatedAt: DateTime.parse(row['updated_at'] as String),
+      endedAt: row['ended_at'] != null ? DateTime.parse(row['ended_at'] as String) : null,
+    );
+  }
 
   factory MatchEntity.fromSupabase(Map<String, dynamic> data) {
     return MatchEntity(

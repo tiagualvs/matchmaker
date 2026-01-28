@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
-import 'package:matchmaker/src/data/repositories/events_repository.dart';
+import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 
 class CreateEventController extends ChangeNotifier {
   CreateEventController(this._repository);

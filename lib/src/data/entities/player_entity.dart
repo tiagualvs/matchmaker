@@ -58,6 +58,17 @@ abstract class PlayerEntity with _$PlayerEntity {
 
   factory PlayerEntity.fromJson(Map<String, dynamic> json) => _$PlayerEntityFromJson(json);
 
+  factory PlayerEntity.fromSqlite(Map<String, dynamic> row) {
+    return PlayerEntity(
+      id: row['id'] as int,
+      name: row['name'] as String,
+      gender: PlayerGender.fromValue(row['gender'] as String),
+      level: PlayerLevel.fromValue(row['level'] as String),
+      createdAt: DateTime.parse(row['created_at'] as String),
+      updatedAt: DateTime.parse(row['updated_at'] as String),
+    );
+  }
+
   factory PlayerEntity.fromSupabase(Map<String, dynamic> data) {
     return PlayerEntity(
       id: data['id'] as int,

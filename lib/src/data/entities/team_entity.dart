@@ -19,6 +19,19 @@ abstract class TeamEntity with _$TeamEntity {
 
   factory TeamEntity.fromJson(Map<String, dynamic> json) => _$TeamEntityFromJson(json);
 
+  factory TeamEntity.fromSqlite(Map<String, dynamic> row) {
+    return TeamEntity(
+      id: row['id'] as int,
+      eventId: row['event_id'] as int,
+      name: row['name'] as String,
+      players: List.from(
+        (row['players'] as List?)?.map((playerData) => PlayerEntity.fromSqlite(playerData)) ?? [],
+      ),
+      createdAt: DateTime.parse(row['created_at'] as String),
+      updatedAt: DateTime.parse(row['updated_at'] as String),
+    );
+  }
+
   factory TeamEntity.fromSupabase(Map<String, dynamic> data) {
     return TeamEntity(
       id: data['id'] as int,

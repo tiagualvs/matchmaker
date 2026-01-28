@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
-import 'package:matchmaker/src/data/repositories/events_repository.dart';
+import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 
 class MatchHistoryController extends ChangeNotifier {
   final EventsRepository _eventRepository;

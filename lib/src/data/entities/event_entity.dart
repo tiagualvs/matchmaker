@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -24,6 +26,41 @@ abstract class EventEntity with _$EventEntity {
   }) = _EventEntity;
 
   factory EventEntity.fromJson(Map<String, dynamic> json) => _$EventEntityFromJson(json);
+
+  factory EventEntity.fromSqlite(Map<String, dynamic> row) {
+    final teams = List<TeamEntity>.from(
+      row['teams'] != null ? (json.decode(row['teams']) as List).map((team) => TeamEntity.fromSqlite(team)) : [],
+    );
+
+    final matches = List<MatchEntity>.from(
+      row['matches'] != null
+          ? (json.decode(row['matches']) as List).map(
+              (match) => MatchEntity.fromSqlite(match).copyWith(
+                firstTeam: teams.firstWhere((team) => team.id == match['first_team_id']),
+                secondTeam: teams.firstWhere((team) => team.id == match['second_team_id']),
+              ),
+            )
+          : [],
+    )..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    final queue = List<int>.from(
+      row['queue'] != null ? (json.decode(row['queue']) as List).map((id) => int.parse(id)) : [],
+    );
+
+    return EventEntity(
+      id: row['id'] as int,
+      name: row['name'] as String,
+      maxScore: row['max_score'] as int,
+      maxPlayerPerTeam: row['max_player_per_team'] as int,
+      teams: teams,
+      matches: matches,
+      queue: queue,
+      ended: row['ended'] == 1,
+      createdAt: DateTime.parse(row['created_at'] as String),
+      updatedAt: DateTime.parse(row['updated_at'] as String),
+      endedAt: row['ended_at'] != null ? DateTime.parse(row['ended_at'] as String) : null,
+    );
+  }
 
   factory EventEntity.fromSupabase(Map<String, dynamic> data) {
     final teams = List<TeamEntity>.from(
