@@ -36,6 +36,9 @@ class EventsRemoteRepository implements EventsRepository {
       'name': params.name,
       'max_score': params.maxScore,
       'max_player_per_team': params.maxPlayerPerTeam,
+      'balanced_by_gender': params.balancedByGender,
+      'balanced_by_level': params.balancedByLevel,
+      'max_wins_in_a_row': params.maxWinsInARow,
     }).select();
 
     final event = EventEntity.fromJson(result0[0]);
@@ -116,5 +119,10 @@ class EventsRemoteRepository implements EventsRepository {
         queue: queue,
       ),
     );
+  }
+
+  @override
+  AsyncResult<EventEntity> updateOne(int id, UpdateOneEventParams params) async {
+    throw UnimplementedError();
   }
 }

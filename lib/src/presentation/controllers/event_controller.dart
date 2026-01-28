@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
@@ -41,6 +43,7 @@ class EventController extends ChangeNotifier {
               firstTeamId: winner.id,
               secondTeamId: event.queue.first,
               maxScore: event.maxScore,
+              halfScoreToEliminate: event.halfScoreToEliminate,
               enqueue: loser.id,
               dequeue: event.queue.first,
             ),
@@ -68,6 +71,8 @@ class EventController extends ChangeNotifier {
         }
 
         _loading = false;
+
+        log(_event.halfScoreToEliminate.toString());
 
         notifyListeners();
       },

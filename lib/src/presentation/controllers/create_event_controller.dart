@@ -48,6 +48,12 @@ class CreateEventController extends ChangeNotifier {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) {
+    if (_event.balancedByGender && _players.any((player) => player.isUnknown)) {
+      return onError?.call(
+        'Para gerar o evento balanceado por gênero, todos os jogadores devem ter um gênero definido!',
+      );
+    }
+
     final numTeams = (_players.length / _event.maxPlayerPerTeam).ceil();
 
     if (numTeams < 2) {
@@ -130,7 +136,11 @@ class CreateEventController extends ChangeNotifier {
       InsertOneEventParams(
         name: _event.name,
         maxScore: _event.maxScore,
+        halfScoreToEliminate: _event.halfScoreToEliminate,
         maxPlayerPerTeam: _event.maxPlayerPerTeam,
+        balancedByGender: _event.balancedByGender,
+        balancedByLevel: _event.balancedByLevel,
+        maxWinsInARow: _event.maxWinsInARow,
         teams: _event.teams,
       ),
     );
@@ -158,6 +168,11 @@ class CreateEventController extends ChangeNotifier {
     players.add(PlayerEntity.empty(nameController.text, selectedGender.first));
     nameController.clear();
     selectedGender.clear();
+    notifyListeners();
+  }
+
+  void handlePlayerChanges(int index, PlayerEntity player) {
+    players[index] = player;
     notifyListeners();
   }
 
@@ -225,7 +240,9 @@ class CreateEventController extends ChangeNotifier {
     nameController.clear();
     selectedGender.clear();
     _players.clear();
-    _event = EventEntity.empty();
+    _event = EventEntity.empty().copyWith(
+      name: 'Evento do dia ${DateFormat('dd/MM/yyyy').format(DateTime.now())}',
+    );
     _loading = false;
   }
 }

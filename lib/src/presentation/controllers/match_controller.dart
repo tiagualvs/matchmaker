@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
@@ -18,6 +21,8 @@ class MatchController extends ChangeNotifier {
     final result = await _matchesRepository.findOne(matchId);
 
     _match = result.fold((ok) => ok, (_) => _match);
+
+    log(_match.halfScoreToEliminate.toString());
 
     notifyListeners();
   }
@@ -55,6 +60,7 @@ class MatchController extends ChangeNotifier {
 
   Future<void> incrementScore(
     int teamId, {
+    required FutureOr<bool> Function() confirmEndOfMatch,
     void Function(String error)? onError,
   }) async {
     if (_match.ended) return;
@@ -82,6 +88,25 @@ class MatchController extends ChangeNotifier {
         }
 
         if (_match.firstTeamWon || _match.secondTeamWon) {
+          if (!await confirmEndOfMatch()) {
+            final deleteResult = await _scoresRepository.deleteOne(score.id);
+
+            return deleteResult.fold(
+              (_) {
+                _match = _match.copyWith(
+                  scores: List.from(_match.scores)
+                    ..remove(score)
+                    ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
+                );
+
+                notifyListeners();
+              },
+              (err) {
+                return onError?.call(err.toString());
+              },
+            );
+          }
+
           final result = await _matchesRepository.updateOne(
             _match.id,
             UpdateOneMatchParams(ended: true, endedAt: DateTime.now()),

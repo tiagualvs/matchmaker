@@ -11,4 +11,5 @@ class InsertOneScoreParams {
 abstract interface class ScoresRepository {
   AsyncResult<ScoreEntity> insertOne(InsertOneScoreParams params);
   AsyncResult<ScoreEntity> updateOne(int id, bool reversed);
+  AsyncResult<ScoreEntity> deleteOne(int id);
 }

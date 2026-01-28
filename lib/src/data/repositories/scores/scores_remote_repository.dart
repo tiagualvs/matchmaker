@@ -39,4 +39,15 @@ class ScoresRemoteRepository implements ScoresRepository {
 
     return Result.ok(ScoreEntity.fromSupabase(result[0]));
   }
+
+  @override
+  AsyncResult<ScoreEntity> deleteOne(int id) async {
+    final result = await _client.from('tb_match_scores').delete().eq('id', id).select();
+
+    if (result.isEmpty) {
+      return Result.error(Exception('Falha ao deletar score!'));
+    }
+
+    return Result.ok(ScoreEntity.fromSupabase(result[0]));
+  }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/presentation/ui/pages/create_event_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/event_page.dart';
+import 'package:matchmaker/src/presentation/ui/pages/event_settings_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/home_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/match_history_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/match_page.dart';
@@ -34,6 +35,19 @@ abstract class AppRouter {
             key: state.pageKey,
             page: EventPage(
               id: int.parse(state.pathParameters['id'] ?? '-1'),
+              controller: context.read(),
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/event-settings/:eventId',
+        name: 'event-settings',
+        pageBuilder: (context, state) {
+          return defaultTransition(
+            key: state.pageKey,
+            page: EventSettingsPage(
+              eventId: int.parse(state.pathParameters['eventId'] ?? '-1'),
               controller: context.read(),
             ),
           );

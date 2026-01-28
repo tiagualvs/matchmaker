@@ -109,4 +109,6 @@ abstract class PlayerEntity with _$PlayerEntity {
   bool get isWoman => gender == PlayerGender.female;
 
   bool get isMan => gender == PlayerGender.male;
+
+  bool get isUnknown => gender == PlayerGender.unknown;
 }

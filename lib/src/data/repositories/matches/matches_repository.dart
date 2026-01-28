@@ -7,6 +7,7 @@ class InsertOneMatchParams {
   final int firstTeamId;
   final int secondTeamId;
   final int maxScore;
+  final bool halfScoreToEliminate;
   final int enqueue;
   final int dequeue;
 
@@ -16,6 +17,7 @@ class InsertOneMatchParams {
     required this.firstTeamId,
     required this.secondTeamId,
     required this.maxScore,
+    required this.halfScoreToEliminate,
     required this.enqueue,
     required this.dequeue,
   });
@@ -24,12 +26,14 @@ class InsertOneMatchParams {
 class UpdateOneMatchParams {
   final String? name;
   final int? maxScore;
+  final bool? halfScoreToEliminate;
   final bool? ended;
   final DateTime? endedAt;
 
   const UpdateOneMatchParams({
     this.name,
     this.maxScore,
+    this.halfScoreToEliminate,
     this.ended,
     this.endedAt,
   });

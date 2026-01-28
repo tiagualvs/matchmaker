@@ -19,6 +19,7 @@ abstract class MatchEntity with _$MatchEntity {
     @JsonKey(name: 'second_team') required TeamEntity secondTeam,
     @Default([]) List<ScoreEntity> scores,
     @JsonKey(name: 'max_score') required int maxScore,
+    @JsonKey(name: 'half_score_to_eliminate') required bool halfScoreToEliminate,
     @Default(false) bool ended,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
@@ -45,6 +46,7 @@ abstract class MatchEntity with _$MatchEntity {
           ? TeamEntity.fromSqlite(json.decode(row['second_team']) as Map<String, dynamic>)
           : TeamEntity.empty(''),
       scores: scores..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
+      halfScoreToEliminate: row['half_score_to_eliminate'] == 1,
       ended: row['ended'] == 1,
       createdAt: DateTime.parse(row['created_at'] as String),
       updatedAt: DateTime.parse(row['updated_at'] as String),
@@ -67,6 +69,7 @@ abstract class MatchEntity with _$MatchEntity {
         (data['scores'] as List<dynamic>?)?.map((e) => ScoreEntity.fromSupabase(e as Map<String, dynamic>)).toList() ??
             [],
       ),
+      halfScoreToEliminate: data['half_score_to_eliminate'] as bool,
       maxScore: data['max_score'] as int,
       ended: data['ended'] as bool,
       createdAt: DateTime.parse(data['created_at'] as String),
@@ -79,17 +82,41 @@ abstract class MatchEntity with _$MatchEntity {
 
   int get secondTeamScore => scores.where((score) => score.teamId == secondTeam.id && !score.reversed).length;
 
-  bool get isByOne => firstTeamScore == maxScore - 1 || secondTeamScore == maxScore - 1;
+  bool get firstTeamScoreByOne {
+    if (halfScoreToEliminate) {
+      return (firstTeamScore == maxScore / 2 - 1 && secondTeamScore == 0) || firstTeamScore == maxScore - 1;
+    }
+
+    return (firstTeamScore == maxScore - 1);
+  }
+
+  bool get secondTeamScoreByOne {
+    if (halfScoreToEliminate) {
+      return (secondTeamScore == maxScore / 2 - 1 && firstTeamScore == 0) || secondTeamScore == maxScore - 1;
+    }
+
+    return (secondTeamScore == maxScore - 1);
+  }
+
+  bool get isByOne => firstTeamScoreByOne || secondTeamScoreByOne;
 
   bool get isTiedWhenByOne => firstTeamScore == secondTeamScore && isByOne;
 
-  bool get firstTeamWon => firstTeamScore == maxScore;
+  bool get firstTeamWon {
+    return firstTeamScore == maxScore || (firstTeamScore == (maxScore / 2) && secondTeamScore == 0);
+  }
 
-  bool get secondTeamWon => secondTeamScore == maxScore;
+  bool get secondTeamWon {
+    return secondTeamScore == maxScore || (secondTeamScore == (maxScore / 2) && firstTeamScore == 0);
+  }
 
   bool get isEmpty => id == -1;
 
   bool get isNotEmpty => !isEmpty;
+
+  String get details {
+    return '$name - ${firstTeam.name} ($firstTeamScore) vs ($secondTeamScore) ${secondTeam.name}';
+  }
 
   ScoreEntity get lastScore {
     final realScores = scores.where((score) => !score.reversed).toList()
@@ -105,6 +132,7 @@ abstract class MatchEntity with _$MatchEntity {
       name: '',
       firstTeam: TeamEntity.empty(''),
       secondTeam: TeamEntity.empty(''),
+      halfScoreToEliminate: false,
       maxScore: 0,
       createdAt: DateTime(0),
       updatedAt: DateTime(0),

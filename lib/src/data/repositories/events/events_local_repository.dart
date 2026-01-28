@@ -1,22 +1,28 @@
+import 'package:matchmaker/src/app_database.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:result/result.dart';
-import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3/sqlite3.dart' hide Session;
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'events_repository.dart';
 
 class EventsLocalRepository implements EventsRepository {
-  final Database _db;
+  late final Session? _session;
+  late final Database _db;
 
-  const EventsLocalRepository(this._db);
+  EventsLocalRepository(AppDatabase app) {
+    _session = app.remote.auth.currentSession;
+    _db = app.local;
+  }
 
   @override
   AsyncResult<List<EventEntity>> findMany() async {
-    final result = _db.select('SELECT * FROM vw_events_full');
+    final result = _db.select('SELECT * FROM vw_events_full ORDER BY created_at DESC');
 
-    return Result.ok(result.map(EventEntity.fromSqlite).toList()..sort((a, b) => a.createdAt.compareTo(b.createdAt)));
+    return Result.ok(result.map(EventEntity.fromSqlite).toList());
   }
 
   @override
@@ -32,9 +38,24 @@ class EventsLocalRepository implements EventsRepository {
 
   @override
   AsyncResult<EventEntity> insertOne(InsertOneEventParams params) async {
+    final userId = _session?.user.id;
+
+    if (userId == null) {
+      return Result.error(Exception('Você precisa estar autenticado para realizar esta ação!'));
+    }
+
     final result0 = _db.select(
-      'INSERT INTO tb_events (name, max_score, max_player_per_team) VALUES (?, ?, ?) RETURNING *',
-      [params.name, params.maxScore, params.maxPlayerPerTeam],
+      'INSERT INTO tb_events (user_id, name, max_score, half_score_to_eliminate, max_player_per_team, balanced_by_gender, balanced_by_level, max_wins_in_a_row) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *',
+      [
+        userId,
+        params.name,
+        params.maxScore,
+        params.halfScoreToEliminate ? 1 : 0,
+        params.maxPlayerPerTeam,
+        params.balancedByGender ? 1 : 0,
+        params.balancedByLevel ? 1 : 0,
+        params.maxWinsInARow,
+      ],
     );
 
     final event = EventEntity.fromSqlite(result0.first);
@@ -43,8 +64,8 @@ class EventsLocalRepository implements EventsRepository {
 
     for (final t in params.teams) {
       final result1 = _db.select(
-        'INSERT INTO tb_event_teams (event_id, name) VALUES (?, ?) RETURNING *',
-        [event.id, t.name],
+        'INSERT INTO tb_event_teams (user_id, event_id, name) VALUES (?, ?, ?) RETURNING *',
+        [userId, event.id, t.name],
       );
 
       final team = TeamEntity.fromSqlite(result1.first);
@@ -53,15 +74,15 @@ class EventsLocalRepository implements EventsRepository {
 
       for (final p in t.players) {
         final result2 = _db.select(
-          'INSERT INTO tb_players (name, gender, level) VALUES (?, ?, ?) ON CONFLICT(name) DO UPDATE SET name = excluded.name RETURNING *',
-          [p.name, p.gender.value, p.level.value],
+          'INSERT INTO tb_players (user_id, name, gender, level) VALUES (?, ?, ?, ?) ON CONFLICT(name) DO UPDATE SET name = excluded.name RETURNING *',
+          [userId, p.name, p.gender.value, p.level.value],
         );
 
         final player = PlayerEntity.fromSqlite(result2.first);
 
         _db.execute(
-          'INSERT INTO tb_event_team_players (team_id, player_id) VALUES (?, ?)',
-          [team.id, player.id],
+          'INSERT INTO tb_event_team_players (user_id, team_id, player_id) VALUES (?, ?, ?)',
+          [userId, team.id, player.id],
         );
 
         players.add(player);
@@ -73,16 +94,24 @@ class EventsLocalRepository implements EventsRepository {
     final starterTeams = teams.take(2);
 
     final result3 = _db.select(
-      'INSERT INTO tb_event_matches (name, event_id, first_team_id, second_team_id, max_score) VALUES (?, ?, ?, ?, ?) RETURNING *',
-      ['Partida #1', event.id, starterTeams.first.id, starterTeams.last.id, event.maxScore],
+      'INSERT INTO tb_event_matches (user_id, name, event_id, first_team_id, second_team_id, max_score, half_score_to_eliminate) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *',
+      [
+        userId,
+        'Partida #1',
+        event.id,
+        starterTeams.first.id,
+        starterTeams.last.id,
+        event.maxScore,
+        event.halfScoreToEliminate ? 1 : 0,
+      ],
     );
 
     final match = MatchEntity.fromSqlite(result3.first);
 
     for (final team in teams.skip(2)) {
       _db.execute(
-        'INSERT INTO tb_event_queue (event_id, team_id) VALUES (?, ?)',
-        [event.id, team.id],
+        'INSERT INTO tb_event_queue (user_id, event_id, team_id) VALUES (?, ?, ?)',
+        [userId, event.id, team.id],
       );
     }
 
@@ -93,5 +122,29 @@ class EventsLocalRepository implements EventsRepository {
         queue: teams.skip(2).map((team) => team.id).toList(),
       ),
     );
+  }
+
+  @override
+  AsyncResult<EventEntity> updateOne(int id, UpdateOneEventParams params) async {
+    final values = <String, dynamic>{
+      if (params.name != null) 'name': params.name,
+      if (params.maxScore != null) 'max_score': params.maxScore,
+      if (params.halfScoreToEliminate != null) 'half_score_to_eliminate': params.halfScoreToEliminate == true ? 1 : 0,
+      if (params.maxPlayerPerTeam != null) 'max_player_per_team': params.maxPlayerPerTeam,
+      if (params.balancedByGender != null) 'balanced_by_gender': params.balancedByGender == true ? 1 : 0,
+      if (params.balancedByLevel != null) 'balanced_by_level': params.balancedByLevel == true ? 1 : 0,
+      if (params.maxWinsInARow != null) 'max_wins_in_a_row': params.maxWinsInARow,
+    };
+
+    if (values.isEmpty) {
+      return Result.error(Exception('Nenhum campo para atualizar!'));
+    }
+
+    final result = _db.select(
+      'UPDATE tb_events SET ${values.keys.map((key) => '$key = ?').join(', ')} WHERE id = ? RETURNING *',
+      [...values.values, id],
+    );
+
+    return Result.ok(EventEntity.fromSqlite(result.first));
   }
 }

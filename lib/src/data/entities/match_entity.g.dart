@@ -18,6 +18,7 @@ _MatchEntity _$MatchEntityFromJson(Map<String, dynamic> json) => _MatchEntity(
           .toList() ??
       const [],
   maxScore: (json['max_score'] as num).toInt(),
+  halfScoreToEliminate: json['half_score_to_eliminate'] as bool,
   ended: json['ended'] as bool? ?? false,
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
@@ -35,6 +36,7 @@ Map<String, dynamic> _$MatchEntityToJson(_MatchEntity instance) =>
       'second_team': instance.secondTeam,
       'scores': instance.scores,
       'max_score': instance.maxScore,
+      'half_score_to_eliminate': instance.halfScoreToEliminate,
       'ended': instance.ended,
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),

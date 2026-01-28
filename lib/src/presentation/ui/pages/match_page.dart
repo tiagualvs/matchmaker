@@ -33,6 +33,40 @@ class _MatchPageState extends State<MatchPage> {
 
   TeamEntity get secondTeam => match.secondTeam;
 
+  Future<bool> confirmEndOfMatch({
+    required TeamEntity team,
+    required String score,
+  }) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text(
+                'Partida encerrada?',
+                style: context.textTheme.titleLarge?.copyWith(
+                  fontWeight: .bold,
+                ),
+              ),
+              content: Text(
+                'O time ${team.name} está prestes a vencer a partida por $score!\n\nConfirma o ultimo ponto para encerrar a partida?',
+                style: context.textTheme.bodyMedium,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => context.pop(false),
+                  child: const Text('Não'),
+                ),
+                TextButton(
+                  onPressed: () => context.pop(true),
+                  child: const Text('Sim'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -131,6 +165,10 @@ class _MatchPageState extends State<MatchPage> {
                             child: GestureDetector(
                               onTap: () => controller.incrementScore(
                                 firstTeam.id,
+                                confirmEndOfMatch: () => confirmEndOfMatch(
+                                  team: firstTeam,
+                                  score: '${match.firstTeamScore} x ${match.secondTeamScore}',
+                                ),
                                 onError: (error) {
                                   return SnackBars.error(error);
                                 },
@@ -153,7 +191,7 @@ class _MatchPageState extends State<MatchPage> {
                                     match.firstTeamScore.toString(),
                                     style: context.textTheme.displayLarge?.copyWith(
                                       fontWeight: .bold,
-                                      color: switch (match.firstTeamScore == match.maxScore - 1) {
+                                      color: switch (match.firstTeamScoreByOne || match.firstTeamWon) {
                                         true => Colors.yellow,
                                         false => Colors.white,
                                       },
@@ -172,6 +210,10 @@ class _MatchPageState extends State<MatchPage> {
                             child: GestureDetector(
                               onTap: () => controller.incrementScore(
                                 secondTeam.id,
+                                confirmEndOfMatch: () => confirmEndOfMatch(
+                                  team: secondTeam,
+                                  score: '${match.secondTeamScore} x ${match.firstTeamScore}',
+                                ),
                                 onError: (error) {
                                   return SnackBars.error(error);
                                 },
@@ -194,7 +236,7 @@ class _MatchPageState extends State<MatchPage> {
                                     match.secondTeamScore.toString(),
                                     style: context.textTheme.displayLarge?.copyWith(
                                       fontWeight: .bold,
-                                      color: switch (match.secondTeamScore == match.maxScore - 1) {
+                                      color: switch (match.secondTeamScoreByOne || match.secondTeamWon) {
                                         true => Colors.yellow,
                                         false => Colors.white,
                                       },

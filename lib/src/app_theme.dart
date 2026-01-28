@@ -66,6 +66,7 @@ abstract final class AppTheme {
       inputDecoratorBorderType: FlexInputBorderType.outline,
       inputDecoratorSchemeColor: SchemeColor.onPrimary,
       inputCursorSchemeColor: SchemeColor.primary,
+      inputSelectionHandleSchemeColor: SchemeColor.primary,
       inputDecoratorBorderSchemeColor: SchemeColor.primary,
       scaffoldBackgroundSchemeColor: SchemeColor.surfaceContainerLow,
       inputDecoratorIsFilled: true,

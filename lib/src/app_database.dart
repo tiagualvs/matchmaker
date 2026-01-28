@@ -41,10 +41,9 @@ class AppDatabase {
 
     final db = sqlite3.open(database.path);
 
-    await database.copy('/storage/emulated/0/Download/database.db');
-
     db.execute('''CREATE TABLE IF NOT EXISTS tb_players (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL,
   name TEXT UNIQUE NOT NULL,
   gender TEXT NOT NULL CHECK (gender IN ('male', 'female', 'unknown')) DEFAULT 'unknown',
   level TEXT NOT NULL CHECK (level IN ('basic', 'intermediate', 'advanced')) DEFAULT 'basic',
@@ -54,9 +53,14 @@ class AppDatabase {
 
 CREATE TABLE IF NOT EXISTS tb_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL,
   name TEXT NOT NULL,
   max_score INTEGER NOT NULL DEFAULT 12,
   max_player_per_team INTEGER NOT NULL DEFAULT 4,
+  balanced_by_gender BOOLEAN NOT NULL DEFAULT TRUE,
+  balanced_by_level BOOLEAN NOT NULL DEFAULT TRUE,
+  max_wins_in_a_row INTEGER NOT NULL DEFAULT 0,
+  half_score_to_eliminate BOOLEAN NOT NULL DEFAULT FALSE,
   ended BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -65,6 +69,7 @@ CREATE TABLE IF NOT EXISTS tb_events (
 
 CREATE TABLE IF NOT EXISTS tb_event_teams (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL,
   event_id INTEGER NOT NULL,
   name TEXT NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -73,6 +78,7 @@ CREATE TABLE IF NOT EXISTS tb_event_teams (
 );
 
 CREATE TABLE IF NOT EXISTS tb_event_team_players (
+  user_id TEXT NOT NULL,
   team_id INTEGER NOT NULL,
   player_id INTEGER NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -83,11 +89,13 @@ CREATE TABLE IF NOT EXISTS tb_event_team_players (
 
 CREATE TABLE IF NOT EXISTS tb_event_matches (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL,
   name TEXT NOT NULL,
   event_id INTEGER NOT NULL,
   first_team_id INTEGER NOT NULL,
   second_team_id INTEGER NOT NULL, 
   max_score INTEGER NOT NULL DEFAULT 12,
+  half_score_to_eliminate BOOLEAN NOT NULL,
   ended BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -99,6 +107,7 @@ CREATE TABLE IF NOT EXISTS tb_event_matches (
 
 CREATE TABLE IF NOT EXISTS tb_match_scores (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL,
   match_id INTEGER NOT NULL,
   team_id INTEGER NOT NULL,
   reversed BOOLEAN NOT NULL DEFAULT FALSE,
@@ -110,6 +119,7 @@ CREATE TABLE IF NOT EXISTS tb_match_scores (
 
 CREATE TABLE IF NOT EXISTS tb_event_queue (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL,
   event_id INTEGER NOT NULL,
   team_id INTEGER NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -117,12 +127,18 @@ CREATE TABLE IF NOT EXISTS tb_event_queue (
   FOREIGN KEY (team_id) REFERENCES tb_event_teams(id) ON DELETE CASCADE
 );
 
+DROP VIEW IF EXISTS vw_events_full;
+
 CREATE VIEW IF NOT EXISTS vw_events_full AS
 SELECT
   e.id,
   e.name,
   e.max_score,
   e.max_player_per_team,
+  e.balanced_by_gender,
+  e.balanced_by_level,
+  e.max_wins_in_a_row,
+  e.half_score_to_eliminate,
   e.ended,
   e.created_at,
   e.updated_at,
@@ -175,6 +191,7 @@ SELECT
           'first_team_id', m.first_team_id,
           'second_team_id', m.second_team_id,
           'max_score', m.max_score,
+          'half_score_to_eliminate', m.half_score_to_eliminate,
           'ended', m.ended,
           'created_at', m.created_at,
           'updated_at', m.updated_at,
@@ -193,6 +210,7 @@ SELECT
               )
               FROM tb_match_scores s
               WHERE s.match_id = m.id
+              ORDER BY s.created_at DESC
             ),
             json('[]')
           )
@@ -212,12 +230,14 @@ SELECT
       )
       FROM tb_event_queue q
       WHERE q.event_id = e.id
-      ORDER BY q.id ASC
+      ORDER BY q.created_at ASC
     ),
     json('[]')
   ) AS queue
 
 FROM tb_events e;
+
+DROP VIEW IF EXISTS vw_event_match_full;
 
 CREATE VIEW IF NOT EXISTS vw_event_match_full AS
 SELECT
@@ -227,6 +247,7 @@ SELECT
   m.first_team_id,
   m.second_team_id,
   m.max_score,
+  m.half_score_to_eliminate,
   m.ended,
   m.created_at,
   m.updated_at,
@@ -301,7 +322,7 @@ SELECT
       )
       FROM tb_match_scores s
       WHERE s.match_id = m.id
-      ORDER BY s.id DESC
+      ORDER BY s.created_at DESC
     ),
     json('[]')
   ) AS scores
@@ -323,6 +344,12 @@ CREATE INDEX IF NOT EXISTS idx_match_scores_match_id ON tb_match_scores(match_id
     );
 
     _instance._remote = Supabase.instance.client;
+
+    final session = _instance._remote?.auth.currentSession;
+
+    if (session == null) {
+      await _instance._remote?.auth.signInAnonymously();
+    }
 
     _instance._initialized = true;
   }
