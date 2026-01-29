@@ -29,6 +29,17 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
   }
 
   @override
+  void didUpdateWidget(covariant EventSettingsDialog oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.event != widget.event) {
+      setState(() {
+        event = widget.event;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: switch (widget.hideAppBar) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
-import 'package:matchmaker/src/presentation/ui/pages/home_page.dart';
+import 'package:matchmaker/src/presentation/ui/pages/events_page.dart';
 
 class CurrentMatchWidget extends StatelessWidget {
   const CurrentMatchWidget({super.key, required this.match, required this.onTap});

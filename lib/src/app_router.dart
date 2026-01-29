@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/presentation/ui/pages/create_event_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/event_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/event_settings_page.dart';
-import 'package:matchmaker/src/presentation/ui/pages/home_page.dart';
+import 'package:matchmaker/src/presentation/ui/pages/events_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/match_history_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/match_page.dart';
 import 'package:provider/provider.dart';
@@ -17,11 +17,11 @@ abstract class AppRouter {
     routes: [
       GoRoute(
         path: '/',
-        name: 'home',
+        name: 'events',
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: HomePage(
+            page: EventsPage(
               controller: context.read(),
             ),
           );

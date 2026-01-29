@@ -66,34 +66,81 @@ class CreateEventController extends ChangeNotifier {
 
     final men = _players.where((player) => player.isMan).toList()..shuffle();
 
+    // Calculate how many teams we can fully fill
+    final fullTeamsCount = (_players.length / _event.maxPlayerPerTeam).floor();
+
+    // We treat the "fullTeamsCount" teams as priority targets to be balanced.
+    // If (numTeams > fullTeamsCount), the last team takes the overflow.
+    // Edge case: if fullTeamsCount == numTeams, all teams are targets.
+    // Edge case: if fullTeamsCount == 0 (should shouldn't happen with numTeams >= 2 check usually,
+    // unless max is huge, but then numTeams would be 1 and error out),
+    // but code handles targetTeamsCount=0 gracefully by skipping loop and dumping to remainder.
+    final targetTeamsCount = fullTeamsCount;
+
     var teamIndex = 0;
 
     for (final woman in women) {
-      while (teams[teamIndex].players.length >= _event.maxPlayerPerTeam) {
-        teamIndex = (teamIndex + 1) % numTeams;
+      bool placed = false;
+      // Distribute Round-Robin only among the Target Teams
+      if (targetTeamsCount > 0) {
+        for (int i = 0; i < targetTeamsCount; i++) {
+          if (teams[teamIndex].players.length < _event.maxPlayerPerTeam) {
+            teams[teamIndex] = teams[teamIndex].copyWith(
+              players: [
+                ...teams[teamIndex].players,
+                woman,
+              ],
+            );
+            teamIndex = (teamIndex + 1) % targetTeamsCount;
+            placed = true;
+            break;
+          }
+          teamIndex = (teamIndex + 1) % targetTeamsCount;
+        }
       }
-      teams[teamIndex] = teams[teamIndex].copyWith(
-        players: [
-          ...teams[teamIndex].players,
-          woman,
-        ],
-      );
-      teamIndex = (teamIndex + 1) % numTeams;
+
+      // If full or no target teams, put in the remainder team (last one)
+      if (!placed && numTeams > targetTeamsCount) {
+        final remainderIndex = numTeams - 1;
+        teams[remainderIndex] = teams[remainderIndex].copyWith(
+          players: [
+            ...teams[remainderIndex].players,
+            woman,
+          ],
+        );
+      }
     }
 
     teamIndex = 0;
 
     for (final man in men) {
-      while (teams[teamIndex].players.length >= _event.maxPlayerPerTeam) {
-        teamIndex = (teamIndex + 1) % numTeams;
+      bool placed = false;
+      if (targetTeamsCount > 0) {
+        for (int i = 0; i < targetTeamsCount; i++) {
+          if (teams[teamIndex].players.length < _event.maxPlayerPerTeam) {
+            teams[teamIndex] = teams[teamIndex].copyWith(
+              players: [
+                ...teams[teamIndex].players,
+                man,
+              ],
+            );
+            teamIndex = (teamIndex + 1) % targetTeamsCount;
+            placed = true;
+            break;
+          }
+          teamIndex = (teamIndex + 1) % targetTeamsCount;
+        }
       }
-      teams[teamIndex] = teams[teamIndex].copyWith(
-        players: [
-          ...teams[teamIndex].players,
-          man,
-        ],
-      );
-      teamIndex = (teamIndex + 1) % numTeams;
+
+      if (!placed && numTeams > targetTeamsCount) {
+        final remainderIndex = numTeams - 1;
+        teams[remainderIndex] = teams[remainderIndex].copyWith(
+          players: [
+            ...teams[remainderIndex].players,
+            man,
+          ],
+        );
+      }
     }
 
     int jokerIndex = 0;
