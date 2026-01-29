@@ -22,7 +22,7 @@ class CreateEventController extends ChangeNotifier {
 
   EventEntity get event => _event;
 
-  final List<PlayerEntity> _players = [];
+  List<PlayerEntity> _players = [];
 
   List<PlayerEntity> get players => _players;
 
@@ -232,10 +232,6 @@ class CreateEventController extends ChangeNotifier {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
-    _loading = true;
-
-    notifyListeners();
-
     final regex = RegExp(r'^(\d+)(\s+)-(\s+)(.+)');
 
     final names =
@@ -248,7 +244,9 @@ class CreateEventController extends ChangeNotifier {
           ..sort((a, b) => a.compareTo(b));
 
     if (names.isEmpty) {
-      return onError?.call('Nenhum jogador encontrado!');
+      importerController.clear();
+
+      return onError?.call('Nenhum jogador encontrado na lista colada!');
     }
 
     players.addAll(
@@ -271,11 +269,11 @@ class CreateEventController extends ChangeNotifier {
       ),
     );
 
+    _players = players.toSet().toList();
+
     players.sort((a, b) => a.name.compareTo(b.name));
 
     importerController.clear();
-
-    _loading = false;
 
     notifyListeners();
 

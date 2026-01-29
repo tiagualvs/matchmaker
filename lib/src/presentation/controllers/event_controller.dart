@@ -141,6 +141,23 @@ class EventController extends ChangeNotifier {
 
     notifyListeners();
 
+    if (_event.endedMatches.isEmpty) {
+      final result0 = await _eventsRepository.deleteOne(_event.id);
+
+      return result0.fold(
+        (_) async {
+          return onSuccess?.call();
+        },
+        (error) {
+          _loading = false;
+
+          notifyListeners();
+
+          return onError?.call(error.toString());
+        },
+      );
+    }
+
     final result0 = await _eventsRepository.updateOne(_event.id, const UpdateOneEventParams(ended: true));
 
     return result0.fold(

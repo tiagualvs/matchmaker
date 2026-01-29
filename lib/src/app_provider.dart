@@ -9,7 +9,7 @@ import 'package:matchmaker/src/data/repositories/scores/scores_repository.dart';
 import 'package:matchmaker/src/presentation/controllers/create_event_controller.dart';
 import 'package:matchmaker/src/presentation/controllers/event_controller.dart';
 import 'package:matchmaker/src/presentation/controllers/event_settings_controller.dart';
-import 'package:matchmaker/src/presentation/controllers/home_controller.dart';
+import 'package:matchmaker/src/presentation/controllers/events_controller.dart';
 import 'package:matchmaker/src/presentation/controllers/match_controller.dart';
 import 'package:matchmaker/src/presentation/controllers/match_history_controller.dart';
 import 'package:provider/provider.dart';
@@ -32,8 +32,8 @@ class AppProvider extends StatelessWidget {
         Provider<ScoresRepository>(
           create: (ctx) => ScoresLocalRepository(AppDatabase.instance),
         ),
-        InheritedProvider<HomeController>(
-          create: (ctx) => HomeController(ctx.read()),
+        InheritedProvider<EventsController>(
+          create: (ctx) => EventsController(ctx.read()),
         ),
         InheritedProvider<EventController>(
           create: (ctx) => EventController(ctx.read(), ctx.read()),

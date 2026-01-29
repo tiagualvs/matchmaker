@@ -125,4 +125,9 @@ class EventsRemoteRepository implements EventsRepository {
   AsyncResult<EventEntity> updateOne(int id, UpdateOneEventParams params) async {
     throw UnimplementedError();
   }
+
+  @override
+  AsyncResult<void> deleteOne(int id) {
+    throw UnimplementedError();
+  }
 }

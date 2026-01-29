@@ -85,8 +85,8 @@ abstract class PlayerEntity with _$PlayerEntity {
       id: -1,
       name: name,
       gender: gender,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
+      createdAt: DateTime(0),
+      updatedAt: DateTime(0),
     );
   }
 

@@ -146,4 +146,17 @@ class EventsLocalRepository implements EventsRepository {
 
     return Result.ok(EventEntity.fromSqlite(result.first));
   }
+
+  @override
+  AsyncResult<void> deleteOne(int id) async {
+    try {
+      _db.execute('DELETE FROM tb_events WHERE id = ?', [id]);
+
+      return const Result.ok(null);
+    } on SqliteException catch (e) {
+      return Result.error(e);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
 }

@@ -51,4 +51,5 @@ abstract interface class EventsRepository {
   AsyncResult<List<EventEntity>> findMany();
   AsyncResult<EventEntity> findOne(int id);
   AsyncResult<EventEntity> updateOne(int id, UpdateOneEventParams params);
+  AsyncResult<void> deleteOne(int id);
 }

@@ -150,9 +150,9 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         return FilledButton.icon(
                           onPressed: disabled
                               ? null
-                              : () {
+                              : () async {
                                   FocusScope.of(context).unfocus();
-                                  controller.importFromRawList();
+                                  await controller.importFromRawList(onError: SnackBars.error);
                                 },
                           icon: const Icon(Icons.upload_file_rounded),
                           label: const Text('Importar'),

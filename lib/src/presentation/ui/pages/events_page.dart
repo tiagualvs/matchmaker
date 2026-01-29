@@ -5,19 +5,19 @@ import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
-import 'package:matchmaker/src/presentation/controllers/home_controller.dart';
+import 'package:matchmaker/src/presentation/controllers/events_controller.dart';
 
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key, required this.controller});
 
-  final HomeController controller;
+  final EventsController controller;
 
   @override
   State<EventsPage> createState() => _EventsPageState();
 }
 
 class _EventsPageState extends State<EventsPage> {
-  HomeController get controller => widget.controller;
+  EventsController get controller => widget.controller;
 
   List<EventEntity> get events => controller.events;
 
