@@ -66,17 +66,19 @@ class MatchController extends ChangeNotifier {
     if (_match.ended) return;
 
     final result = await _scoresRepository.insertOne(
-      InsertOneScoreParams(matchId: _match.id, teamId: teamId),
+      InsertOneScoreParams(
+        matchId: _match.id,
+        teamId: teamId,
+      ),
     );
 
     return result.fold(
       (score) async {
         _match = _match.copyWith(
-          scores: [
-            score,
-            ..._match.scores,
-          ]..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
+          scores: [score, ..._match.scores],
         );
+
+        notifyListeners();
 
         if (_match.isTiedWhenByOne) {
           final result = await _matchesRepository.updateOne(
@@ -85,19 +87,13 @@ class MatchController extends ChangeNotifier {
           );
 
           _match = result.fold((ok) => ok.copyWith(scores: _match.scores), (_) => _match);
-        }
-
-        if (_match.firstTeamWon || _match.secondTeamWon) {
+        } else if (_match.firstTeamWon || _match.secondTeamWon) {
           if (!await confirmEndOfMatch()) {
             final deleteResult = await _scoresRepository.deleteOne(score.id);
 
             return deleteResult.fold(
               (_) {
-                _match = _match.copyWith(
-                  scores: List.from(_match.scores)
-                    ..remove(score)
-                    ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
-                );
+                _match = _match.copyWith(scores: List.from(_match.scores)..remove(score));
 
                 notifyListeners();
               },

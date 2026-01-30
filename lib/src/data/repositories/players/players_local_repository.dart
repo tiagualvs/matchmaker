@@ -1,0 +1,112 @@
+import 'package:drift/drift.dart';
+import 'package:matchmaker/src/common/shared/exceptions.dart';
+import 'package:matchmaker/src/data/entities/player_entity.dart';
+import 'package:matchmaker/src/data/services/database/database.dart';
+import 'package:result/result.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'players_repository.dart';
+
+class PlayersLocalRepository implements PlayersRepository {
+  late final AppDatabase _db;
+  late final Session? _session;
+
+  PlayersLocalRepository(AppDatabase app) {
+    _session = Supabase.instance.client.auth.currentSession;
+    _db = app;
+  }
+
+  @override
+  AsyncResult<PlayerEntity> insertOne(InsertOnePlayerParams params) async {
+    try {
+      final userId = _session?.user.id;
+
+      if (userId == null) {
+        return const Result.error(AppException('Você precisa estar logado para realizar essa ação!'));
+      }
+
+      final player = await _db
+          .into(_db.player)
+          .insertReturning(
+            PlayerCompanion.insert(
+              userId: userId,
+              name: params.name,
+              gender: params.gender,
+              level: params.level,
+            ),
+            onConflict: DoUpdate(
+              (old) => PlayerCompanion.custom(id: old.id),
+              target: [_db.player.name],
+            ),
+          );
+
+      return Result.ok(PlayerEntity.fromDrift(player));
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
+    } on Exception catch (e) {
+      return Result.error(AppException('Falha ao inserir jogador!', e));
+    }
+  }
+
+  @override
+  AsyncResult<PlayerEntity> findOneById(int id) async {
+    try {
+      final player = await (_db.player.select()..where((t) => t.id.equals(id))).getSingleOrNull();
+
+      if (player == null) {
+        return const Result.error(AppException('Jogador não encontrado!'));
+      }
+
+      return Result.ok(PlayerEntity.fromDrift(player));
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
+    } on Exception catch (e) {
+      return Result.error(AppException('Falha ao buscar jogador por id!', e));
+    }
+  }
+
+  @override
+  AsyncResult<PlayerEntity> findOneByName(String name) async {
+    try {
+      final player = await (_db.player.select()..where((t) => t.name.equals(name))).getSingleOrNull();
+
+      if (player == null) {
+        return const Result.error(AppException('Jogador não encontrado!'));
+      }
+
+      return Result.ok(PlayerEntity.fromDrift(player));
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
+    } on Exception catch (e) {
+      return Result.error(AppException('Falha ao buscar jogador por nome!', e));
+    }
+  }
+
+  @override
+  AsyncResult<PlayerEntity> updateOne(int id, UpdateOnePlayerParams params) async {
+    try {
+      if (!params.hasChanges) {
+        return const Result.error(AppException('Nenhuma alteração detectada!'));
+      }
+
+      final players = await (_db.update(_db.player)..where((t) => t.id.equals(id))).writeReturning(
+        PlayerCompanion(
+          name: params.name != null ? Value(params.name!) : const Value.absent(),
+          gender: params.gender != null ? Value(params.gender!) : const Value.absent(),
+          level: params.level != null ? Value(params.level!) : const Value.absent(),
+          updatedAt: Value(DateTime.now().toUtc()),
+        ),
+      );
+
+      if (players.isEmpty) {
+        return const Result.error(AppException('Falha ao atualizar jogador!'));
+      }
+
+      return Result.ok(PlayerEntity.fromDrift(players.first));
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
+    } on Exception catch (e) {
+      return Result.error(AppException('Falha ao atualizar jogador!', e));
+    }
+  }
+}

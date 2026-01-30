@@ -116,30 +116,6 @@ abstract class MatchEntity with _$MatchEntity {
     );
   }
 
-  factory MatchEntity.fromSupabase(Map<String, dynamic> data) {
-    return MatchEntity(
-      id: data['id'] as int,
-      eventId: data['event_id'] as int,
-      name: data['name'] as String,
-      firstTeam: data['first_team'] != null
-          ? TeamEntity.fromSupabase(data['first_team'] as Map<String, dynamic>)
-          : TeamEntity.empty(''),
-      secondTeam: data['second_team'] != null
-          ? TeamEntity.fromSupabase(data['second_team'] as Map<String, dynamic>)
-          : TeamEntity.empty(''),
-      scores: List.from(
-        (data['scores'] as List<dynamic>?)?.map((e) => ScoreEntity.fromSupabase(e as Map<String, dynamic>)).toList() ??
-            [],
-      ),
-      halfScoreToEliminate: data['half_score_to_eliminate'] as bool,
-      maxScore: data['max_score'] as int,
-      ended: data['ended'] as bool,
-      createdAt: DateTime.parse(data['created_at'] as String),
-      updatedAt: DateTime.parse(data['updated_at'] as String),
-      endedAt: data['ended_at'] != null ? DateTime.parse(data['ended_at'] as String) : null,
-    );
-  }
-
   int get firstTeamScore => scores.where((score) => score.teamId == firstTeam.id && !score.reversed).length;
 
   int get secondTeamScore => scores.where((score) => score.teamId == secondTeam.id && !score.reversed).length;

@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:matchmaker/src/common/shared/exceptions.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/services/database/database.dart';
 import 'package:result/result.dart';
@@ -21,12 +22,14 @@ class EventsLocalRepository implements EventsRepository {
       final userId = _session?.user.id;
 
       if (userId == null) {
-        return Result.error(Exception('Você precisa estar autenticado para realizar esta ação!'));
+        return const Result.error(AppException('Você precisa estar autenticado para realizar esta ação!'));
       }
 
       return await _db.getEventsWithLastMatch(userId);
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
-      return Result.error(e);
+      return Result.error(AppException('Falha ao buscar eventos!', e));
     }
   }
 
@@ -34,8 +37,10 @@ class EventsLocalRepository implements EventsRepository {
   AsyncResult<EventEntity> findOne(int id) async {
     try {
       return await _db.getEventWithAllData(id);
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
-      return Result.error(e);
+      return Result.error(AppException('Falha ao buscar evento por id!', e));
     }
   }
 
@@ -45,7 +50,7 @@ class EventsLocalRepository implements EventsRepository {
       final userId = _session?.user.id;
 
       if (userId == null) {
-        return Result.error(Exception('Você precisa estar autenticado para realizar esta ação!'));
+        return const Result.error(AppException('Você precisa estar autenticado para realizar esta ação!'));
       }
 
       return await _db.transaction(
@@ -135,14 +140,16 @@ class EventsLocalRepository implements EventsRepository {
           )..where((tb) => tb.id.equals(event.id))).getSingleOrNull();
 
           if (result == null) {
-            return Result.error(Exception('Evento não encontrado!'));
+            return const Result.error(AppException('Evento não encontrado!'));
           }
 
           return Result.ok(EventEntity.withAllData(result));
         },
       );
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
-      return Result.error(e);
+      return Result.error(AppException('Falha ao inserir evento!', e));
     }
   }
 
@@ -177,13 +184,15 @@ class EventsLocalRepository implements EventsRepository {
         )..where((tb) => tb.id.equals(id))).getSingleOrNull();
 
         if (result == null) {
-          return Result.error(Exception('Evento não encontrado!'));
+          return const Result.error(AppException('Evento não encontrado!'));
         }
 
         return Result.ok(EventEntity.withAllData(result));
       });
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
-      return Result.error(e);
+      return Result.error(AppException('Falha ao atualizar evento!', e));
     }
   }
 
@@ -193,8 +202,10 @@ class EventsLocalRepository implements EventsRepository {
       await (_db.delete(_db.event)..where((tb) => tb.id.equals(id))).go();
 
       return const Result.ok(null);
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
-      return Result.error(e);
+      return Result.error(AppException('Falha ao deletar evento!', e));
     }
   }
 }

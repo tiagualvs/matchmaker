@@ -200,9 +200,9 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         return FilledButton.icon(
                           onPressed: disabled
                               ? null
-                              : () {
+                              : () async {
                                   FocusScope.of(context).unfocus();
-                                  return controller.handleAddPlayer();
+                                  return await controller.handleAddPlayer(onError: SnackBars.error);
                                 },
                           icon: const Icon(Icons.person_add_rounded),
                           label: const Text('Adicionar'),
@@ -216,7 +216,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                         children: [
                           const Expanded(child: Divider()),
                           Text(
-                            'Lista de Jogadores (${controller.players.length})',
+                            'Lista de Jogadores (${controller.players.length}) / Times (${controller.numTeams})',
                             style: context.textTheme.bodyMedium,
                           ),
                           const Expanded(child: Divider()),
@@ -354,7 +354,11 @@ class _CreateEventPageState extends State<CreateEventPage> {
 
                                 if (changedPlayed == null) return;
 
-                                controller.handlePlayerChanges(index, changedPlayed);
+                                await controller.handlePlayerChanges(
+                                  index,
+                                  changedPlayed,
+                                  onError: SnackBars.error,
+                                );
                               },
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0).copyWith(

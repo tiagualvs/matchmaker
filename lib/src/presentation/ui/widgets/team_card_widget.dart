@@ -3,7 +3,7 @@ import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 
-class TeamCardWidget extends StatelessWidget {
+class TeamCardWidget extends StatefulWidget {
   const TeamCardWidget({
     super.key,
     required this.team,
@@ -14,11 +14,37 @@ class TeamCardWidget extends StatelessWidget {
   final TeamEntity team;
 
   @override
+  State<TeamCardWidget> createState() => _TeamCardWidgetState();
+}
+
+class _TeamCardWidgetState extends State<TeamCardWidget> {
+  final ExpansibleController controller = ExpansibleController();
+
+  @override
+  void didUpdateWidget(covariant TeamCardWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.initiallyExpanded != widget.initiallyExpanded) {
+      if (widget.initiallyExpanded) {
+        controller.expand();
+      } else {
+        controller.collapse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Theme(
       data: context.theme.copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
-        initiallyExpanded: initiallyExpanded,
+        controller: controller,
         tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
         childrenPadding: const EdgeInsets.symmetric(horizontal: 16.0).copyWith(bottom: 16.0),
         expandedCrossAxisAlignment: .stretch,
@@ -37,11 +63,11 @@ class TeamCardWidget extends StatelessWidget {
           ),
         ),
         title: Text(
-          'Time ${team.name}',
+          'Time ${widget.team.name}',
           style: context.textTheme.titleMedium,
         ),
         children: List.from(
-          team.players.map(
+          widget.team.players.map(
             (player) => Padding(
               padding: const .only(bottom: 8.0),
               child: Row(

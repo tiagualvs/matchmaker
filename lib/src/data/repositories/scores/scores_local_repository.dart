@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:matchmaker/src/common/shared/exceptions.dart';
 import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:matchmaker/src/data/services/database/database.dart';
 import 'package:result/result.dart';
@@ -21,7 +22,7 @@ class ScoresLocalRepository implements ScoresRepository {
       final userId = _session?.user.id;
 
       if (userId == null) {
-        return Result.error(Exception('Usuário não autenticado!'));
+        return const Result.error(AppException('Usuário não autenticado!'));
       }
 
       final score = await _db
@@ -35,8 +36,10 @@ class ScoresLocalRepository implements ScoresRepository {
           );
 
       return Result.ok(ScoreEntity.fromDrift(score));
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
-      return Result.error(e);
+      return Result.error(AppException('Falha ao inserir score!', e));
     }
   }
 
@@ -51,12 +54,14 @@ class ScoresLocalRepository implements ScoresRepository {
       );
 
       if (scores.isEmpty) {
-        return Result.error(Exception('Score não encontrado!'));
+        return const Result.error(AppException('Score não encontrado!'));
       }
 
       return Result.ok(ScoreEntity.fromDrift(scores.first));
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
-      return Result.error(e);
+      return Result.error(AppException('Falha ao atualizar score!', e));
     }
   }
 
@@ -66,12 +71,14 @@ class ScoresLocalRepository implements ScoresRepository {
       final scores = await (_db.delete(_db.matchScore)..where((tb) => tb.id.equals(id))).goAndReturn();
 
       if (scores.isEmpty) {
-        return Result.error(Exception('Score não encontrado!'));
+        return const Result.error(AppException('Score não encontrado!'));
       }
 
       return Result.ok(ScoreEntity.fromDrift(scores.first));
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
-      return Result.error(e);
+      return Result.error(AppException('Falha ao deletar score!', e));
     }
   }
 }

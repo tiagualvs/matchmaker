@@ -54,6 +54,7 @@ class _EventSettingsPageState extends State<EventSettingsPage> {
           body: EventSettingsDialog(
             event: controller.event,
             hideAppBar: true,
+            onChange: controller.handleEventChanges,
             onSave: (event) => controller.save(
               onSuccess: () => context.pop(),
               onError: SnackBars.error,

@@ -99,7 +99,7 @@ abstract class EventEntity with _$EventEntity {
                   updatedAt: DateTime.parse(score['updatedAt'] as String).toLocal(),
                 ),
               ),
-            ),
+            )..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
             maxScore: source['maxScore'] as int,
             halfScoreToEliminate: source['halfScoreToEliminate'] == 1,
             ended: source['ended'] == 1,

@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:matchmaker/src/common/shared/exceptions.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/services/database/database.dart';
 import 'package:result/result.dart';
@@ -20,7 +21,7 @@ class MatchesLocalRepository implements MatchesRepository {
     final userId = _session?.user.id;
 
     if (userId == null) {
-      return Result.error(Exception('Usuário não autenticado!'));
+      return const Result.error(AppException('Usuário não autenticado!'));
     }
 
     try {
@@ -49,13 +50,15 @@ class MatchesLocalRepository implements MatchesRepository {
         final result = await (_db.select(_db.matchWithAllData)..where((tb) => tb.id.equals(matchId))).getSingleOrNull();
 
         if (result == null) {
-          return Result.error(Exception('Partida não encontrada!'));
+          return const Result.error(AppException('Partida não encontrada!'));
         }
 
         return Result.ok(MatchEntity.withAllData(result));
       });
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
-      return Result.error(e);
+      return Result.error(AppException('Falha ao inserir partida!', e));
     }
   }
 
@@ -90,13 +93,15 @@ class MatchesLocalRepository implements MatchesRepository {
         final result = await (_db.select(_db.matchWithAllData)..where((tb) => tb.id.equals(id))).getSingleOrNull();
 
         if (result == null) {
-          return Result.error(Exception('Partida não encontrada!'));
+          return const Result.error(AppException('Partida não encontrada!'));
         }
 
         return Result.ok(MatchEntity.withAllData(result));
       });
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
-      return Result.error(e);
+      return Result.error(AppException('Falha ao buscar partida por id!', e));
     }
   }
 
@@ -121,8 +126,10 @@ class MatchesLocalRepository implements MatchesRepository {
 
         return const Result.ok(null);
       });
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
-      return Result.error(e);
+      return Result.error(AppException('Falha ao buscar partida por id!', e));
     }
   }
 
@@ -131,8 +138,10 @@ class MatchesLocalRepository implements MatchesRepository {
     try {
       await (_db.delete(_db.eventMatch)..where((tb) => tb.id.equals(id))).go();
       return const Result.ok(null);
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
-      return Result.error(e);
+      return Result.error(AppException('Falha ao deletar partida!', e));
     }
   }
 
@@ -141,8 +150,10 @@ class MatchesLocalRepository implements MatchesRepository {
     try {
       await (_db.delete(_db.eventMatch)..where((tb) => tb.eventId.equals(eventId))).go();
       return const Result.ok(null);
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
-      return Result.error(e);
+      return Result.error(AppException('Falha ao dele tar partidas por evento!', e));
     }
   }
 }

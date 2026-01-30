@@ -1,10 +1,10 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:widgets_to_image/widgets_to_image.dart';
 
 class EventController extends ChangeNotifier {
   EventController(this._eventsRepository, this._matchesRepository);
@@ -16,6 +16,10 @@ class EventController extends ChangeNotifier {
   bool _loading = false;
 
   bool get loading => _loading;
+
+  bool _sharing = false;
+
+  bool get sharing => _sharing;
 
   EventEntity _event = EventEntity.empty();
 
@@ -33,13 +37,14 @@ class EventController extends ChangeNotifier {
   }) async {
     _loading = true;
 
+    _sharing = false;
+
     notifyListeners();
 
     final result0 = await _eventsRepository.findOne(eventId);
 
     return result0.fold(
       (event) async {
-        log(event.createdAt.toIso8601String());
         final currentMatch = event.currentMatch;
         final lastEndedMatch = event.lastEndedMatch;
         if (!event.ended && currentMatch == null && lastEndedMatch != null) {
@@ -185,5 +190,42 @@ class EventController extends ChangeNotifier {
         return onError?.call(error.toString());
       },
     );
+  }
+
+  Future<void> shareEvent(
+    WidgetsToImageController controller, {
+    void Function()? onSuccess,
+    void Function(String error)? onError,
+  }) async {
+    _sharing = true;
+
+    notifyListeners();
+
+    final bytes = await controller.capturePng(
+      waitForAnimations: true,
+      delayMs: 100,
+    );
+
+    if (bytes == null) {
+      return onError?.call('Erro ao compartilhar evento!');
+    }
+
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [
+          XFile.fromData(
+            bytes,
+            name: '${_event.name}.png',
+            mimeType: 'image/png',
+          ),
+        ],
+      ),
+    );
+
+    _sharing = false;
+
+    notifyListeners();
+
+    return onSuccess?.call();
   }
 }

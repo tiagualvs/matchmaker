@@ -102,13 +102,16 @@ class _FloatingActionButtonMenuState extends State<FloatingActionButtonMenu> wit
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: toggleMenu,
-        child: AnimatedIcon(
-          icon: AnimatedIcons.menu_close,
-          progress: animation,
+      floatingActionButton: switch (widget.menus.isEmpty) {
+        true => null,
+        false => FloatingActionButton(
+          onPressed: toggleMenu,
+          child: AnimatedIcon(
+            icon: AnimatedIcons.menu_close,
+            progress: animation,
+          ),
         ),
-      ),
+      },
     );
   }
 }

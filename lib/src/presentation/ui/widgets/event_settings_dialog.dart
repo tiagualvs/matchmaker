@@ -9,11 +9,13 @@ class EventSettingsDialog extends StatefulWidget {
     required this.event,
     this.hideAppBar = false,
     this.onSave,
+    this.onChange,
   });
 
   final EventEntity event;
   final bool hideAppBar;
   final Future<void> Function(EventEntity event)? onSave;
+  final void Function(EventEntity event)? onChange;
 
   @override
   State<EventSettingsDialog> createState() => _EventSettingsDialogState();
@@ -25,6 +27,8 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
   void handleEventChanges(EventEntity event) {
     setState(() {
       this.event = event;
+
+      widget.onChange?.call(event);
     });
   }
 
@@ -148,7 +152,7 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
               materialTapTargetSize: .shrinkWrap,
               title: const Text('Balancear por gênero?'),
               subtitle: const Text('Mesma quantidade de homens e mulheres por time.'),
-              onChanged: event.teams.isEmpty || !event.ended
+              onChanged: event.teams.isEmpty && !event.ended
                   ? (value) {
                       return handleEventChanges(
                         event.copyWith(balancedByGender: value),
@@ -162,7 +166,7 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
               materialTapTargetSize: .shrinkWrap,
               title: const Text('Balancear por nível?'),
               subtitle: const Text('Mesma quantidade de jogadores por nível por time.'),
-              onChanged: event.teams.isEmpty || !event.ended
+              onChanged: event.teams.isEmpty && !event.ended
                   ? (value) {
                       return handleEventChanges(
                         event.copyWith(balancedByLevel: value),

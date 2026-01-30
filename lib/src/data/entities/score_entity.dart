@@ -30,17 +30,6 @@ abstract class ScoreEntity with _$ScoreEntity {
     );
   }
 
-  factory ScoreEntity.fromSupabase(Map<String, dynamic> data) {
-    return ScoreEntity(
-      id: data['id'] as int,
-      matchId: data['match_id'] as int,
-      teamId: data['team_id'] as int,
-      reversed: data['reversed'] as bool,
-      createdAt: DateTime.parse(data['created_at'] as String),
-      updatedAt: DateTime.parse(data['updated_at'] as String),
-    );
-  }
-
   bool get isEmpty => id == -1;
 
   bool get isNotEmpty => !isEmpty;

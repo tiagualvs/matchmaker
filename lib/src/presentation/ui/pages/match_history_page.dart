@@ -93,32 +93,41 @@ class _MatchHistoryPageState extends State<MatchHistoryPage> {
                     ),
                   ),
                   title: Text(
-                    '${match.firstTeam.name} (${match.firstTeamScore}) x (${match.secondTeamScore}) ${match.secondTeam.name}',
+                    '${match.firstTeam.name} ${match.firstTeamScore} x ${match.secondTeamScore} ${match.secondTeam.name}',
                     style: context.textTheme.titleMedium?.copyWith(fontWeight: .normal),
                   ),
                   children: List.from(
                     match.scores.map(
                       (score) {
-                        final currentPoint = match.scores.where(
-                          (s) =>
-                              s.teamId == score.teamId &&
-                              (s.id >= score.id &&
-                                  (s.createdAt.isAtSameMomentAs(score.createdAt) ||
-                                      s.createdAt.isAfter(score.createdAt))) &&
-                              !s.reversed,
-                        );
+                        String currentScore() {
+                          final scores = match.scores.where((s) => s.id <= score.id && !s.reversed).toList();
+
+                          final firstTeamScore = scores.where((s) => s.teamId == match.firstTeam.id).length;
+
+                          final secondTeamScore = scores.where((s) => s.teamId == match.secondTeam.id).length;
+
+                          return '$firstTeamScore x $secondTeamScore';
+                        }
+
+                        Color currentColor() {
+                          if (score.teamId == match.firstTeam.id && !score.reversed) {
+                            return Colors.blue.shade100;
+                          }
+
+                          if (score.teamId == match.secondTeam.id && !score.reversed) {
+                            return Colors.red.shade100;
+                          }
+
+                          return Colors.blueGrey.shade100;
+                        }
 
                         return Container(
                           padding: const .all(8.0),
                           margin: const .only(bottom: 8.0),
-                          color: score.teamId == match.firstTeam.id ? Colors.blue.shade100 : Colors.red.shade100,
+                          color: currentColor(),
                           child: Row(
                             spacing: 8.0,
                             children: [
-                              Text(
-                                '(${currentPoint.length})',
-                                style: context.textTheme.bodyMedium?.copyWith(fontWeight: .bold),
-                              ),
                               Expanded(
                                 child: Text(
                                   score.teamId == match.firstTeam.id ? match.firstTeam.name : match.secondTeam.name,
@@ -126,6 +135,13 @@ class _MatchHistoryPageState extends State<MatchHistoryPage> {
                                   overflow: .ellipsis,
                                   style: context.textTheme.bodyMedium?.copyWith(fontWeight: .bold),
                                 ),
+                              ),
+                              Text(
+                                switch (score.reversed) {
+                                  true => 'Ponto revertido',
+                                  false => currentScore(),
+                                },
+                                style: context.textTheme.bodyMedium?.copyWith(fontWeight: .bold),
                               ),
                               Text(DateFormat('HH:mm').format(score.createdAt)),
                             ],

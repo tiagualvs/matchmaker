@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
@@ -16,6 +18,16 @@ class EventSettingsController extends ChangeNotifier {
   EventEntity _event = EventEntity.empty();
 
   EventEntity get event => _event;
+
+  void handleEventChanges(EventEntity event) {
+    _event = event;
+
+    log(
+      'Event name: ${_event.name}, maxScore: ${_event.maxScore}, halfScoreToEliminate: ${_event.halfScoreToEliminate}, maxPlayerPerTeam: ${_event.maxPlayerPerTeam}, balancedByGender: ${_event.balancedByGender}, balancedByLevel: ${_event.balancedByLevel}, maxWinsInARow: ${_event.maxWinsInARow}',
+    );
+
+    notifyListeners();
+  }
 
   Future<void> loadDependencies(
     int eventId, {

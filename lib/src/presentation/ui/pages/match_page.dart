@@ -1,14 +1,15 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
+import 'package:matchmaker/src/common/others/text_span_builder.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/match_controller.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class MatchPage extends StatefulWidget {
   const MatchPage({
@@ -50,23 +51,25 @@ class _MatchPageState extends State<MatchPage> {
           builder: (context) {
             return AlertDialog(
               title: Text(
-                'Partida encerrada?',
-                style: context.textTheme.titleLarge?.copyWith(
-                  fontWeight: .bold,
-                ),
+                'Fim de partida',
+                style: context.textTheme.headlineMedium?.copyWith(fontWeight: .bold),
               ),
-              content: Text(
-                'O time ${team.name} está prestes a vencer a partida por $score!\n\nConfirma o ultimo ponto para encerrar a partida?',
-                style: context.textTheme.bodyMedium,
+              content: Text.rich(
+                TextSpanBuilder.build(
+                  'O time [b]${team.name}[/b] venceu a partia por [b]$score[/b]!\n\nConfirmar e ir para próxima partida?',
+                  normalStyle: context.textTheme.bodyLarge,
+                  boldStyle: context.textTheme.bodyLarge?.copyWith(fontWeight: .bold),
+                ),
               ),
               actions: [
                 TextButton(
                   onPressed: () => context.pop(false),
-                  child: const Text('Não'),
+                  style: TextButton.styleFrom(foregroundColor: context.colorScheme.error),
+                  child: const Text('Não, reverter!'),
                 ),
                 TextButton(
                   onPressed: () => context.pop(true),
-                  child: const Text('Sim'),
+                  child: const Text('Sim, confirmar!'),
                 ),
               ],
             );
@@ -80,6 +83,8 @@ class _MatchPageState extends State<MatchPage> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await WakelockPlus.enable();
+
       await SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeRight,
         DeviceOrientation.landscapeLeft,
@@ -90,12 +95,17 @@ class _MatchPageState extends State<MatchPage> {
 
   @override
   void dispose() {
-    controller.resetController();
     scheduleMicrotask(
-      () async => await SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]),
+      () async {
+        await WakelockPlus.disable();
+
+        await SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]);
+
+        controller.resetController();
+      },
     );
     super.dispose();
   }
@@ -111,35 +121,8 @@ class _MatchPageState extends State<MatchPage> {
           );
         }
 
-        WidgetsBinding.instance.addPostFrameCallback((_) async {
-          if (match.ended) {
-            final team = match.firstTeamWon ? firstTeam : secondTeam;
-            final max = math.max(match.firstTeamScore, match.secondTeamScore);
-            final min = math.min(match.firstTeamScore, match.secondTeamScore);
-
-            await showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) {
-                return AlertDialog(
-                  title: const Text('Partida encerrada!'),
-                  content: Text(
-                    'O time ${team.name} venceu por $max x $min!',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => context.pop(),
-                      child: const Text('OK'),
-                    ),
-                  ],
-                );
-              },
-            );
-
-            if (!context.mounted) return;
-
-            return context.pop();
-          }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (match.ended) return context.pop();
         });
 
         final firstTeamWidget = Expanded(
@@ -241,24 +224,29 @@ class _MatchPageState extends State<MatchPage> {
                   left: 16.0,
                   right: 16.0,
                   child: Row(
-                    mainAxisAlignment: .spaceEvenly,
                     children: [
-                      Text(
-                        swapped ? secondTeam.name : firstTeam.name,
-                        style: context.textTheme.titleLarge?.copyWith(
-                          fontWeight: .bold,
-                          color: Colors.white,
+                      Expanded(
+                        child: Text(
+                          swapped ? secondTeam.name : firstTeam.name,
+                          textAlign: .center,
+                          style: context.textTheme.titleLarge?.copyWith(
+                            fontWeight: .bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                       FloatingActionButton(
                         onPressed: toggleSwap,
                         child: const Icon(Icons.swap_horiz_rounded),
                       ),
-                      Text(
-                        swapped ? firstTeam.name : secondTeam.name,
-                        style: context.textTheme.titleLarge?.copyWith(
-                          fontWeight: .bold,
-                          color: Colors.white,
+                      Expanded(
+                        child: Text(
+                          swapped ? firstTeam.name : secondTeam.name,
+                          textAlign: .center,
+                          style: context.textTheme.titleLarge?.copyWith(
+                            fontWeight: .bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],
