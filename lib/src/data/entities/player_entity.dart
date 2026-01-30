@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:matchmaker/src/data/services/database/database.dart';
 
 part 'player_entity.freezed.dart';
 part 'player_entity.g.dart';
@@ -52,20 +53,20 @@ abstract class PlayerEntity with _$PlayerEntity {
     required String name,
     required PlayerGender gender,
     @Default(PlayerLevel.basic) PlayerLevel level,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    required DateTime createdAt,
+    required DateTime updatedAt,
   }) = _PlayerEntity;
 
   factory PlayerEntity.fromJson(Map<String, dynamic> json) => _$PlayerEntityFromJson(json);
 
-  factory PlayerEntity.fromSqlite(Map<String, dynamic> row) {
+  factory PlayerEntity.fromDrift(PlayerData data) {
     return PlayerEntity(
-      id: row['id'] as int,
-      name: row['name'] as String,
-      gender: PlayerGender.fromValue(row['gender'] as String),
-      level: PlayerLevel.fromValue(row['level'] as String),
-      createdAt: DateTime.parse(row['created_at'] as String),
-      updatedAt: DateTime.parse(row['updated_at'] as String),
+      id: data.id,
+      name: data.name,
+      gender: PlayerGender.fromValue(data.gender),
+      level: PlayerLevel.fromValue(data.level),
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
     );
   }
 

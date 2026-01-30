@@ -147,9 +147,10 @@ class _MatchPageState extends State<MatchPage> {
                     mainAxisAlignment: .spaceBetween,
                     children: [
                       Text(
-                        match.name,
+                        '${match.name} - ${match.firstTeam.name} vs. ${match.secondTeam.name}',
                         style: context.textTheme.headlineMedium,
                       ),
+
                       Text(
                         'Termina em ${match.maxScore}',
                         style: context.textTheme.headlineMedium,

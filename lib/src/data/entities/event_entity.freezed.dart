@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$EventEntity {
 
- int get id; String get name; List<TeamEntity> get teams; List<MatchEntity> get matches; List<int> get queue;@JsonKey(name: 'max_score') int get maxScore;@JsonKey(name: 'max_player_per_team') int get maxPlayerPerTeam;@JsonKey(name: 'balanced_by_gender') bool get balancedByGender;@JsonKey(name: 'balanced_by_level') bool get balancedByLevel;@JsonKey(name: 'max_wins_in_a_row') int get maxWinsInARow;@JsonKey(name: 'half_score_to_eliminate') bool get halfScoreToEliminate; bool get ended;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'ended_at') DateTime? get endedAt;
+ int get id; String get name; List<TeamEntity> get teams; List<MatchEntity> get matches; List<int> get queue; int get maxScore; int get maxPlayerPerTeam; bool get balancedByGender; bool get balancedByLevel; int get maxWinsInARow; bool get halfScoreToEliminate; bool get ended; DateTime get createdAt; DateTime get updatedAt; DateTime? get endedAt;
 /// Create a copy of EventEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $EventEntityCopyWith<$Res>  {
   factory $EventEntityCopyWith(EventEntity value, $Res Function(EventEntity) _then) = _$EventEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, List<TeamEntity> teams, List<MatchEntity> matches, List<int> queue,@JsonKey(name: 'max_score') int maxScore,@JsonKey(name: 'max_player_per_team') int maxPlayerPerTeam,@JsonKey(name: 'balanced_by_gender') bool balancedByGender,@JsonKey(name: 'balanced_by_level') bool balancedByLevel,@JsonKey(name: 'max_wins_in_a_row') int maxWinsInARow,@JsonKey(name: 'half_score_to_eliminate') bool halfScoreToEliminate, bool ended,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'ended_at') DateTime? endedAt
+ int id, String name, List<TeamEntity> teams, List<MatchEntity> matches, List<int> queue, int maxScore, int maxPlayerPerTeam, bool balancedByGender, bool balancedByLevel, int maxWinsInARow, bool halfScoreToEliminate, bool ended, DateTime createdAt, DateTime updatedAt, DateTime? endedAt
 });
 
 
@@ -167,7 +167,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  List<TeamEntity> teams,  List<MatchEntity> matches,  List<int> queue, @JsonKey(name: 'max_score')  int maxScore, @JsonKey(name: 'max_player_per_team')  int maxPlayerPerTeam, @JsonKey(name: 'balanced_by_gender')  bool balancedByGender, @JsonKey(name: 'balanced_by_level')  bool balancedByLevel, @JsonKey(name: 'max_wins_in_a_row')  int maxWinsInARow, @JsonKey(name: 'half_score_to_eliminate')  bool halfScoreToEliminate,  bool ended, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'ended_at')  DateTime? endedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  List<TeamEntity> teams,  List<MatchEntity> matches,  List<int> queue,  int maxScore,  int maxPlayerPerTeam,  bool balancedByGender,  bool balancedByLevel,  int maxWinsInARow,  bool halfScoreToEliminate,  bool ended,  DateTime createdAt,  DateTime updatedAt,  DateTime? endedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _EventEntity() when $default != null:
 return $default(_that.id,_that.name,_that.teams,_that.matches,_that.queue,_that.maxScore,_that.maxPlayerPerTeam,_that.balancedByGender,_that.balancedByLevel,_that.maxWinsInARow,_that.halfScoreToEliminate,_that.ended,_that.createdAt,_that.updatedAt,_that.endedAt);case _:
@@ -188,7 +188,7 @@ return $default(_that.id,_that.name,_that.teams,_that.matches,_that.queue,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  List<TeamEntity> teams,  List<MatchEntity> matches,  List<int> queue, @JsonKey(name: 'max_score')  int maxScore, @JsonKey(name: 'max_player_per_team')  int maxPlayerPerTeam, @JsonKey(name: 'balanced_by_gender')  bool balancedByGender, @JsonKey(name: 'balanced_by_level')  bool balancedByLevel, @JsonKey(name: 'max_wins_in_a_row')  int maxWinsInARow, @JsonKey(name: 'half_score_to_eliminate')  bool halfScoreToEliminate,  bool ended, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'ended_at')  DateTime? endedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  List<TeamEntity> teams,  List<MatchEntity> matches,  List<int> queue,  int maxScore,  int maxPlayerPerTeam,  bool balancedByGender,  bool balancedByLevel,  int maxWinsInARow,  bool halfScoreToEliminate,  bool ended,  DateTime createdAt,  DateTime updatedAt,  DateTime? endedAt)  $default,) {final _that = this;
 switch (_that) {
 case _EventEntity():
 return $default(_that.id,_that.name,_that.teams,_that.matches,_that.queue,_that.maxScore,_that.maxPlayerPerTeam,_that.balancedByGender,_that.balancedByLevel,_that.maxWinsInARow,_that.halfScoreToEliminate,_that.ended,_that.createdAt,_that.updatedAt,_that.endedAt);case _:
@@ -208,7 +208,7 @@ return $default(_that.id,_that.name,_that.teams,_that.matches,_that.queue,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  List<TeamEntity> teams,  List<MatchEntity> matches,  List<int> queue, @JsonKey(name: 'max_score')  int maxScore, @JsonKey(name: 'max_player_per_team')  int maxPlayerPerTeam, @JsonKey(name: 'balanced_by_gender')  bool balancedByGender, @JsonKey(name: 'balanced_by_level')  bool balancedByLevel, @JsonKey(name: 'max_wins_in_a_row')  int maxWinsInARow, @JsonKey(name: 'half_score_to_eliminate')  bool halfScoreToEliminate,  bool ended, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'ended_at')  DateTime? endedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  List<TeamEntity> teams,  List<MatchEntity> matches,  List<int> queue,  int maxScore,  int maxPlayerPerTeam,  bool balancedByGender,  bool balancedByLevel,  int maxWinsInARow,  bool halfScoreToEliminate,  bool ended,  DateTime createdAt,  DateTime updatedAt,  DateTime? endedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _EventEntity() when $default != null:
 return $default(_that.id,_that.name,_that.teams,_that.matches,_that.queue,_that.maxScore,_that.maxPlayerPerTeam,_that.balancedByGender,_that.balancedByLevel,_that.maxWinsInARow,_that.halfScoreToEliminate,_that.ended,_that.createdAt,_that.updatedAt,_that.endedAt);case _:
@@ -223,7 +223,7 @@ return $default(_that.id,_that.name,_that.teams,_that.matches,_that.queue,_that.
 @JsonSerializable()
 
 class _EventEntity extends EventEntity {
-  const _EventEntity({required this.id, required this.name, final  List<TeamEntity> teams = const [], final  List<MatchEntity> matches = const [], final  List<int> queue = const [], @JsonKey(name: 'max_score') this.maxScore = 12, @JsonKey(name: 'max_player_per_team') this.maxPlayerPerTeam = 4, @JsonKey(name: 'balanced_by_gender') this.balancedByGender = true, @JsonKey(name: 'balanced_by_level') this.balancedByLevel = true, @JsonKey(name: 'max_wins_in_a_row') this.maxWinsInARow = 0, @JsonKey(name: 'half_score_to_eliminate') this.halfScoreToEliminate = false, this.ended = false, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'ended_at') this.endedAt}): _teams = teams,_matches = matches,_queue = queue,super._();
+  const _EventEntity({required this.id, required this.name, final  List<TeamEntity> teams = const [], final  List<MatchEntity> matches = const [], final  List<int> queue = const [], this.maxScore = 12, this.maxPlayerPerTeam = 4, this.balancedByGender = true, this.balancedByLevel = true, this.maxWinsInARow = 0, this.halfScoreToEliminate = false, this.ended = false, required this.createdAt, required this.updatedAt, this.endedAt}): _teams = teams,_matches = matches,_queue = queue,super._();
   factory _EventEntity.fromJson(Map<String, dynamic> json) => _$EventEntityFromJson(json);
 
 @override final  int id;
@@ -249,16 +249,16 @@ class _EventEntity extends EventEntity {
   return EqualUnmodifiableListView(_queue);
 }
 
-@override@JsonKey(name: 'max_score') final  int maxScore;
-@override@JsonKey(name: 'max_player_per_team') final  int maxPlayerPerTeam;
-@override@JsonKey(name: 'balanced_by_gender') final  bool balancedByGender;
-@override@JsonKey(name: 'balanced_by_level') final  bool balancedByLevel;
-@override@JsonKey(name: 'max_wins_in_a_row') final  int maxWinsInARow;
-@override@JsonKey(name: 'half_score_to_eliminate') final  bool halfScoreToEliminate;
+@override@JsonKey() final  int maxScore;
+@override@JsonKey() final  int maxPlayerPerTeam;
+@override@JsonKey() final  bool balancedByGender;
+@override@JsonKey() final  bool balancedByLevel;
+@override@JsonKey() final  int maxWinsInARow;
+@override@JsonKey() final  bool halfScoreToEliminate;
 @override@JsonKey() final  bool ended;
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
-@override@JsonKey(name: 'ended_at') final  DateTime? endedAt;
+@override final  DateTime createdAt;
+@override final  DateTime updatedAt;
+@override final  DateTime? endedAt;
 
 /// Create a copy of EventEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -293,7 +293,7 @@ abstract mixin class _$EventEntityCopyWith<$Res> implements $EventEntityCopyWith
   factory _$EventEntityCopyWith(_EventEntity value, $Res Function(_EventEntity) _then) = __$EventEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, List<TeamEntity> teams, List<MatchEntity> matches, List<int> queue,@JsonKey(name: 'max_score') int maxScore,@JsonKey(name: 'max_player_per_team') int maxPlayerPerTeam,@JsonKey(name: 'balanced_by_gender') bool balancedByGender,@JsonKey(name: 'balanced_by_level') bool balancedByLevel,@JsonKey(name: 'max_wins_in_a_row') int maxWinsInARow,@JsonKey(name: 'half_score_to_eliminate') bool halfScoreToEliminate, bool ended,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'ended_at') DateTime? endedAt
+ int id, String name, List<TeamEntity> teams, List<MatchEntity> matches, List<int> queue, int maxScore, int maxPlayerPerTeam, bool balancedByGender, bool balancedByLevel, int maxWinsInARow, bool halfScoreToEliminate, bool ended, DateTime createdAt, DateTime updatedAt, DateTime? endedAt
 });
 
 

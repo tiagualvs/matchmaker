@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -37,8 +39,10 @@ class EventController extends ChangeNotifier {
 
     return result0.fold(
       (event) async {
-        if (!event.ended && event.currentMatch == null && event.lastEndedMatch != null) {
-          final lastEndedMatch = event.lastEndedMatch!;
+        log(event.createdAt.toIso8601String());
+        final currentMatch = event.currentMatch;
+        final lastEndedMatch = event.lastEndedMatch;
+        if (!event.ended && currentMatch == null && lastEndedMatch != null) {
           final winner = lastEndedMatch.firstTeamWon ? lastEndedMatch.firstTeam : lastEndedMatch.secondTeam;
           final loser = lastEndedMatch.firstTeamWon ? lastEndedMatch.secondTeam : lastEndedMatch.firstTeam;
           if (event.teamHasMaxWinsInARow(winner.id)) {
@@ -50,6 +54,8 @@ class EventController extends ChangeNotifier {
               event.teams.firstWhere((team) => team.id == nextIds.last),
             );
 
+            final queue = [winner.id, ...event.queue.skip(2), loser.id];
+
             final result1 = await _matchesRepository.insertOne(
               InsertOneMatchParams(
                 eventId: eventId,
@@ -58,10 +64,10 @@ class EventController extends ChangeNotifier {
                 secondTeamId: nextIds.last,
                 maxScore: event.maxScore,
                 halfScoreToEliminate: event.halfScoreToEliminate,
-                enqueue: [winner.id, loser.id],
-                dequeue: nextIds,
+                queue: queue,
               ),
             );
+
             result1.fold(
               (match) {
                 _event = event.copyWith(
@@ -72,7 +78,7 @@ class EventController extends ChangeNotifier {
                       secondTeam: event.teams.firstWhere((team) => team.id == nextIds.last),
                     ),
                   ],
-                  queue: [winner.id, ...event.queue.skip(2), loser.id],
+                  queue: queue,
                 );
               },
               (error) {
@@ -89,6 +95,8 @@ class EventController extends ChangeNotifier {
                 ? winner
                 : event.teams.firstWhere((team) => team.id == nextId);
 
+            final queue = [...event.queue.skip(1), loser.id];
+
             final result1 = await _matchesRepository.insertOne(
               InsertOneMatchParams(
                 eventId: eventId,
@@ -97,8 +105,7 @@ class EventController extends ChangeNotifier {
                 secondTeamId: secondTeam.id,
                 maxScore: event.maxScore,
                 halfScoreToEliminate: event.halfScoreToEliminate,
-                enqueue: [loser.id],
-                dequeue: [nextId],
+                queue: queue,
               ),
             );
 
@@ -109,7 +116,7 @@ class EventController extends ChangeNotifier {
                     ...event.matches,
                     match.copyWith(firstTeam: firstTeam, secondTeam: secondTeam),
                   ],
-                  queue: [...event.queue.skip(1), loser.id],
+                  queue: queue,
                 );
               },
               (error) {

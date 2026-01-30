@@ -14,8 +14,8 @@ _PlayerEntity _$PlayerEntityFromJson(Map<String, dynamic> json) =>
       level:
           $enumDecodeNullable(_$PlayerLevelEnumMap, json['level']) ??
           PlayerLevel.basic,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$PlayerEntityToJson(_PlayerEntity instance) =>
@@ -24,8 +24,8 @@ Map<String, dynamic> _$PlayerEntityToJson(_PlayerEntity instance) =>
       'name': instance.name,
       'gender': _$PlayerGenderEnumMap[instance.gender]!,
       'level': _$PlayerLevelEnumMap[instance.level]!,
-      'created_at': instance.createdAt.toIso8601String(),
-      'updated_at': instance.updatedAt.toIso8601String(),
+      'createdAt': instance.createdAt.toIso8601String(),
+      'updatedAt': instance.updatedAt.toIso8601String(),
     };
 
 const _$PlayerGenderEnumMap = {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:matchmaker/src/app_database.dart';
 import 'package:matchmaker/src/data/repositories/events/events_local_repository.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/matches/matches_local_repository.dart';
 import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
 import 'package:matchmaker/src/data/repositories/scores/scores_local_repository.dart';
 import 'package:matchmaker/src/data/repositories/scores/scores_repository.dart';
+import 'package:matchmaker/src/data/services/database/database.dart';
 import 'package:matchmaker/src/presentation/controllers/create_event_controller.dart';
 import 'package:matchmaker/src/presentation/controllers/event_controller.dart';
 import 'package:matchmaker/src/presentation/controllers/event_settings_controller.dart';
@@ -23,14 +23,17 @@ class AppProvider extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<AppDatabase>(
+          create: (ctx) => AppDatabase(),
+        ),
         Provider<EventsRepository>(
-          create: (ctx) => EventsLocalRepository(AppDatabase.instance),
+          create: (ctx) => EventsLocalRepository(ctx.read()),
         ),
         Provider<MatchesRepository>(
-          create: (ctx) => MatchesLocalRepository(AppDatabase.instance),
+          create: (ctx) => MatchesLocalRepository(ctx.read()),
         ),
         Provider<ScoresRepository>(
-          create: (ctx) => ScoresLocalRepository(AppDatabase.instance),
+          create: (ctx) => ScoresLocalRepository(ctx.read()),
         ),
         InheritedProvider<EventsController>(
           create: (ctx) => EventsController(ctx.read()),

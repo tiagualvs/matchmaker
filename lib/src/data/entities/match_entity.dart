@@ -1,8 +1,10 @@
 import 'dart:convert';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
+import 'package:matchmaker/src/data/services/database/database.dart';
 
 part 'match_entity.freezed.dart';
 part 'match_entity.g.dart';
@@ -13,44 +15,104 @@ abstract class MatchEntity with _$MatchEntity {
 
   const factory MatchEntity({
     required int id,
-    @JsonKey(name: 'event_id') required int eventId,
+    required int eventId,
     required String name,
-    @JsonKey(name: 'first_team') required TeamEntity firstTeam,
-    @JsonKey(name: 'second_team') required TeamEntity secondTeam,
+    required TeamEntity firstTeam,
+    required TeamEntity secondTeam,
     @Default([]) List<ScoreEntity> scores,
-    @JsonKey(name: 'max_score') required int maxScore,
-    @JsonKey(name: 'half_score_to_eliminate') required bool halfScoreToEliminate,
+    required int maxScore,
+    required bool halfScoreToEliminate,
     @Default(false) bool ended,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
-    @JsonKey(name: 'ended_at') DateTime? endedAt,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    DateTime? endedAt,
   }) = _MatchEntity;
 
   factory MatchEntity.fromJson(Map<String, dynamic> json) => _$MatchEntityFromJson(json);
 
-  factory MatchEntity.fromSqlite(Map<String, dynamic> row) {
-    final scores = switch (row['scores']) {
-      String s => (json.decode(s) as List).map((e) => ScoreEntity.fromSqlite(e as Map<String, dynamic>)).toList(),
-      List l => l.map((e) => ScoreEntity.fromSqlite(e as Map<String, dynamic>)).toList(),
-      _ => <ScoreEntity>[],
-    };
+  factory MatchEntity.fromDrift(EventMatchData data) {
     return MatchEntity(
-      id: row['id'] as int,
-      eventId: row['event_id'] as int,
-      name: row['name'] as String,
-      maxScore: row['max_score'] as int,
-      firstTeam: row['first_team'] != null
-          ? TeamEntity.fromSqlite(json.decode(row['first_team']) as Map<String, dynamic>)
-          : TeamEntity.empty(''),
-      secondTeam: row['second_team'] != null
-          ? TeamEntity.fromSqlite(json.decode(row['second_team']) as Map<String, dynamic>)
-          : TeamEntity.empty(''),
-      scores: scores..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
-      halfScoreToEliminate: row['half_score_to_eliminate'] == 1,
-      ended: row['ended'] == 1,
-      createdAt: DateTime.parse(row['created_at'] as String),
-      updatedAt: DateTime.parse(row['updated_at'] as String),
-      endedAt: row['ended_at'] != null ? DateTime.parse(row['ended_at'] as String) : null,
+      id: data.id,
+      eventId: data.eventId,
+      name: data.name,
+      maxScore: data.maxScore,
+      firstTeam: TeamEntity.empty(''),
+      secondTeam: TeamEntity.empty(''),
+      scores: [],
+      halfScoreToEliminate: data.halfScoreToEliminate,
+      ended: data.ended,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+      endedAt: data.endedAt,
+    );
+  }
+
+  factory MatchEntity.withAllData(MatchWithAllDataData data) {
+    final firstTeamSource = json.decode(data.firstTeam);
+    final secondTeamSource = json.decode(data.secondTeam);
+
+    return MatchEntity(
+      id: data.id,
+      eventId: data.eventId,
+      name: data.name,
+      maxScore: data.maxScore,
+      firstTeam: TeamEntity(
+        id: firstTeamSource['id'] as int,
+        eventId: firstTeamSource['eventId'] as int,
+        name: firstTeamSource['name'] as String,
+        players: List.from(
+          (firstTeamSource['players'] as List).map(
+            (player) => PlayerEntity(
+              id: player['id'] as int,
+              name: player['name'] as String,
+              gender: PlayerGender.fromValue(player['gender'] as String),
+              level: PlayerLevel.fromValue(player['level'] as String),
+              createdAt: DateTime.parse(player['createdAt'] as String),
+              updatedAt: DateTime.parse(player['updatedAt'] as String),
+            ),
+          ),
+        ),
+        createdAt: DateTime.parse(firstTeamSource['createdAt'] as String),
+        updatedAt: DateTime.parse(firstTeamSource['updatedAt'] as String),
+      ),
+      secondTeam: TeamEntity(
+        id: secondTeamSource['id'] as int,
+        eventId: secondTeamSource['eventId'] as int,
+        name: secondTeamSource['name'] as String,
+        players: List.from(
+          (secondTeamSource['players'] as List).map(
+            (player) => PlayerEntity(
+              id: player['id'] as int,
+              name: player['name'] as String,
+              gender: PlayerGender.fromValue(player['gender'] as String),
+              level: PlayerLevel.fromValue(player['level'] as String),
+              createdAt: DateTime.parse(player['createdAt'] as String),
+              updatedAt: DateTime.parse(player['updatedAt'] as String),
+            ),
+          ),
+        ),
+        createdAt: DateTime.parse(secondTeamSource['createdAt'] as String),
+        updatedAt: DateTime.parse(secondTeamSource['updatedAt'] as String),
+      ),
+      scores: List.from(
+        (json.decode(data.scores) as List).map(
+          (source) => ScoreEntity(
+            id: source['id'] as int,
+            matchId: source['matchId'] as int,
+            teamId: source['teamId'] as int,
+            createdAt: DateTime.parse(source['createdAt'] as String),
+            updatedAt: DateTime.parse(source['updatedAt'] as String),
+          ),
+        ),
+      ),
+      halfScoreToEliminate: data.halfScoreToEliminate,
+      ended: data.ended,
+      createdAt: DateTime.parse(data.createdAt),
+      updatedAt: DateTime.parse(data.updatedAt),
+      endedAt: switch (data.endedAt.isEmpty) {
+        true => null,
+        false => DateTime.parse(data.endedAt),
+      },
     );
   }
 
@@ -103,11 +165,19 @@ abstract class MatchEntity with _$MatchEntity {
   bool get isTiedWhenByOne => firstTeamScore == secondTeamScore && isByOne;
 
   bool get firstTeamWon {
-    return firstTeamScore == maxScore || (firstTeamScore == (maxScore / 2) && secondTeamScore == 0);
+    if (halfScoreToEliminate) {
+      return firstTeamScore == maxScore || (firstTeamScore == (maxScore / 2) && secondTeamScore == 0);
+    }
+
+    return firstTeamScore == maxScore;
   }
 
   bool get secondTeamWon {
-    return secondTeamScore == maxScore || (secondTeamScore == (maxScore / 2) && firstTeamScore == 0);
+    if (halfScoreToEliminate) {
+      return secondTeamScore == maxScore || (secondTeamScore == (maxScore / 2) && firstTeamScore == 0);
+    }
+
+    return secondTeamScore == maxScore;
   }
 
   bool get isEmpty => id == -1;

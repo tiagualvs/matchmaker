@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
+import 'package:matchmaker/src/data/services/database/database.dart';
 
 part 'team_entity.freezed.dart';
 part 'team_entity.g.dart';
@@ -10,25 +11,23 @@ abstract class TeamEntity with _$TeamEntity {
 
   const factory TeamEntity({
     required int id,
-    @JsonKey(name: 'event_id') required int eventId,
+    required int eventId,
     required String name,
     required List<PlayerEntity> players,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    required DateTime createdAt,
+    required DateTime updatedAt,
   }) = _TeamEntity;
 
   factory TeamEntity.fromJson(Map<String, dynamic> json) => _$TeamEntityFromJson(json);
 
-  factory TeamEntity.fromSqlite(Map<String, dynamic> row) {
+  factory TeamEntity.fromDrift(EventTeamData data) {
     return TeamEntity(
-      id: row['id'] as int,
-      eventId: row['event_id'] as int,
-      name: row['name'] as String,
-      players: List.from(
-        (row['players'] as List?)?.map((playerData) => PlayerEntity.fromSqlite(playerData)) ?? [],
-      ),
-      createdAt: DateTime.parse(row['created_at'] as String),
-      updatedAt: DateTime.parse(row['updated_at'] as String),
+      id: data.id,
+      eventId: data.eventId,
+      name: data.name,
+      players: [],
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
     );
   }
 

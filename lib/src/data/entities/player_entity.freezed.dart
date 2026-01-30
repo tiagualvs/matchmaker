@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PlayerEntity {
 
- int get id; String get name; PlayerGender get gender; PlayerLevel get level;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ int get id; String get name; PlayerGender get gender; PlayerLevel get level; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of PlayerEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $PlayerEntityCopyWith<$Res>  {
   factory $PlayerEntityCopyWith(PlayerEntity value, $Res Function(PlayerEntity) _then) = _$PlayerEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, PlayerGender gender, PlayerLevel level,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ int id, String name, PlayerGender gender, PlayerLevel level, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -158,7 +158,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  PlayerGender gender,  PlayerLevel level, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  PlayerGender gender,  PlayerLevel level,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlayerEntity() when $default != null:
 return $default(_that.id,_that.name,_that.gender,_that.level,_that.createdAt,_that.updatedAt);case _:
@@ -179,7 +179,7 @@ return $default(_that.id,_that.name,_that.gender,_that.level,_that.createdAt,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  PlayerGender gender,  PlayerLevel level, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  PlayerGender gender,  PlayerLevel level,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _PlayerEntity():
 return $default(_that.id,_that.name,_that.gender,_that.level,_that.createdAt,_that.updatedAt);case _:
@@ -199,7 +199,7 @@ return $default(_that.id,_that.name,_that.gender,_that.level,_that.createdAt,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  PlayerGender gender,  PlayerLevel level, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  PlayerGender gender,  PlayerLevel level,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _PlayerEntity() when $default != null:
 return $default(_that.id,_that.name,_that.gender,_that.level,_that.createdAt,_that.updatedAt);case _:
@@ -214,15 +214,15 @@ return $default(_that.id,_that.name,_that.gender,_that.level,_that.createdAt,_th
 @JsonSerializable()
 
 class _PlayerEntity extends PlayerEntity {
-  const _PlayerEntity({required this.id, required this.name, required this.gender, this.level = PlayerLevel.basic, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt}): super._();
+  const _PlayerEntity({required this.id, required this.name, required this.gender, this.level = PlayerLevel.basic, required this.createdAt, required this.updatedAt}): super._();
   factory _PlayerEntity.fromJson(Map<String, dynamic> json) => _$PlayerEntityFromJson(json);
 
 @override final  int id;
 @override final  String name;
 @override final  PlayerGender gender;
 @override@JsonKey() final  PlayerLevel level;
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override final  DateTime createdAt;
+@override final  DateTime updatedAt;
 
 /// Create a copy of PlayerEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -257,7 +257,7 @@ abstract mixin class _$PlayerEntityCopyWith<$Res> implements $PlayerEntityCopyWi
   factory _$PlayerEntityCopyWith(_PlayerEntity value, $Res Function(_PlayerEntity) _then) = __$PlayerEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, PlayerGender gender, PlayerLevel level,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ int id, String name, PlayerGender gender, PlayerLevel level, DateTime createdAt, DateTime updatedAt
 });
 
 

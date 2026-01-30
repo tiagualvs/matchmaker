@@ -24,18 +24,18 @@ _EventEntity _$EventEntityFromJson(Map<String, dynamic> json) => _EventEntity(
           ?.map((e) => (e as num).toInt())
           .toList() ??
       const [],
-  maxScore: (json['max_score'] as num?)?.toInt() ?? 12,
-  maxPlayerPerTeam: (json['max_player_per_team'] as num?)?.toInt() ?? 4,
-  balancedByGender: json['balanced_by_gender'] as bool? ?? true,
-  balancedByLevel: json['balanced_by_level'] as bool? ?? true,
-  maxWinsInARow: (json['max_wins_in_a_row'] as num?)?.toInt() ?? 0,
-  halfScoreToEliminate: json['half_score_to_eliminate'] as bool? ?? false,
+  maxScore: (json['maxScore'] as num?)?.toInt() ?? 12,
+  maxPlayerPerTeam: (json['maxPlayerPerTeam'] as num?)?.toInt() ?? 4,
+  balancedByGender: json['balancedByGender'] as bool? ?? true,
+  balancedByLevel: json['balancedByLevel'] as bool? ?? true,
+  maxWinsInARow: (json['maxWinsInARow'] as num?)?.toInt() ?? 0,
+  halfScoreToEliminate: json['halfScoreToEliminate'] as bool? ?? false,
   ended: json['ended'] as bool? ?? false,
-  createdAt: DateTime.parse(json['created_at'] as String),
-  updatedAt: DateTime.parse(json['updated_at'] as String),
-  endedAt: json['ended_at'] == null
+  createdAt: DateTime.parse(json['createdAt'] as String),
+  updatedAt: DateTime.parse(json['updatedAt'] as String),
+  endedAt: json['endedAt'] == null
       ? null
-      : DateTime.parse(json['ended_at'] as String),
+      : DateTime.parse(json['endedAt'] as String),
 );
 
 Map<String, dynamic> _$EventEntityToJson(_EventEntity instance) =>
@@ -45,14 +45,14 @@ Map<String, dynamic> _$EventEntityToJson(_EventEntity instance) =>
       'teams': instance.teams,
       'matches': instance.matches,
       'queue': instance.queue,
-      'max_score': instance.maxScore,
-      'max_player_per_team': instance.maxPlayerPerTeam,
-      'balanced_by_gender': instance.balancedByGender,
-      'balanced_by_level': instance.balancedByLevel,
-      'max_wins_in_a_row': instance.maxWinsInARow,
-      'half_score_to_eliminate': instance.halfScoreToEliminate,
+      'maxScore': instance.maxScore,
+      'maxPlayerPerTeam': instance.maxPlayerPerTeam,
+      'balancedByGender': instance.balancedByGender,
+      'balancedByLevel': instance.balancedByLevel,
+      'maxWinsInARow': instance.maxWinsInARow,
+      'halfScoreToEliminate': instance.halfScoreToEliminate,
       'ended': instance.ended,
-      'created_at': instance.createdAt.toIso8601String(),
-      'updated_at': instance.updatedAt.toIso8601String(),
-      'ended_at': instance.endedAt?.toIso8601String(),
+      'createdAt': instance.createdAt.toIso8601String(),
+      'updatedAt': instance.updatedAt.toIso8601String(),
+      'endedAt': instance.endedAt?.toIso8601String(),
     };

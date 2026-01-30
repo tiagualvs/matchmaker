@@ -1,31 +1,30 @@
-import 'package:matchmaker/src/app_database.dart';
+import 'package:drift/drift.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
-import 'package:matchmaker/src/data/entities/match_entity.dart';
-import 'package:matchmaker/src/data/entities/player_entity.dart';
-import 'package:matchmaker/src/data/entities/team_entity.dart';
+import 'package:matchmaker/src/data/services/database/database.dart';
 import 'package:result/result.dart';
-import 'package:sqlite3/sqlite3.dart' hide Session;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'events_repository.dart';
 
 class EventsLocalRepository implements EventsRepository {
   late final Session? _session;
-  late final Database _db;
+  late final AppDatabase _db;
 
   EventsLocalRepository(AppDatabase app) {
-    _session = app.remote.auth.currentSession;
-    _db = app.local;
+    _session = Supabase.instance.client.auth.currentSession;
+    _db = app;
   }
 
   @override
   AsyncResult<List<EventEntity>> findMany() async {
     try {
-      final result = _db.select('SELECT * FROM vw_events_full ORDER BY created_at DESC');
+      final userId = _session?.user.id;
 
-      return Result.ok(result.map(EventEntity.fromSqlite).toList());
-    } on SqliteException catch (e) {
-      return Result.error(e);
+      if (userId == null) {
+        return Result.error(Exception('Você precisa estar autenticado para realizar esta ação!'));
+      }
+
+      return await _db.getEventsWithLastMatch(userId);
     } on Exception catch (e) {
       return Result.error(e);
     }
@@ -34,15 +33,7 @@ class EventsLocalRepository implements EventsRepository {
   @override
   AsyncResult<EventEntity> findOne(int id) async {
     try {
-      final result = _db.select('SELECT * FROM vw_events_full WHERE id = ?', [id]);
-
-      if (result.isEmpty) {
-        return Result.error(Exception('Event not found'));
-      }
-
-      return Result.ok(EventEntity.fromSqlite(result.first));
-    } on SqliteException catch (e) {
-      return Result.error(e);
+      return await _db.getEventWithAllData(id);
     } on Exception catch (e) {
       return Result.error(e);
     }
@@ -57,83 +48,99 @@ class EventsLocalRepository implements EventsRepository {
         return Result.error(Exception('Você precisa estar autenticado para realizar esta ação!'));
       }
 
-      final result0 = _db.select(
-        'INSERT INTO tb_events (user_id, name, max_score, half_score_to_eliminate, max_player_per_team, balanced_by_gender, balanced_by_level, max_wins_in_a_row) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *',
-        [
-          userId,
-          params.name,
-          params.maxScore,
-          params.halfScoreToEliminate ? 1 : 0,
-          params.maxPlayerPerTeam,
-          params.balancedByGender ? 1 : 0,
-          params.balancedByLevel ? 1 : 0,
-          params.maxWinsInARow,
-        ],
+      return await _db.transaction(
+        () async {
+          final event = await _db
+              .into(_db.event)
+              .insertReturning(
+                EventCompanion.insert(
+                  userId: userId,
+                  name: params.name,
+                  maxScore: Value(params.maxScore),
+                  halfScoreToEliminate: Value(params.halfScoreToEliminate),
+                  maxPlayerPerTeam: Value(params.maxPlayerPerTeam),
+                  balancedByGender: Value(params.balancedByGender),
+                  balancedByLevel: Value(params.balancedByLevel),
+                  maxWinsInARow: Value(params.maxWinsInARow),
+                ),
+              );
+
+          final teamIds = <int>[];
+
+          for (final t in params.teams) {
+            final teamId = await _db
+                .into(_db.eventTeam)
+                .insert(
+                  EventTeamCompanion.insert(
+                    userId: userId,
+                    eventId: event.id,
+                    name: t.name,
+                  ),
+                );
+
+            for (final p in t.players) {
+              final player = await _db
+                  .into(_db.player)
+                  .insertReturning(
+                    PlayerCompanion.insert(
+                      userId: userId,
+                      name: p.name,
+                      gender: p.gender.value,
+                      level: p.level.value,
+                    ),
+                    onConflict: DoUpdate(
+                      (old) => PlayerCompanion.custom(id: old.id),
+                      target: [_db.player.name],
+                    ),
+                  );
+
+              await _db
+                  .into(_db.eventTeamPlayer)
+                  .insert(
+                    EventTeamPlayerCompanion.insert(
+                      userId: userId,
+                      teamId: teamId,
+                      playerId: player.id,
+                    ),
+                  );
+            }
+
+            teamIds.add(teamId);
+          }
+
+          final starterTeams = teamIds.take(2);
+
+          await _db
+              .into(_db.eventMatch)
+              .insert(
+                EventMatchCompanion.insert(
+                  userId: userId,
+                  eventId: event.id,
+                  name: 'Partida #1',
+                  firstTeamId: starterTeams.first,
+                  secondTeamId: starterTeams.last,
+                  maxScore: event.maxScore,
+                  halfScoreToEliminate: event.halfScoreToEliminate,
+                ),
+              );
+
+          final queue = teamIds.skip(2).join(',');
+
+          final updateQuery = _db.update(_db.event)..where((tb) => tb.id.equals(event.id));
+
+          await updateQuery.write(EventCompanion(queue: Value(queue)));
+
+          final result = await (_db.select(
+            _db.eventWithAllData,
+          )..where((tb) => tb.id.equals(event.id))).getSingleOrNull();
+
+          if (result == null) {
+            return Result.error(Exception('Evento não encontrado!'));
+          }
+
+          return Result.ok(EventEntity.withAllData(result));
+        },
       );
-
-      final event = EventEntity.fromSqlite(result0.first);
-
-      final teams = <TeamEntity>[];
-
-      for (final t in params.teams) {
-        final result1 = _db.select(
-          'INSERT INTO tb_event_teams (user_id, event_id, name) VALUES (?, ?, ?) RETURNING *',
-          [userId, event.id, t.name],
-        );
-
-        final team = TeamEntity.fromSqlite(result1.first);
-
-        final players = <PlayerEntity>[];
-
-        for (final p in t.players) {
-          final result2 = _db.select(
-            'INSERT INTO tb_players (user_id, name, gender, level) VALUES (?, ?, ?, ?) ON CONFLICT(name) DO UPDATE SET name = excluded.name RETURNING *',
-            [userId, p.name, p.gender.value, p.level.value],
-          );
-
-          final player = PlayerEntity.fromSqlite(result2.first);
-
-          _db.execute(
-            'INSERT INTO tb_event_team_players (user_id, team_id, player_id) VALUES (?, ?, ?)',
-            [userId, team.id, player.id],
-          );
-
-          players.add(player);
-        }
-
-        teams.add(team.copyWith(players: players));
-      }
-
-      final starterTeams = teams.take(2);
-
-      final result3 = _db.select(
-        'INSERT INTO tb_event_matches (user_id, name, event_id, first_team_id, second_team_id, max_score, half_score_to_eliminate) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *',
-        [
-          userId,
-          'Partida #1',
-          event.id,
-          starterTeams.first.id,
-          starterTeams.last.id,
-          event.maxScore,
-          event.halfScoreToEliminate ? 1 : 0,
-        ],
-      );
-
-      final match = MatchEntity.fromSqlite(result3.first);
-
-      final enqueue = teams.skip(2).map((team) => team.id).toList();
-
-      _db.execute('UPDATE tb_events SET queue = ? WHERE id = ?', [enqueue.join(','), event.id]);
-
-      return Result.ok(
-        event.copyWith(
-          teams: teams,
-          matches: [match],
-          queue: enqueue,
-        ),
-      );
-    } on SqliteException catch (e) {
-      return Result.error(e);
     } on Exception catch (e) {
       return Result.error(e);
     }
@@ -142,30 +149,39 @@ class EventsLocalRepository implements EventsRepository {
   @override
   AsyncResult<EventEntity> updateOne(int id, UpdateOneEventParams params) async {
     try {
-      final values = <String, dynamic>{
-        if (params.name != null) 'name': params.name,
-        if (params.maxScore != null) 'max_score': params.maxScore,
-        if (params.halfScoreToEliminate != null) 'half_score_to_eliminate': params.halfScoreToEliminate == true ? 1 : 0,
-        if (params.maxPlayerPerTeam != null) 'max_player_per_team': params.maxPlayerPerTeam,
-        if (params.balancedByGender != null) 'balanced_by_gender': params.balancedByGender == true ? 1 : 0,
-        if (params.balancedByLevel != null) 'balanced_by_level': params.balancedByLevel == true ? 1 : 0,
-        if (params.maxWinsInARow != null) 'max_wins_in_a_row': params.maxWinsInARow,
-        if (params.ended != null) 'ended': params.ended == true ? 1 : 0,
-        if (params.ended != null && params.ended == true) 'ended_at': DateTime.now().toIso8601String(),
-      };
+      return await _db.transaction(() async {
+        final updateQuery = _db.update(_db.event)..where((tb) => tb.id.equals(id));
 
-      if (values.isEmpty) {
-        return Result.error(Exception('Nenhum campo para atualizar!'));
-      }
+        await updateQuery.write(
+          EventCompanion(
+            name: params.name != null ? Value(params.name!) : const Value.absent(),
+            maxScore: params.maxScore != null ? Value(params.maxScore!) : const Value.absent(),
+            halfScoreToEliminate: params.halfScoreToEliminate != null
+                ? Value(params.halfScoreToEliminate!)
+                : const Value.absent(),
+            maxPlayerPerTeam: params.maxPlayerPerTeam != null ? Value(params.maxPlayerPerTeam!) : const Value.absent(),
+            balancedByGender: params.balancedByGender != null ? Value(params.balancedByGender!) : const Value.absent(),
+            balancedByLevel: params.balancedByLevel != null ? Value(params.balancedByLevel!) : const Value.absent(),
+            maxWinsInARow: params.maxWinsInARow != null ? Value(params.maxWinsInARow!) : const Value.absent(),
+            // queue: ,
+            ended: params.ended != null ? Value(params.ended!) : const Value.absent(),
+            endedAt: params.ended != null && params.ended == true
+                ? Value(DateTime.now().toUtc())
+                : const Value.absent(),
+            updatedAt: Value(DateTime.now().toUtc()),
+          ),
+        );
 
-      final result = _db.select(
-        'UPDATE tb_events SET ${values.keys.map((key) => '$key = ?').join(', ')} WHERE id = ? RETURNING *',
-        [...values.values, id],
-      );
+        final result = await (_db.select(
+          _db.eventWithAllData,
+        )..where((tb) => tb.id.equals(id))).getSingleOrNull();
 
-      return Result.ok(EventEntity.fromSqlite(result.first));
-    } on SqliteException catch (e) {
-      return Result.error(e);
+        if (result == null) {
+          return Result.error(Exception('Evento não encontrado!'));
+        }
+
+        return Result.ok(EventEntity.withAllData(result));
+      });
     } on Exception catch (e) {
       return Result.error(e);
     }
@@ -174,11 +190,9 @@ class EventsLocalRepository implements EventsRepository {
   @override
   AsyncResult<void> deleteOne(int id) async {
     try {
-      _db.execute('DELETE FROM tb_events WHERE id = ?', [id]);
+      await (_db.delete(_db.event)..where((tb) => tb.id.equals(id))).go();
 
       return const Result.ok(null);
-    } on SqliteException catch (e) {
-      return Result.error(e);
     } on Exception catch (e) {
       return Result.error(e);
     }

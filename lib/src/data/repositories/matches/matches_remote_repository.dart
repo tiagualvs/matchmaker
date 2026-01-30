@@ -23,10 +23,6 @@ class MatchesRepositoryImp implements MatchesRepository {
       return Result.error(Exception('Match not found'));
     }
 
-    await _client.from('tb_event_queue').delete().eq('team_id', params.dequeue);
-
-    await _client.from('tb_event_queue').insert({'event_id': params.eventId, 'team_id': params.enqueue});
-
     return Result.ok(MatchEntity.fromSupabase(result[0]));
   }
 
@@ -57,7 +53,7 @@ class MatchesRepositoryImp implements MatchesRepository {
   }
 
   @override
-  AsyncResult<MatchEntity> updateManyByEventId(int eventId, UpdateOneMatchParams params) {
+  AsyncResult<void> updateManyByEventId(int eventId, UpdateOneMatchParams params) {
     throw UnimplementedError();
   }
 

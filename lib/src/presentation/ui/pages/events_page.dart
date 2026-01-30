@@ -49,11 +49,9 @@ class _EventsPageState extends State<EventsPage> {
               icon: const Icon(Icons.event_rounded),
               label: const Text('Criar novo evento'),
               onPressed: () async {
-                final hasCreated = await context.pushNamed<bool>('createEvent');
+                await context.pushNamed<bool>('createEvent');
 
-                if (hasCreated ?? false) {
-                  await controller.getEventsList();
-                }
+                await controller.getEventsList();
               },
             ),
           ],
@@ -102,7 +100,7 @@ class _EventsPageState extends State<EventsPage> {
                       await controller.getEventsList();
                     },
                     title: Text(event.name),
-                    subtitle: switch (event.ended) {
+                    subtitle: switch (event.ended && event.endedAt != null) {
                       true => Text(
                         'Evento finalizado em ${DateFormat("dd 'de' MMM 'de' yyyy 'às' HH:mm").format(event.endedAt!)}',
                       ),

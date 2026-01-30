@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TeamEntity {
 
- int get id;@JsonKey(name: 'event_id') int get eventId; String get name; List<PlayerEntity> get players;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ int get id; int get eventId; String get name; List<PlayerEntity> get players; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of TeamEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $TeamEntityCopyWith<$Res>  {
   factory $TeamEntityCopyWith(TeamEntity value, $Res Function(TeamEntity) _then) = _$TeamEntityCopyWithImpl;
 @useResult
 $Res call({
- int id,@JsonKey(name: 'event_id') int eventId, String name, List<PlayerEntity> players,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ int id, int eventId, String name, List<PlayerEntity> players, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -158,7 +158,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'event_id')  int eventId,  String name,  List<PlayerEntity> players, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int eventId,  String name,  List<PlayerEntity> players,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TeamEntity() when $default != null:
 return $default(_that.id,_that.eventId,_that.name,_that.players,_that.createdAt,_that.updatedAt);case _:
@@ -179,7 +179,7 @@ return $default(_that.id,_that.eventId,_that.name,_that.players,_that.createdAt,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'event_id')  int eventId,  String name,  List<PlayerEntity> players, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int eventId,  String name,  List<PlayerEntity> players,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _TeamEntity():
 return $default(_that.id,_that.eventId,_that.name,_that.players,_that.createdAt,_that.updatedAt);case _:
@@ -199,7 +199,7 @@ return $default(_that.id,_that.eventId,_that.name,_that.players,_that.createdAt,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'event_id')  int eventId,  String name,  List<PlayerEntity> players, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int eventId,  String name,  List<PlayerEntity> players,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _TeamEntity() when $default != null:
 return $default(_that.id,_that.eventId,_that.name,_that.players,_that.createdAt,_that.updatedAt);case _:
@@ -214,11 +214,11 @@ return $default(_that.id,_that.eventId,_that.name,_that.players,_that.createdAt,
 @JsonSerializable()
 
 class _TeamEntity extends TeamEntity {
-  const _TeamEntity({required this.id, @JsonKey(name: 'event_id') required this.eventId, required this.name, required final  List<PlayerEntity> players, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt}): _players = players,super._();
+  const _TeamEntity({required this.id, required this.eventId, required this.name, required final  List<PlayerEntity> players, required this.createdAt, required this.updatedAt}): _players = players,super._();
   factory _TeamEntity.fromJson(Map<String, dynamic> json) => _$TeamEntityFromJson(json);
 
 @override final  int id;
-@override@JsonKey(name: 'event_id') final  int eventId;
+@override final  int eventId;
 @override final  String name;
  final  List<PlayerEntity> _players;
 @override List<PlayerEntity> get players {
@@ -227,8 +227,8 @@ class _TeamEntity extends TeamEntity {
   return EqualUnmodifiableListView(_players);
 }
 
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override final  DateTime createdAt;
+@override final  DateTime updatedAt;
 
 /// Create a copy of TeamEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -263,7 +263,7 @@ abstract mixin class _$TeamEntityCopyWith<$Res> implements $TeamEntityCopyWith<$
   factory _$TeamEntityCopyWith(_TeamEntity value, $Res Function(_TeamEntity) _then) = __$TeamEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id,@JsonKey(name: 'event_id') int eventId, String name, List<PlayerEntity> players,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ int id, int eventId, String name, List<PlayerEntity> players, DateTime createdAt, DateTime updatedAt
 });
 
 

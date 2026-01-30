@@ -1,18 +1,18 @@
-import 'package:matchmaker/src/app_database.dart';
+import 'package:drift/drift.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
+import 'package:matchmaker/src/data/services/database/database.dart';
 import 'package:result/result.dart';
-import 'package:sqlite3/sqlite3.dart' hide Session;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'matches_repository.dart';
 
 class MatchesLocalRepository implements MatchesRepository {
-  late final Database _db;
+  late final AppDatabase _db;
   late final Session? _session;
 
   MatchesLocalRepository(AppDatabase app) {
-    _db = app.local;
-    _session = app.remote.auth.currentSession;
+    _session = Supabase.instance.client.auth.currentSession;
+    _db = app;
   }
 
   @override
@@ -23,112 +23,104 @@ class MatchesLocalRepository implements MatchesRepository {
       return Result.error(Exception('Usuário não autenticado!'));
     }
 
-    final result0 = _db.select(
-      'INSERT INTO tb_event_matches (user_id, event_id, name, first_team_id, second_team_id, max_score, half_score_to_eliminate) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *',
-      [
-        userId,
-        params.eventId,
-        params.name,
-        params.firstTeamId,
-        params.secondTeamId,
-        params.maxScore,
-        params.halfScoreToEliminate,
-      ],
-    );
+    try {
+      return await _db.transaction(() async {
+        final matchId = await _db
+            .into(_db.eventMatch)
+            .insert(
+              EventMatchCompanion.insert(
+                userId: userId,
+                eventId: params.eventId,
+                name: params.name,
+                firstTeamId: params.firstTeamId,
+                secondTeamId: params.secondTeamId,
+                maxScore: params.maxScore,
+                halfScoreToEliminate: params.halfScoreToEliminate,
+              ),
+            );
 
-    if (result0.isEmpty) {
-      return Result.error(Exception('Match not found'));
+        await (_db.update(_db.event)..where((tb) => tb.id.equals(params.eventId))).write(
+          EventCompanion(
+            queue: Value(params.queue.join(',')),
+            updatedAt: Value(DateTime.now().toUtc()),
+          ),
+        );
+
+        final result = await (_db.select(_db.matchWithAllData)..where((tb) => tb.id.equals(matchId))).getSingleOrNull();
+
+        if (result == null) {
+          return Result.error(Exception('Partida não encontrada!'));
+        }
+
+        return Result.ok(MatchEntity.withAllData(result));
+      });
+    } on Exception catch (e) {
+      return Result.error(e);
     }
-
-    final result1 = _db.select('SELECT queue FROM tb_events WHERE id = ?', [params.eventId]);
-
-    final queue = (result1.first['queue'] as String).split(',').map(int.parse).toList();
-
-    params.dequeue.forEach(queue.remove);
-
-    if (params.enqueue.length == 2) {
-      queue.insert(0, params.enqueue.first);
-      queue.add(params.enqueue.last);
-    } else {
-      queue.add(params.enqueue.first);
-    }
-
-    _db.execute('UPDATE tb_events SET queue = ? WHERE id = ?', [queue.join(','), params.eventId]);
-
-    final match = MatchEntity.fromSqlite(result0[0]);
-
-    return findOne(match.id);
   }
 
   @override
   AsyncResult<MatchEntity> findOne(int id) async {
-    final result = _db.select(
-      'SELECT * FROM vw_event_match_full WHERE id = ? ORDER BY created_at DESC',
-      [id],
-    );
-
-    if (result.isEmpty) {
-      return Result.error(Exception('Match not found'));
+    try {
+      return await _db.getMatchWithAllData(id);
+    } on Exception catch (e) {
+      return Result.error(e);
     }
-
-    return Result.ok(MatchEntity.fromSqlite(result[0]));
   }
 
   @override
   AsyncResult<MatchEntity> updateOne(int id, UpdateOneMatchParams params) async {
-    final values = <String, dynamic>{
-      if (params.name != null) 'name': params.name,
-      if (params.maxScore != null) 'max_score': params.maxScore,
-      if (params.halfScoreToEliminate != null) 'half_score_to_eliminate': params.halfScoreToEliminate == true ? 1 : 0,
-      if (params.ended != null) 'ended': params.ended == true ? 1 : 0,
-      if (params.ended != null && params.ended == true) 'ended_at': DateTime.now().toIso8601String(),
-    };
+    try {
+      return await _db.transaction(() async {
+        await (_db.update(_db.eventMatch)..where((tb) => tb.id.equals(id))).write(
+          EventMatchCompanion(
+            name: params.name != null ? Value(params.name!) : const Value.absent(),
+            maxScore: params.maxScore != null ? Value(params.maxScore!) : const Value.absent(),
+            halfScoreToEliminate: params.halfScoreToEliminate != null
+                ? Value(params.halfScoreToEliminate!)
+                : const Value.absent(),
+            ended: params.ended != null ? Value(params.ended!) : const Value.absent(),
+            endedAt: params.ended != null && params.ended == true
+                ? Value(DateTime.now().toUtc())
+                : const Value.absent(),
+            updatedAt: Value(DateTime.now().toUtc()),
+          ),
+        );
 
-    if (values.isEmpty) {
-      return Result.error(Exception('No values to update'));
+        final result = await (_db.select(_db.matchWithAllData)..where((tb) => tb.id.equals(id))).getSingleOrNull();
+
+        if (result == null) {
+          return Result.error(Exception('Partida não encontrada!'));
+        }
+
+        return Result.ok(MatchEntity.withAllData(result));
+      });
+    } on Exception catch (e) {
+      return Result.error(e);
     }
-
-    values['updated_at'] = DateTime.now().toIso8601String();
-
-    _db.select(
-      'UPDATE tb_event_matches SET ${values.keys.map((key) => '$key = ?').join(', ')} WHERE id = ? RETURNING *',
-      [
-        ...values.values,
-        id,
-      ],
-    );
-
-    return findOne(id);
   }
 
   @override
-  AsyncResult<MatchEntity> updateManyByEventId(int eventId, UpdateOneMatchParams params) async {
+  AsyncResult<void> updateManyByEventId(int eventId, UpdateOneMatchParams params) async {
     try {
-      final values = <String, dynamic>{
-        if (params.name != null) 'name': params.name,
-        if (params.maxScore != null) 'max_score': params.maxScore,
-        if (params.halfScoreToEliminate != null) 'half_score_to_eliminate': params.halfScoreToEliminate == true ? 1 : 0,
-        if (params.ended != null) 'ended': params.ended == true ? 1 : 0,
-        if (params.ended != null && params.ended == true) 'ended_at': DateTime.now().toIso8601String(),
-      };
+      return await _db.transaction(() async {
+        await (_db.update(_db.eventMatch)..where((tb) => tb.eventId.equals(eventId))).write(
+          EventMatchCompanion(
+            name: params.name != null ? Value(params.name!) : const Value.absent(),
+            maxScore: params.maxScore != null ? Value(params.maxScore!) : const Value.absent(),
+            halfScoreToEliminate: params.halfScoreToEliminate != null
+                ? Value(params.halfScoreToEliminate!)
+                : const Value.absent(),
+            ended: params.ended != null ? Value(params.ended!) : const Value.absent(),
+            endedAt: params.ended != null && params.ended == true
+                ? Value(DateTime.now().toUtc())
+                : const Value.absent(),
+            updatedAt: Value(DateTime.now().toUtc()),
+          ),
+        );
 
-      if (values.isEmpty) {
-        return Result.error(Exception('No values to update'));
-      }
-
-      values['updated_at'] = DateTime.now().toIso8601String();
-
-      _db.select(
-        'UPDATE tb_event_matches SET ${values.keys.map((key) => '$key = ?').join(', ')} WHERE event_id = ?',
-        [
-          ...values.values,
-          eventId,
-        ],
-      );
-
-      return findOne(eventId);
-    } on SqliteException catch (e) {
-      return Result.error(e);
+        return const Result.ok(null);
+      });
     } on Exception catch (e) {
       return Result.error(e);
     }
@@ -137,10 +129,8 @@ class MatchesLocalRepository implements MatchesRepository {
   @override
   AsyncResult<void> deleteOne(int id) async {
     try {
-      _db.execute('DELETE FROM tb_event_matches WHERE id = ?', [id]);
+      await (_db.delete(_db.eventMatch)..where((tb) => tb.id.equals(id))).go();
       return const Result.ok(null);
-    } on SqliteException catch (e) {
-      return Result.error(e);
     } on Exception catch (e) {
       return Result.error(e);
     }
@@ -149,10 +139,8 @@ class MatchesLocalRepository implements MatchesRepository {
   @override
   AsyncResult<void> deleteManyByEventId(int eventId) async {
     try {
-      _db.execute('DELETE FROM tb_event_matches WHERE event_id = ?', [eventId]);
+      await (_db.delete(_db.eventMatch)..where((tb) => tb.eventId.equals(eventId))).go();
       return const Result.ok(null);
-    } on SqliteException catch (e) {
-      return Result.error(e);
     } on Exception catch (e) {
       return Result.error(e);
     }
