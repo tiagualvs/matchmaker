@@ -1,7 +1,6 @@
 CREATE VIEW IF NOT EXISTS event_with_all_data AS
 SELECT
   CAST(e.id AS INT) AS id,
-  CAST(e.user_id AS TEXT) AS userId,
   CAST(e.name AS TEXT) AS name,
   CAST(e.max_score AS INT) AS maxScore,
   CAST(e.max_player_per_team AS INT) AS maxPlayerPerTeam,
@@ -98,7 +97,6 @@ FROM tb_events e;
 CREATE VIEW IF NOT EXISTS event_with_last_match AS
 SELECT
   CAST(e.id AS INT) AS id,
-  CAST(e.user_id AS TEXT) AS userId,
   CAST(e.name AS TEXT) AS name,
   CAST(e.max_score AS INT) AS maxScore,
   CAST(e.max_player_per_team AS INT) AS maxPlayerPerTeam,

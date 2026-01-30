@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
+import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
@@ -33,6 +34,7 @@ class EventController extends ChangeNotifier {
       TeamEntity secondTeam,
     )
     onMaxWinsInARow,
+    required Future<void> Function(TeamEntity team, List<PlayerEntity> suggestions) onNeedsJoker,
     void Function(String error)? onError,
   }) async {
     _loading = true;
@@ -93,6 +95,8 @@ class EventController extends ChangeNotifier {
           } else {
             final nextId = event.queue.first;
 
+            final queue = [...event.queue.skip(1), loser.id];
+
             final firstTeam = lastEndedMatch.firstTeam.id == winner.id
                 ? winner
                 : event.teams.firstWhere((team) => team.id == nextId);
@@ -100,7 +104,15 @@ class EventController extends ChangeNotifier {
                 ? winner
                 : event.teams.firstWhere((team) => team.id == nextId);
 
-            final queue = [...event.queue.skip(1), loser.id];
+            if (firstTeam.players.length != _event.maxPlayerPerTeam) {
+              if (_event.balancedByGender) {}
+
+              await onNeedsJoker(firstTeam, []);
+            }
+
+            if (secondTeam.players.length != _event.maxPlayerPerTeam) {
+              await onNeedsJoker(secondTeam, []);
+            }
 
             final result1 = await _matchesRepository.insertOne(
               InsertOneMatchParams(

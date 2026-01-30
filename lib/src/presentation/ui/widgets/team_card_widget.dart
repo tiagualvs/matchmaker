@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 class TeamCardWidget extends StatefulWidget {
   const TeamCardWidget({
     super.key,
     required this.team,
     this.initiallyExpanded = false,
+    this.showGenders = true,
+    this.showLevels = true,
   });
 
   final bool initiallyExpanded;
+  final bool showGenders;
+  final bool showLevels;
   final TeamEntity team;
 
   @override
@@ -19,6 +24,17 @@ class TeamCardWidget extends StatefulWidget {
 
 class _TeamCardWidgetState extends State<TeamCardWidget> {
   final ExpansibleController controller = ExpansibleController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.initiallyExpanded) {
+        controller.expand();
+      }
+    });
+  }
 
   @override
   void didUpdateWidget(covariant TeamCardWidget oldWidget) {
@@ -73,14 +89,16 @@ class _TeamCardWidgetState extends State<TeamCardWidget> {
               child: Row(
                 spacing: 8.0,
                 children: [
-                  SizedBox(
-                    width: 24.0,
-                    child: switch (player.gender) {
-                      PlayerGender.male => const Icon(Icons.male, color: Colors.blue),
-                      PlayerGender.female => const Icon(Icons.female, color: Colors.pink),
-                      _ => const Icon(Icons.info_outline_rounded),
-                    },
-                  ),
+                  if (widget.showGenders) ...[
+                    SizedBox(
+                      width: 24.0,
+                      child: switch (player.gender) {
+                        PlayerGender.male => const Icon(Symbols.male, color: Colors.blue),
+                        PlayerGender.female => const Icon(Symbols.female, color: Colors.pink),
+                        _ => const Icon(Symbols.agender),
+                      },
+                    ),
+                  ],
                   Expanded(
                     child: Text(
                       player.name,
@@ -88,20 +106,22 @@ class _TeamCardWidgetState extends State<TeamCardWidget> {
                       style: context.textTheme.bodyMedium,
                     ),
                   ),
-                  switch (player.level) {
-                    PlayerLevel.basic => const Text(
-                      '⭐',
-                      textAlign: .end,
-                    ),
-                    PlayerLevel.intermediate => const Text(
-                      '⭐⭐',
-                      textAlign: .end,
-                    ),
-                    PlayerLevel.advanced => const Text(
-                      '⭐⭐⭐',
-                      textAlign: .end,
-                    ),
-                  },
+                  if (widget.showLevels) ...[
+                    switch (player.level) {
+                      PlayerLevel.basic => const Text(
+                        '⭐',
+                        textAlign: .end,
+                      ),
+                      PlayerLevel.intermediate => const Text(
+                        '⭐⭐',
+                        textAlign: .end,
+                      ),
+                      PlayerLevel.advanced => const Text(
+                        '⭐⭐⭐',
+                        textAlign: .end,
+                      ),
+                    },
+                  ],
                 ],
               ),
             ),

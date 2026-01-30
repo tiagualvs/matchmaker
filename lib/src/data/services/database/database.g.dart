@@ -5,7 +5,6 @@ part of 'database.dart';
 // ignore_for_file: type=lint
 class EventWithAllDataData extends DataClass {
   final int id;
-  final String userId;
   final String name;
   final int maxScore;
   final int maxPlayerPerTeam;
@@ -22,7 +21,6 @@ class EventWithAllDataData extends DataClass {
   final String matches;
   const EventWithAllDataData({
     required this.id,
-    required this.userId,
     required this.name,
     required this.maxScore,
     required this.maxPlayerPerTeam,
@@ -45,7 +43,6 @@ class EventWithAllDataData extends DataClass {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return EventWithAllDataData(
       id: serializer.fromJson<int>(json['id']),
-      userId: serializer.fromJson<String>(json['userId']),
       name: serializer.fromJson<String>(json['name']),
       maxScore: serializer.fromJson<int>(json['maxScore']),
       maxPlayerPerTeam: serializer.fromJson<int>(json['maxPlayerPerTeam']),
@@ -69,7 +66,6 @@ class EventWithAllDataData extends DataClass {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'userId': serializer.toJson<String>(userId),
       'name': serializer.toJson<String>(name),
       'maxScore': serializer.toJson<int>(maxScore),
       'maxPlayerPerTeam': serializer.toJson<int>(maxPlayerPerTeam),
@@ -89,7 +85,6 @@ class EventWithAllDataData extends DataClass {
 
   EventWithAllDataData copyWith({
     int? id,
-    String? userId,
     String? name,
     int? maxScore,
     int? maxPlayerPerTeam,
@@ -106,7 +101,6 @@ class EventWithAllDataData extends DataClass {
     String? matches,
   }) => EventWithAllDataData(
     id: id ?? this.id,
-    userId: userId ?? this.userId,
     name: name ?? this.name,
     maxScore: maxScore ?? this.maxScore,
     maxPlayerPerTeam: maxPlayerPerTeam ?? this.maxPlayerPerTeam,
@@ -126,7 +120,6 @@ class EventWithAllDataData extends DataClass {
   String toString() {
     return (StringBuffer('EventWithAllDataData(')
           ..write('id: $id, ')
-          ..write('userId: $userId, ')
           ..write('name: $name, ')
           ..write('maxScore: $maxScore, ')
           ..write('maxPlayerPerTeam: $maxPlayerPerTeam, ')
@@ -148,7 +141,6 @@ class EventWithAllDataData extends DataClass {
   @override
   int get hashCode => Object.hash(
     id,
-    userId,
     name,
     maxScore,
     maxPlayerPerTeam,
@@ -169,7 +161,6 @@ class EventWithAllDataData extends DataClass {
       identical(this, other) ||
       (other is EventWithAllDataData &&
           other.id == this.id &&
-          other.userId == this.userId &&
           other.name == this.name &&
           other.maxScore == this.maxScore &&
           other.maxPlayerPerTeam == this.maxPlayerPerTeam &&
@@ -195,7 +186,6 @@ class EventWithAllData extends ViewInfo<EventWithAllData, EventWithAllDataData>
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    userId,
     name,
     maxScore,
     maxPlayerPerTeam,
@@ -218,7 +208,7 @@ class EventWithAllData extends ViewInfo<EventWithAllData, EventWithAllDataData>
   @override
   Map<SqlDialect, String> get createViewStatements => {
     SqlDialect.sqlite:
-        'CREATE VIEW IF NOT EXISTS event_with_all_data AS SELECT CAST(e.id AS INT) AS id, CAST(e.user_id AS TEXT) AS userId, CAST(e.name AS TEXT) AS name, CAST(e.max_score AS INT) AS maxScore, CAST(e.max_player_per_team AS INT) AS maxPlayerPerTeam, CAST(e.balanced_by_gender AS INT) AS balancedByGender, CAST(e.balanced_by_level AS INT) AS balancedByLevel, CAST(e.max_wins_in_a_row AS INT) AS maxWinsInARow, CAST(e.half_score_to_eliminate AS INT) AS halfScoreToEliminate, CAST(e.queue AS TEXT) AS queue, CAST(e.ended AS INT) AS ended, CAST(e.created_at AS TEXT) AS createdAt, CAST(e.updated_at AS TEXT) AS updatedAt, COALESCE(CAST(e.ended_at AS TEXT), \'\') AS endedAt, COALESCE((SELECT json_group_array(json_object(\'id\', t.id, \'eventId\', t.event_id, \'name\', t.name, \'createdAt\', t.created_at, \'updatedAt\', t.updated_at, \'players\', COALESCE((SELECT json_group_array(json_object(\'id\', p.id, \'name\', p.name, \'gender\', p.gender, \'level\', p.level, \'createdAt\', p.created_at, \'updatedAt\', p.updated_at)) FROM tb_event_team_players AS tp JOIN tb_players AS p ON p.id = tp.player_id WHERE tp.team_id = t.id), json(\'[]\')))) FROM tb_event_teams AS t WHERE t.event_id = e.id), json(\'[]\')) AS teams, COALESCE((SELECT json_group_array(json_object(\'id\', m.id, \'eventId\', m.event_id, \'name\', m.name, \'firstTeamId\', m.first_team_id, \'secondTeamId\', m.second_team_id, \'maxScore\', m.max_score, \'halfScoreToEliminate\', m.half_score_to_eliminate, \'ended\', m.ended, \'createdAt\', m.created_at, \'updatedAt\', m.updated_at, \'endedAt\', m.ended_at, \'scores\', COALESCE((SELECT json_group_array(json_object(\'id\', s.id, \'matchId\', s.match_id, \'teamId\', s.team_id, \'reversed\', s.reversed, \'createdAt\', s.created_at, \'updatedAt\', s.updated_at)) FROM tb_match_scores AS s WHERE s.match_id = m.id ORDER BY s.id ASC), json(\'[]\')))) FROM tb_event_matches AS m WHERE m.event_id = e.id ORDER BY m.id ASC), json(\'[]\')) AS matches FROM tb_events AS e',
+        'CREATE VIEW IF NOT EXISTS event_with_all_data AS SELECT CAST(e.id AS INT) AS id, CAST(e.name AS TEXT) AS name, CAST(e.max_score AS INT) AS maxScore, CAST(e.max_player_per_team AS INT) AS maxPlayerPerTeam, CAST(e.balanced_by_gender AS INT) AS balancedByGender, CAST(e.balanced_by_level AS INT) AS balancedByLevel, CAST(e.max_wins_in_a_row AS INT) AS maxWinsInARow, CAST(e.half_score_to_eliminate AS INT) AS halfScoreToEliminate, CAST(e.queue AS TEXT) AS queue, CAST(e.ended AS INT) AS ended, CAST(e.created_at AS TEXT) AS createdAt, CAST(e.updated_at AS TEXT) AS updatedAt, COALESCE(CAST(e.ended_at AS TEXT), \'\') AS endedAt, COALESCE((SELECT json_group_array(json_object(\'id\', t.id, \'eventId\', t.event_id, \'name\', t.name, \'createdAt\', t.created_at, \'updatedAt\', t.updated_at, \'players\', COALESCE((SELECT json_group_array(json_object(\'id\', p.id, \'name\', p.name, \'gender\', p.gender, \'level\', p.level, \'createdAt\', p.created_at, \'updatedAt\', p.updated_at)) FROM tb_event_team_players AS tp JOIN tb_players AS p ON p.id = tp.player_id WHERE tp.team_id = t.id), json(\'[]\')))) FROM tb_event_teams AS t WHERE t.event_id = e.id), json(\'[]\')) AS teams, COALESCE((SELECT json_group_array(json_object(\'id\', m.id, \'eventId\', m.event_id, \'name\', m.name, \'firstTeamId\', m.first_team_id, \'secondTeamId\', m.second_team_id, \'maxScore\', m.max_score, \'halfScoreToEliminate\', m.half_score_to_eliminate, \'ended\', m.ended, \'createdAt\', m.created_at, \'updatedAt\', m.updated_at, \'endedAt\', m.ended_at, \'scores\', COALESCE((SELECT json_group_array(json_object(\'id\', s.id, \'matchId\', s.match_id, \'teamId\', s.team_id, \'reversed\', s.reversed, \'createdAt\', s.created_at, \'updatedAt\', s.updated_at)) FROM tb_match_scores AS s WHERE s.match_id = m.id ORDER BY s.id ASC), json(\'[]\')))) FROM tb_event_matches AS m WHERE m.event_id = e.id ORDER BY m.id ASC), json(\'[]\')) AS matches FROM tb_events AS e',
   };
   @override
   EventWithAllData get asDslTable => this;
@@ -229,10 +219,6 @@ class EventWithAllData extends ViewInfo<EventWithAllData, EventWithAllDataData>
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
-      )!,
-      userId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}userId'],
       )!,
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -298,12 +284,6 @@ class EventWithAllData extends ViewInfo<EventWithAllData, EventWithAllDataData>
     aliasedName,
     false,
     type: DriftSqlType.int,
-  );
-  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
-    'userId',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
   );
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
     'name',
@@ -414,7 +394,6 @@ class EventWithAllData extends ViewInfo<EventWithAllData, EventWithAllDataData>
 
 class EventWithLastMatchData extends DataClass {
   final int id;
-  final String userId;
   final String name;
   final int maxScore;
   final int maxPlayerPerTeam;
@@ -430,7 +409,6 @@ class EventWithLastMatchData extends DataClass {
   final String matches;
   const EventWithLastMatchData({
     required this.id,
-    required this.userId,
     required this.name,
     required this.maxScore,
     required this.maxPlayerPerTeam,
@@ -452,7 +430,6 @@ class EventWithLastMatchData extends DataClass {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return EventWithLastMatchData(
       id: serializer.fromJson<int>(json['id']),
-      userId: serializer.fromJson<String>(json['userId']),
       name: serializer.fromJson<String>(json['name']),
       maxScore: serializer.fromJson<int>(json['maxScore']),
       maxPlayerPerTeam: serializer.fromJson<int>(json['maxPlayerPerTeam']),
@@ -475,7 +452,6 @@ class EventWithLastMatchData extends DataClass {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'userId': serializer.toJson<String>(userId),
       'name': serializer.toJson<String>(name),
       'maxScore': serializer.toJson<int>(maxScore),
       'maxPlayerPerTeam': serializer.toJson<int>(maxPlayerPerTeam),
@@ -494,7 +470,6 @@ class EventWithLastMatchData extends DataClass {
 
   EventWithLastMatchData copyWith({
     int? id,
-    String? userId,
     String? name,
     int? maxScore,
     int? maxPlayerPerTeam,
@@ -510,7 +485,6 @@ class EventWithLastMatchData extends DataClass {
     String? matches,
   }) => EventWithLastMatchData(
     id: id ?? this.id,
-    userId: userId ?? this.userId,
     name: name ?? this.name,
     maxScore: maxScore ?? this.maxScore,
     maxPlayerPerTeam: maxPlayerPerTeam ?? this.maxPlayerPerTeam,
@@ -529,7 +503,6 @@ class EventWithLastMatchData extends DataClass {
   String toString() {
     return (StringBuffer('EventWithLastMatchData(')
           ..write('id: $id, ')
-          ..write('userId: $userId, ')
           ..write('name: $name, ')
           ..write('maxScore: $maxScore, ')
           ..write('maxPlayerPerTeam: $maxPlayerPerTeam, ')
@@ -550,7 +523,6 @@ class EventWithLastMatchData extends DataClass {
   @override
   int get hashCode => Object.hash(
     id,
-    userId,
     name,
     maxScore,
     maxPlayerPerTeam,
@@ -570,7 +542,6 @@ class EventWithLastMatchData extends DataClass {
       identical(this, other) ||
       (other is EventWithLastMatchData &&
           other.id == this.id &&
-          other.userId == this.userId &&
           other.name == this.name &&
           other.maxScore == this.maxScore &&
           other.maxPlayerPerTeam == this.maxPlayerPerTeam &&
@@ -596,7 +567,6 @@ class EventWithLastMatch
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    userId,
     name,
     maxScore,
     maxPlayerPerTeam,
@@ -618,7 +588,7 @@ class EventWithLastMatch
   @override
   Map<SqlDialect, String> get createViewStatements => {
     SqlDialect.sqlite:
-        'CREATE VIEW IF NOT EXISTS event_with_last_match AS SELECT CAST(e.id AS INT) AS id, CAST(e.user_id AS TEXT) AS userId, CAST(e.name AS TEXT) AS name, CAST(e.max_score AS INT) AS maxScore, CAST(e.max_player_per_team AS INT) AS maxPlayerPerTeam, CAST(e.balanced_by_gender AS INT) AS balancedByGender, CAST(e.balanced_by_level AS INT) AS balancedByLevel, CAST(e.max_wins_in_a_row AS INT) AS maxWinsInARow, CAST(e.half_score_to_eliminate AS INT) AS halfScoreToEliminate, CAST(e.queue AS TEXT) AS queue, CAST(e.ended AS INT) AS ended, CAST(e.created_at AS TEXT) AS createdAt, CAST(e.updated_at AS TEXT) AS updatedAt, COALESCE(CAST(e.ended_at AS TEXT), \'\') AS endedAt, COALESCE((SELECT json_group_array(json_object(\'id\', m.id, \'eventId\', m.event_id, \'name\', m.name, \'firstTeamId\', m.first_team_id, \'secondTeamId\', m.second_team_id, \'maxScore\', m.max_score, \'halfScoreToEliminate\', m.half_score_to_eliminate, \'ended\', m.ended, \'createdAt\', m.created_at, \'updatedAt\', m.updated_at, \'endedAt\', m.ended_at, \'firstTeam\', (SELECT json_object(\'id\', t.id, \'eventId\', t.event_id, \'name\', t.name, \'createdAt\', t.created_at, \'updatedAt\', t.updated_at, \'players\', COALESCE((SELECT json_group_array(json_object(\'id\', p.id, \'name\', p.name, \'gender\', p.gender, \'level\', p.level, \'createdAt\', p.created_at, \'updatedAt\', p.updated_at)) FROM tb_event_team_players AS tp JOIN tb_players AS p ON p.id = tp.player_id WHERE tp.team_id = t.id), json(\'[]\'))) FROM tb_event_teams AS t WHERE t.id = m.first_team_id), \'secondTeam\', (SELECT json_object(\'id\', t.id, \'eventId\', t.event_id, \'name\', t.name, \'createdAt\', t.created_at, \'updatedAt\', t.updated_at, \'players\', COALESCE((SELECT json_group_array(json_object(\'id\', p.id, \'name\', p.name, \'gender\', p.gender, \'level\', p.level, \'createdAt\', p.created_at, \'updatedAt\', p.updated_at)) FROM tb_event_team_players AS tp JOIN tb_players AS p ON p.id = tp.player_id WHERE tp.team_id = t.id), json(\'[]\'))) FROM tb_event_teams AS t WHERE t.id = m.second_team_id), \'scores\', COALESCE((SELECT json_group_array(json_object(\'id\', s.id, \'matchId\', s.match_id, \'teamId\', s.team_id, \'reversed\', s.reversed, \'createdAt\', s.created_at, \'updatedAt\', s.updated_at)) FROM tb_match_scores AS s WHERE s.match_id = m.id ORDER BY s.created_at DESC), json(\'[]\')))) FROM tb_event_matches AS m WHERE m.event_id = e.id AND m.ended = 0 AND m.id = (SELECT MAX(id) FROM tb_event_matches WHERE event_id = e.id AND ended = 0)), json(\'[]\')) AS matches FROM tb_events AS e',
+        'CREATE VIEW IF NOT EXISTS event_with_last_match AS SELECT CAST(e.id AS INT) AS id, CAST(e.name AS TEXT) AS name, CAST(e.max_score AS INT) AS maxScore, CAST(e.max_player_per_team AS INT) AS maxPlayerPerTeam, CAST(e.balanced_by_gender AS INT) AS balancedByGender, CAST(e.balanced_by_level AS INT) AS balancedByLevel, CAST(e.max_wins_in_a_row AS INT) AS maxWinsInARow, CAST(e.half_score_to_eliminate AS INT) AS halfScoreToEliminate, CAST(e.queue AS TEXT) AS queue, CAST(e.ended AS INT) AS ended, CAST(e.created_at AS TEXT) AS createdAt, CAST(e.updated_at AS TEXT) AS updatedAt, COALESCE(CAST(e.ended_at AS TEXT), \'\') AS endedAt, COALESCE((SELECT json_group_array(json_object(\'id\', m.id, \'eventId\', m.event_id, \'name\', m.name, \'firstTeamId\', m.first_team_id, \'secondTeamId\', m.second_team_id, \'maxScore\', m.max_score, \'halfScoreToEliminate\', m.half_score_to_eliminate, \'ended\', m.ended, \'createdAt\', m.created_at, \'updatedAt\', m.updated_at, \'endedAt\', m.ended_at, \'firstTeam\', (SELECT json_object(\'id\', t.id, \'eventId\', t.event_id, \'name\', t.name, \'createdAt\', t.created_at, \'updatedAt\', t.updated_at, \'players\', COALESCE((SELECT json_group_array(json_object(\'id\', p.id, \'name\', p.name, \'gender\', p.gender, \'level\', p.level, \'createdAt\', p.created_at, \'updatedAt\', p.updated_at)) FROM tb_event_team_players AS tp JOIN tb_players AS p ON p.id = tp.player_id WHERE tp.team_id = t.id), json(\'[]\'))) FROM tb_event_teams AS t WHERE t.id = m.first_team_id), \'secondTeam\', (SELECT json_object(\'id\', t.id, \'eventId\', t.event_id, \'name\', t.name, \'createdAt\', t.created_at, \'updatedAt\', t.updated_at, \'players\', COALESCE((SELECT json_group_array(json_object(\'id\', p.id, \'name\', p.name, \'gender\', p.gender, \'level\', p.level, \'createdAt\', p.created_at, \'updatedAt\', p.updated_at)) FROM tb_event_team_players AS tp JOIN tb_players AS p ON p.id = tp.player_id WHERE tp.team_id = t.id), json(\'[]\'))) FROM tb_event_teams AS t WHERE t.id = m.second_team_id), \'scores\', COALESCE((SELECT json_group_array(json_object(\'id\', s.id, \'matchId\', s.match_id, \'teamId\', s.team_id, \'reversed\', s.reversed, \'createdAt\', s.created_at, \'updatedAt\', s.updated_at)) FROM tb_match_scores AS s WHERE s.match_id = m.id ORDER BY s.created_at DESC), json(\'[]\')))) FROM tb_event_matches AS m WHERE m.event_id = e.id AND m.ended = 0 AND m.id = (SELECT MAX(id) FROM tb_event_matches WHERE event_id = e.id AND ended = 0)), json(\'[]\')) AS matches FROM tb_events AS e',
   };
   @override
   EventWithLastMatch get asDslTable => this;
@@ -629,10 +599,6 @@ class EventWithLastMatch
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
-      )!,
-      userId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}userId'],
       )!,
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -694,12 +660,6 @@ class EventWithLastMatch
     aliasedName,
     false,
     type: DriftSqlType.int,
-  );
-  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
-    'userId',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
   );
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
     'name',
@@ -1183,15 +1143,6 @@ class $EventTable extends Event with TableInfo<$EventTable, EventData> {
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
-  @override
-  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
-    'user_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -1342,7 +1293,6 @@ class $EventTable extends Event with TableInfo<$EventTable, EventData> {
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    userId,
     name,
     maxScore,
     maxPlayerPerTeam,
@@ -1370,14 +1320,6 @@ class $EventTable extends Event with TableInfo<$EventTable, EventData> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('user_id')) {
-      context.handle(
-        _userIdMeta,
-        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_userIdMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -1481,10 +1423,6 @@ class $EventTable extends Event with TableInfo<$EventTable, EventData> {
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      userId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}user_id'],
-      )!,
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -1544,7 +1482,6 @@ class $EventTable extends Event with TableInfo<$EventTable, EventData> {
 
 class EventData extends DataClass implements Insertable<EventData> {
   final int id;
-  final String userId;
   final String name;
   final int maxScore;
   final int maxPlayerPerTeam;
@@ -1559,7 +1496,6 @@ class EventData extends DataClass implements Insertable<EventData> {
   final DateTime? endedAt;
   const EventData({
     required this.id,
-    required this.userId,
     required this.name,
     required this.maxScore,
     required this.maxPlayerPerTeam,
@@ -1577,7 +1513,6 @@ class EventData extends DataClass implements Insertable<EventData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['user_id'] = Variable<String>(userId);
     map['name'] = Variable<String>(name);
     map['max_score'] = Variable<int>(maxScore);
     map['max_player_per_team'] = Variable<int>(maxPlayerPerTeam);
@@ -1598,7 +1533,6 @@ class EventData extends DataClass implements Insertable<EventData> {
   EventCompanion toCompanion(bool nullToAbsent) {
     return EventCompanion(
       id: Value(id),
-      userId: Value(userId),
       name: Value(name),
       maxScore: Value(maxScore),
       maxPlayerPerTeam: Value(maxPlayerPerTeam),
@@ -1623,7 +1557,6 @@ class EventData extends DataClass implements Insertable<EventData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return EventData(
       id: serializer.fromJson<int>(json['id']),
-      userId: serializer.fromJson<String>(json['userId']),
       name: serializer.fromJson<String>(json['name']),
       maxScore: serializer.fromJson<int>(json['maxScore']),
       maxPlayerPerTeam: serializer.fromJson<int>(json['maxPlayerPerTeam']),
@@ -1645,7 +1578,6 @@ class EventData extends DataClass implements Insertable<EventData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'userId': serializer.toJson<String>(userId),
       'name': serializer.toJson<String>(name),
       'maxScore': serializer.toJson<int>(maxScore),
       'maxPlayerPerTeam': serializer.toJson<int>(maxPlayerPerTeam),
@@ -1663,7 +1595,6 @@ class EventData extends DataClass implements Insertable<EventData> {
 
   EventData copyWith({
     int? id,
-    String? userId,
     String? name,
     int? maxScore,
     int? maxPlayerPerTeam,
@@ -1678,7 +1609,6 @@ class EventData extends DataClass implements Insertable<EventData> {
     Value<DateTime?> endedAt = const Value.absent(),
   }) => EventData(
     id: id ?? this.id,
-    userId: userId ?? this.userId,
     name: name ?? this.name,
     maxScore: maxScore ?? this.maxScore,
     maxPlayerPerTeam: maxPlayerPerTeam ?? this.maxPlayerPerTeam,
@@ -1695,7 +1625,6 @@ class EventData extends DataClass implements Insertable<EventData> {
   EventData copyWithCompanion(EventCompanion data) {
     return EventData(
       id: data.id.present ? data.id.value : this.id,
-      userId: data.userId.present ? data.userId.value : this.userId,
       name: data.name.present ? data.name.value : this.name,
       maxScore: data.maxScore.present ? data.maxScore.value : this.maxScore,
       maxPlayerPerTeam: data.maxPlayerPerTeam.present
@@ -1725,7 +1654,6 @@ class EventData extends DataClass implements Insertable<EventData> {
   String toString() {
     return (StringBuffer('EventData(')
           ..write('id: $id, ')
-          ..write('userId: $userId, ')
           ..write('name: $name, ')
           ..write('maxScore: $maxScore, ')
           ..write('maxPlayerPerTeam: $maxPlayerPerTeam, ')
@@ -1745,7 +1673,6 @@ class EventData extends DataClass implements Insertable<EventData> {
   @override
   int get hashCode => Object.hash(
     id,
-    userId,
     name,
     maxScore,
     maxPlayerPerTeam,
@@ -1764,7 +1691,6 @@ class EventData extends DataClass implements Insertable<EventData> {
       identical(this, other) ||
       (other is EventData &&
           other.id == this.id &&
-          other.userId == this.userId &&
           other.name == this.name &&
           other.maxScore == this.maxScore &&
           other.maxPlayerPerTeam == this.maxPlayerPerTeam &&
@@ -1781,7 +1707,6 @@ class EventData extends DataClass implements Insertable<EventData> {
 
 class EventCompanion extends UpdateCompanion<EventData> {
   final Value<int> id;
-  final Value<String> userId;
   final Value<String> name;
   final Value<int> maxScore;
   final Value<int> maxPlayerPerTeam;
@@ -1796,7 +1721,6 @@ class EventCompanion extends UpdateCompanion<EventData> {
   final Value<DateTime?> endedAt;
   const EventCompanion({
     this.id = const Value.absent(),
-    this.userId = const Value.absent(),
     this.name = const Value.absent(),
     this.maxScore = const Value.absent(),
     this.maxPlayerPerTeam = const Value.absent(),
@@ -1812,7 +1736,6 @@ class EventCompanion extends UpdateCompanion<EventData> {
   });
   EventCompanion.insert({
     this.id = const Value.absent(),
-    required String userId,
     required String name,
     this.maxScore = const Value.absent(),
     this.maxPlayerPerTeam = const Value.absent(),
@@ -1825,11 +1748,9 @@ class EventCompanion extends UpdateCompanion<EventData> {
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.endedAt = const Value.absent(),
-  }) : userId = Value(userId),
-       name = Value(name);
+  }) : name = Value(name);
   static Insertable<EventData> custom({
     Expression<int>? id,
-    Expression<String>? userId,
     Expression<String>? name,
     Expression<int>? maxScore,
     Expression<int>? maxPlayerPerTeam,
@@ -1845,7 +1766,6 @@ class EventCompanion extends UpdateCompanion<EventData> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (userId != null) 'user_id': userId,
       if (name != null) 'name': name,
       if (maxScore != null) 'max_score': maxScore,
       if (maxPlayerPerTeam != null) 'max_player_per_team': maxPlayerPerTeam,
@@ -1864,7 +1784,6 @@ class EventCompanion extends UpdateCompanion<EventData> {
 
   EventCompanion copyWith({
     Value<int>? id,
-    Value<String>? userId,
     Value<String>? name,
     Value<int>? maxScore,
     Value<int>? maxPlayerPerTeam,
@@ -1880,7 +1799,6 @@ class EventCompanion extends UpdateCompanion<EventData> {
   }) {
     return EventCompanion(
       id: id ?? this.id,
-      userId: userId ?? this.userId,
       name: name ?? this.name,
       maxScore: maxScore ?? this.maxScore,
       maxPlayerPerTeam: maxPlayerPerTeam ?? this.maxPlayerPerTeam,
@@ -1901,9 +1819,6 @@ class EventCompanion extends UpdateCompanion<EventData> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
-    }
-    if (userId.present) {
-      map['user_id'] = Variable<String>(userId.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -1950,7 +1865,6 @@ class EventCompanion extends UpdateCompanion<EventData> {
   String toString() {
     return (StringBuffer('EventCompanion(')
           ..write('id: $id, ')
-          ..write('userId: $userId, ')
           ..write('name: $name, ')
           ..write('maxScore: $maxScore, ')
           ..write('maxPlayerPerTeam: $maxPlayerPerTeam, ')
@@ -1985,15 +1899,6 @@ class $PlayerTable extends Player with TableInfo<$PlayerTable, PlayerData> {
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
     ),
-  );
-  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
-  @override
-  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
-    'user_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
   );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
@@ -2052,7 +1957,6 @@ class $PlayerTable extends Player with TableInfo<$PlayerTable, PlayerData> {
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    userId,
     name,
     gender,
     level,
@@ -2073,14 +1977,6 @@ class $PlayerTable extends Player with TableInfo<$PlayerTable, PlayerData> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('user_id')) {
-      context.handle(
-        _userIdMeta,
-        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_userIdMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -2131,10 +2027,6 @@ class $PlayerTable extends Player with TableInfo<$PlayerTable, PlayerData> {
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      userId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}user_id'],
-      )!,
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -2166,7 +2058,6 @@ class $PlayerTable extends Player with TableInfo<$PlayerTable, PlayerData> {
 
 class PlayerData extends DataClass implements Insertable<PlayerData> {
   final int id;
-  final String userId;
   final String name;
   final String gender;
   final String level;
@@ -2174,7 +2065,6 @@ class PlayerData extends DataClass implements Insertable<PlayerData> {
   final DateTime updatedAt;
   const PlayerData({
     required this.id,
-    required this.userId,
     required this.name,
     required this.gender,
     required this.level,
@@ -2185,7 +2075,6 @@ class PlayerData extends DataClass implements Insertable<PlayerData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['user_id'] = Variable<String>(userId);
     map['name'] = Variable<String>(name);
     map['gender'] = Variable<String>(gender);
     map['level'] = Variable<String>(level);
@@ -2197,7 +2086,6 @@ class PlayerData extends DataClass implements Insertable<PlayerData> {
   PlayerCompanion toCompanion(bool nullToAbsent) {
     return PlayerCompanion(
       id: Value(id),
-      userId: Value(userId),
       name: Value(name),
       gender: Value(gender),
       level: Value(level),
@@ -2213,7 +2101,6 @@ class PlayerData extends DataClass implements Insertable<PlayerData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return PlayerData(
       id: serializer.fromJson<int>(json['id']),
-      userId: serializer.fromJson<String>(json['userId']),
       name: serializer.fromJson<String>(json['name']),
       gender: serializer.fromJson<String>(json['gender']),
       level: serializer.fromJson<String>(json['level']),
@@ -2226,7 +2113,6 @@ class PlayerData extends DataClass implements Insertable<PlayerData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'userId': serializer.toJson<String>(userId),
       'name': serializer.toJson<String>(name),
       'gender': serializer.toJson<String>(gender),
       'level': serializer.toJson<String>(level),
@@ -2237,7 +2123,6 @@ class PlayerData extends DataClass implements Insertable<PlayerData> {
 
   PlayerData copyWith({
     int? id,
-    String? userId,
     String? name,
     String? gender,
     String? level,
@@ -2245,7 +2130,6 @@ class PlayerData extends DataClass implements Insertable<PlayerData> {
     DateTime? updatedAt,
   }) => PlayerData(
     id: id ?? this.id,
-    userId: userId ?? this.userId,
     name: name ?? this.name,
     gender: gender ?? this.gender,
     level: level ?? this.level,
@@ -2255,7 +2139,6 @@ class PlayerData extends DataClass implements Insertable<PlayerData> {
   PlayerData copyWithCompanion(PlayerCompanion data) {
     return PlayerData(
       id: data.id.present ? data.id.value : this.id,
-      userId: data.userId.present ? data.userId.value : this.userId,
       name: data.name.present ? data.name.value : this.name,
       gender: data.gender.present ? data.gender.value : this.gender,
       level: data.level.present ? data.level.value : this.level,
@@ -2268,7 +2151,6 @@ class PlayerData extends DataClass implements Insertable<PlayerData> {
   String toString() {
     return (StringBuffer('PlayerData(')
           ..write('id: $id, ')
-          ..write('userId: $userId, ')
           ..write('name: $name, ')
           ..write('gender: $gender, ')
           ..write('level: $level, ')
@@ -2280,13 +2162,12 @@ class PlayerData extends DataClass implements Insertable<PlayerData> {
 
   @override
   int get hashCode =>
-      Object.hash(id, userId, name, gender, level, createdAt, updatedAt);
+      Object.hash(id, name, gender, level, createdAt, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is PlayerData &&
           other.id == this.id &&
-          other.userId == this.userId &&
           other.name == this.name &&
           other.gender == this.gender &&
           other.level == this.level &&
@@ -2296,7 +2177,6 @@ class PlayerData extends DataClass implements Insertable<PlayerData> {
 
 class PlayerCompanion extends UpdateCompanion<PlayerData> {
   final Value<int> id;
-  final Value<String> userId;
   final Value<String> name;
   final Value<String> gender;
   final Value<String> level;
@@ -2304,7 +2184,6 @@ class PlayerCompanion extends UpdateCompanion<PlayerData> {
   final Value<DateTime> updatedAt;
   const PlayerCompanion({
     this.id = const Value.absent(),
-    this.userId = const Value.absent(),
     this.name = const Value.absent(),
     this.gender = const Value.absent(),
     this.level = const Value.absent(),
@@ -2313,19 +2192,16 @@ class PlayerCompanion extends UpdateCompanion<PlayerData> {
   });
   PlayerCompanion.insert({
     this.id = const Value.absent(),
-    required String userId,
     required String name,
     required String gender,
     required String level,
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
-  }) : userId = Value(userId),
-       name = Value(name),
+  }) : name = Value(name),
        gender = Value(gender),
        level = Value(level);
   static Insertable<PlayerData> custom({
     Expression<int>? id,
-    Expression<String>? userId,
     Expression<String>? name,
     Expression<String>? gender,
     Expression<String>? level,
@@ -2334,7 +2210,6 @@ class PlayerCompanion extends UpdateCompanion<PlayerData> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (userId != null) 'user_id': userId,
       if (name != null) 'name': name,
       if (gender != null) 'gender': gender,
       if (level != null) 'level': level,
@@ -2345,7 +2220,6 @@ class PlayerCompanion extends UpdateCompanion<PlayerData> {
 
   PlayerCompanion copyWith({
     Value<int>? id,
-    Value<String>? userId,
     Value<String>? name,
     Value<String>? gender,
     Value<String>? level,
@@ -2354,7 +2228,6 @@ class PlayerCompanion extends UpdateCompanion<PlayerData> {
   }) {
     return PlayerCompanion(
       id: id ?? this.id,
-      userId: userId ?? this.userId,
       name: name ?? this.name,
       gender: gender ?? this.gender,
       level: level ?? this.level,
@@ -2368,9 +2241,6 @@ class PlayerCompanion extends UpdateCompanion<PlayerData> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
-    }
-    if (userId.present) {
-      map['user_id'] = Variable<String>(userId.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -2394,7 +2264,6 @@ class PlayerCompanion extends UpdateCompanion<PlayerData> {
   String toString() {
     return (StringBuffer('PlayerCompanion(')
           ..write('id: $id, ')
-          ..write('userId: $userId, ')
           ..write('name: $name, ')
           ..write('gender: $gender, ')
           ..write('level: $level, ')
@@ -2423,15 +2292,6 @@ class $EventTeamTable extends EventTeam
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
     ),
-  );
-  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
-  @override
-  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
-    'user_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
   );
   static const VerificationMeta _eventIdMeta = const VerificationMeta(
     'eventId',
@@ -2483,7 +2343,6 @@ class $EventTeamTable extends EventTeam
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    userId,
     eventId,
     name,
     createdAt,
@@ -2503,14 +2362,6 @@ class $EventTeamTable extends EventTeam
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('user_id')) {
-      context.handle(
-        _userIdMeta,
-        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_userIdMeta);
     }
     if (data.containsKey('event_id')) {
       context.handle(
@@ -2553,10 +2404,6 @@ class $EventTeamTable extends EventTeam
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      userId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}user_id'],
-      )!,
       eventId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}event_id'],
@@ -2584,14 +2431,12 @@ class $EventTeamTable extends EventTeam
 
 class EventTeamData extends DataClass implements Insertable<EventTeamData> {
   final int id;
-  final String userId;
   final int eventId;
   final String name;
   final DateTime createdAt;
   final DateTime updatedAt;
   const EventTeamData({
     required this.id,
-    required this.userId,
     required this.eventId,
     required this.name,
     required this.createdAt,
@@ -2601,7 +2446,6 @@ class EventTeamData extends DataClass implements Insertable<EventTeamData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['user_id'] = Variable<String>(userId);
     map['event_id'] = Variable<int>(eventId);
     map['name'] = Variable<String>(name);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -2612,7 +2456,6 @@ class EventTeamData extends DataClass implements Insertable<EventTeamData> {
   EventTeamCompanion toCompanion(bool nullToAbsent) {
     return EventTeamCompanion(
       id: Value(id),
-      userId: Value(userId),
       eventId: Value(eventId),
       name: Value(name),
       createdAt: Value(createdAt),
@@ -2627,7 +2470,6 @@ class EventTeamData extends DataClass implements Insertable<EventTeamData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return EventTeamData(
       id: serializer.fromJson<int>(json['id']),
-      userId: serializer.fromJson<String>(json['userId']),
       eventId: serializer.fromJson<int>(json['eventId']),
       name: serializer.fromJson<String>(json['name']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -2639,7 +2481,6 @@ class EventTeamData extends DataClass implements Insertable<EventTeamData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'userId': serializer.toJson<String>(userId),
       'eventId': serializer.toJson<int>(eventId),
       'name': serializer.toJson<String>(name),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -2649,14 +2490,12 @@ class EventTeamData extends DataClass implements Insertable<EventTeamData> {
 
   EventTeamData copyWith({
     int? id,
-    String? userId,
     int? eventId,
     String? name,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => EventTeamData(
     id: id ?? this.id,
-    userId: userId ?? this.userId,
     eventId: eventId ?? this.eventId,
     name: name ?? this.name,
     createdAt: createdAt ?? this.createdAt,
@@ -2665,7 +2504,6 @@ class EventTeamData extends DataClass implements Insertable<EventTeamData> {
   EventTeamData copyWithCompanion(EventTeamCompanion data) {
     return EventTeamData(
       id: data.id.present ? data.id.value : this.id,
-      userId: data.userId.present ? data.userId.value : this.userId,
       eventId: data.eventId.present ? data.eventId.value : this.eventId,
       name: data.name.present ? data.name.value : this.name,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -2677,7 +2515,6 @@ class EventTeamData extends DataClass implements Insertable<EventTeamData> {
   String toString() {
     return (StringBuffer('EventTeamData(')
           ..write('id: $id, ')
-          ..write('userId: $userId, ')
           ..write('eventId: $eventId, ')
           ..write('name: $name, ')
           ..write('createdAt: $createdAt, ')
@@ -2687,14 +2524,12 @@ class EventTeamData extends DataClass implements Insertable<EventTeamData> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, userId, eventId, name, createdAt, updatedAt);
+  int get hashCode => Object.hash(id, eventId, name, createdAt, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is EventTeamData &&
           other.id == this.id &&
-          other.userId == this.userId &&
           other.eventId == this.eventId &&
           other.name == this.name &&
           other.createdAt == this.createdAt &&
@@ -2703,14 +2538,12 @@ class EventTeamData extends DataClass implements Insertable<EventTeamData> {
 
 class EventTeamCompanion extends UpdateCompanion<EventTeamData> {
   final Value<int> id;
-  final Value<String> userId;
   final Value<int> eventId;
   final Value<String> name;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const EventTeamCompanion({
     this.id = const Value.absent(),
-    this.userId = const Value.absent(),
     this.eventId = const Value.absent(),
     this.name = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -2718,17 +2551,14 @@ class EventTeamCompanion extends UpdateCompanion<EventTeamData> {
   });
   EventTeamCompanion.insert({
     this.id = const Value.absent(),
-    required String userId,
     required int eventId,
     required String name,
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
-  }) : userId = Value(userId),
-       eventId = Value(eventId),
+  }) : eventId = Value(eventId),
        name = Value(name);
   static Insertable<EventTeamData> custom({
     Expression<int>? id,
-    Expression<String>? userId,
     Expression<int>? eventId,
     Expression<String>? name,
     Expression<DateTime>? createdAt,
@@ -2736,7 +2566,6 @@ class EventTeamCompanion extends UpdateCompanion<EventTeamData> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (userId != null) 'user_id': userId,
       if (eventId != null) 'event_id': eventId,
       if (name != null) 'name': name,
       if (createdAt != null) 'created_at': createdAt,
@@ -2746,7 +2575,6 @@ class EventTeamCompanion extends UpdateCompanion<EventTeamData> {
 
   EventTeamCompanion copyWith({
     Value<int>? id,
-    Value<String>? userId,
     Value<int>? eventId,
     Value<String>? name,
     Value<DateTime>? createdAt,
@@ -2754,7 +2582,6 @@ class EventTeamCompanion extends UpdateCompanion<EventTeamData> {
   }) {
     return EventTeamCompanion(
       id: id ?? this.id,
-      userId: userId ?? this.userId,
       eventId: eventId ?? this.eventId,
       name: name ?? this.name,
       createdAt: createdAt ?? this.createdAt,
@@ -2767,9 +2594,6 @@ class EventTeamCompanion extends UpdateCompanion<EventTeamData> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
-    }
-    if (userId.present) {
-      map['user_id'] = Variable<String>(userId.value);
     }
     if (eventId.present) {
       map['event_id'] = Variable<int>(eventId.value);
@@ -2790,7 +2614,6 @@ class EventTeamCompanion extends UpdateCompanion<EventTeamData> {
   String toString() {
     return (StringBuffer('EventTeamCompanion(')
           ..write('id: $id, ')
-          ..write('userId: $userId, ')
           ..write('eventId: $eventId, ')
           ..write('name: $name, ')
           ..write('createdAt: $createdAt, ')
@@ -2806,15 +2629,6 @@ class $EventTeamPlayerTable extends EventTeamPlayer
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $EventTeamPlayerTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
-  @override
-  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
-    'user_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
   static const VerificationMeta _teamIdMeta = const VerificationMeta('teamId');
   @override
   late final GeneratedColumn<int> teamId = GeneratedColumn<int>(
@@ -2867,7 +2681,6 @@ class $EventTeamPlayerTable extends EventTeamPlayer
   );
   @override
   List<GeneratedColumn> get $columns => [
-    userId,
     teamId,
     playerId,
     createdAt,
@@ -2885,14 +2698,6 @@ class $EventTeamPlayerTable extends EventTeamPlayer
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('user_id')) {
-      context.handle(
-        _userIdMeta,
-        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_userIdMeta);
-    }
     if (data.containsKey('team_id')) {
       context.handle(
         _teamIdMeta,
@@ -2930,10 +2735,6 @@ class $EventTeamPlayerTable extends EventTeamPlayer
   EventTeamPlayerData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return EventTeamPlayerData(
-      userId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}user_id'],
-      )!,
       teamId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}team_id'],
@@ -2961,13 +2762,11 @@ class $EventTeamPlayerTable extends EventTeamPlayer
 
 class EventTeamPlayerData extends DataClass
     implements Insertable<EventTeamPlayerData> {
-  final String userId;
   final int teamId;
   final int playerId;
   final DateTime createdAt;
   final DateTime updatedAt;
   const EventTeamPlayerData({
-    required this.userId,
     required this.teamId,
     required this.playerId,
     required this.createdAt,
@@ -2976,7 +2775,6 @@ class EventTeamPlayerData extends DataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['user_id'] = Variable<String>(userId);
     map['team_id'] = Variable<int>(teamId);
     map['player_id'] = Variable<int>(playerId);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -2986,7 +2784,6 @@ class EventTeamPlayerData extends DataClass
 
   EventTeamPlayerCompanion toCompanion(bool nullToAbsent) {
     return EventTeamPlayerCompanion(
-      userId: Value(userId),
       teamId: Value(teamId),
       playerId: Value(playerId),
       createdAt: Value(createdAt),
@@ -3000,7 +2797,6 @@ class EventTeamPlayerData extends DataClass
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return EventTeamPlayerData(
-      userId: serializer.fromJson<String>(json['userId']),
       teamId: serializer.fromJson<int>(json['teamId']),
       playerId: serializer.fromJson<int>(json['playerId']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -3011,7 +2807,6 @@ class EventTeamPlayerData extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'userId': serializer.toJson<String>(userId),
       'teamId': serializer.toJson<int>(teamId),
       'playerId': serializer.toJson<int>(playerId),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -3020,13 +2815,11 @@ class EventTeamPlayerData extends DataClass
   }
 
   EventTeamPlayerData copyWith({
-    String? userId,
     int? teamId,
     int? playerId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => EventTeamPlayerData(
-    userId: userId ?? this.userId,
     teamId: teamId ?? this.teamId,
     playerId: playerId ?? this.playerId,
     createdAt: createdAt ?? this.createdAt,
@@ -3034,7 +2827,6 @@ class EventTeamPlayerData extends DataClass
   );
   EventTeamPlayerData copyWithCompanion(EventTeamPlayerCompanion data) {
     return EventTeamPlayerData(
-      userId: data.userId.present ? data.userId.value : this.userId,
       teamId: data.teamId.present ? data.teamId.value : this.teamId,
       playerId: data.playerId.present ? data.playerId.value : this.playerId,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -3045,7 +2837,6 @@ class EventTeamPlayerData extends DataClass
   @override
   String toString() {
     return (StringBuffer('EventTeamPlayerData(')
-          ..write('userId: $userId, ')
           ..write('teamId: $teamId, ')
           ..write('playerId: $playerId, ')
           ..write('createdAt: $createdAt, ')
@@ -3055,13 +2846,11 @@ class EventTeamPlayerData extends DataClass
   }
 
   @override
-  int get hashCode =>
-      Object.hash(userId, teamId, playerId, createdAt, updatedAt);
+  int get hashCode => Object.hash(teamId, playerId, createdAt, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is EventTeamPlayerData &&
-          other.userId == this.userId &&
           other.teamId == this.teamId &&
           other.playerId == this.playerId &&
           other.createdAt == this.createdAt &&
@@ -3069,14 +2858,12 @@ class EventTeamPlayerData extends DataClass
 }
 
 class EventTeamPlayerCompanion extends UpdateCompanion<EventTeamPlayerData> {
-  final Value<String> userId;
   final Value<int> teamId;
   final Value<int> playerId;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
   const EventTeamPlayerCompanion({
-    this.userId = const Value.absent(),
     this.teamId = const Value.absent(),
     this.playerId = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -3084,17 +2871,14 @@ class EventTeamPlayerCompanion extends UpdateCompanion<EventTeamPlayerData> {
     this.rowid = const Value.absent(),
   });
   EventTeamPlayerCompanion.insert({
-    required String userId,
     required int teamId,
     required int playerId,
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
-  }) : userId = Value(userId),
-       teamId = Value(teamId),
+  }) : teamId = Value(teamId),
        playerId = Value(playerId);
   static Insertable<EventTeamPlayerData> custom({
-    Expression<String>? userId,
     Expression<int>? teamId,
     Expression<int>? playerId,
     Expression<DateTime>? createdAt,
@@ -3102,7 +2886,6 @@ class EventTeamPlayerCompanion extends UpdateCompanion<EventTeamPlayerData> {
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
-      if (userId != null) 'user_id': userId,
       if (teamId != null) 'team_id': teamId,
       if (playerId != null) 'player_id': playerId,
       if (createdAt != null) 'created_at': createdAt,
@@ -3112,7 +2895,6 @@ class EventTeamPlayerCompanion extends UpdateCompanion<EventTeamPlayerData> {
   }
 
   EventTeamPlayerCompanion copyWith({
-    Value<String>? userId,
     Value<int>? teamId,
     Value<int>? playerId,
     Value<DateTime>? createdAt,
@@ -3120,7 +2902,6 @@ class EventTeamPlayerCompanion extends UpdateCompanion<EventTeamPlayerData> {
     Value<int>? rowid,
   }) {
     return EventTeamPlayerCompanion(
-      userId: userId ?? this.userId,
       teamId: teamId ?? this.teamId,
       playerId: playerId ?? this.playerId,
       createdAt: createdAt ?? this.createdAt,
@@ -3132,9 +2913,6 @@ class EventTeamPlayerCompanion extends UpdateCompanion<EventTeamPlayerData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (userId.present) {
-      map['user_id'] = Variable<String>(userId.value);
-    }
     if (teamId.present) {
       map['team_id'] = Variable<int>(teamId.value);
     }
@@ -3156,7 +2934,6 @@ class EventTeamPlayerCompanion extends UpdateCompanion<EventTeamPlayerData> {
   @override
   String toString() {
     return (StringBuffer('EventTeamPlayerCompanion(')
-          ..write('userId: $userId, ')
           ..write('teamId: $teamId, ')
           ..write('playerId: $playerId, ')
           ..write('createdAt: $createdAt, ')
@@ -3185,15 +2962,6 @@ class $EventMatchTable extends EventMatch
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
     ),
-  );
-  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
-  @override
-  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
-    'user_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
   );
   static const VerificationMeta _eventIdMeta = const VerificationMeta(
     'eventId',
@@ -3321,7 +3089,6 @@ class $EventMatchTable extends EventMatch
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    userId,
     eventId,
     firstTeamId,
     secondTeamId,
@@ -3347,14 +3114,6 @@ class $EventMatchTable extends EventMatch
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('user_id')) {
-      context.handle(
-        _userIdMeta,
-        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_userIdMeta);
     }
     if (data.containsKey('event_id')) {
       context.handle(
@@ -3450,10 +3209,6 @@ class $EventMatchTable extends EventMatch
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      userId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}user_id'],
-      )!,
       eventId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}event_id'],
@@ -3505,7 +3260,6 @@ class $EventMatchTable extends EventMatch
 
 class EventMatchData extends DataClass implements Insertable<EventMatchData> {
   final int id;
-  final String userId;
   final int eventId;
   final int firstTeamId;
   final int secondTeamId;
@@ -3518,7 +3272,6 @@ class EventMatchData extends DataClass implements Insertable<EventMatchData> {
   final DateTime? endedAt;
   const EventMatchData({
     required this.id,
-    required this.userId,
     required this.eventId,
     required this.firstTeamId,
     required this.secondTeamId,
@@ -3534,7 +3287,6 @@ class EventMatchData extends DataClass implements Insertable<EventMatchData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['user_id'] = Variable<String>(userId);
     map['event_id'] = Variable<int>(eventId);
     map['first_team_id'] = Variable<int>(firstTeamId);
     map['second_team_id'] = Variable<int>(secondTeamId);
@@ -3553,7 +3305,6 @@ class EventMatchData extends DataClass implements Insertable<EventMatchData> {
   EventMatchCompanion toCompanion(bool nullToAbsent) {
     return EventMatchCompanion(
       id: Value(id),
-      userId: Value(userId),
       eventId: Value(eventId),
       firstTeamId: Value(firstTeamId),
       secondTeamId: Value(secondTeamId),
@@ -3576,7 +3327,6 @@ class EventMatchData extends DataClass implements Insertable<EventMatchData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return EventMatchData(
       id: serializer.fromJson<int>(json['id']),
-      userId: serializer.fromJson<String>(json['userId']),
       eventId: serializer.fromJson<int>(json['eventId']),
       firstTeamId: serializer.fromJson<int>(json['firstTeamId']),
       secondTeamId: serializer.fromJson<int>(json['secondTeamId']),
@@ -3596,7 +3346,6 @@ class EventMatchData extends DataClass implements Insertable<EventMatchData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'userId': serializer.toJson<String>(userId),
       'eventId': serializer.toJson<int>(eventId),
       'firstTeamId': serializer.toJson<int>(firstTeamId),
       'secondTeamId': serializer.toJson<int>(secondTeamId),
@@ -3612,7 +3361,6 @@ class EventMatchData extends DataClass implements Insertable<EventMatchData> {
 
   EventMatchData copyWith({
     int? id,
-    String? userId,
     int? eventId,
     int? firstTeamId,
     int? secondTeamId,
@@ -3625,7 +3373,6 @@ class EventMatchData extends DataClass implements Insertable<EventMatchData> {
     Value<DateTime?> endedAt = const Value.absent(),
   }) => EventMatchData(
     id: id ?? this.id,
-    userId: userId ?? this.userId,
     eventId: eventId ?? this.eventId,
     firstTeamId: firstTeamId ?? this.firstTeamId,
     secondTeamId: secondTeamId ?? this.secondTeamId,
@@ -3640,7 +3387,6 @@ class EventMatchData extends DataClass implements Insertable<EventMatchData> {
   EventMatchData copyWithCompanion(EventMatchCompanion data) {
     return EventMatchData(
       id: data.id.present ? data.id.value : this.id,
-      userId: data.userId.present ? data.userId.value : this.userId,
       eventId: data.eventId.present ? data.eventId.value : this.eventId,
       firstTeamId: data.firstTeamId.present
           ? data.firstTeamId.value
@@ -3664,7 +3410,6 @@ class EventMatchData extends DataClass implements Insertable<EventMatchData> {
   String toString() {
     return (StringBuffer('EventMatchData(')
           ..write('id: $id, ')
-          ..write('userId: $userId, ')
           ..write('eventId: $eventId, ')
           ..write('firstTeamId: $firstTeamId, ')
           ..write('secondTeamId: $secondTeamId, ')
@@ -3682,7 +3427,6 @@ class EventMatchData extends DataClass implements Insertable<EventMatchData> {
   @override
   int get hashCode => Object.hash(
     id,
-    userId,
     eventId,
     firstTeamId,
     secondTeamId,
@@ -3699,7 +3443,6 @@ class EventMatchData extends DataClass implements Insertable<EventMatchData> {
       identical(this, other) ||
       (other is EventMatchData &&
           other.id == this.id &&
-          other.userId == this.userId &&
           other.eventId == this.eventId &&
           other.firstTeamId == this.firstTeamId &&
           other.secondTeamId == this.secondTeamId &&
@@ -3714,7 +3457,6 @@ class EventMatchData extends DataClass implements Insertable<EventMatchData> {
 
 class EventMatchCompanion extends UpdateCompanion<EventMatchData> {
   final Value<int> id;
-  final Value<String> userId;
   final Value<int> eventId;
   final Value<int> firstTeamId;
   final Value<int> secondTeamId;
@@ -3727,7 +3469,6 @@ class EventMatchCompanion extends UpdateCompanion<EventMatchData> {
   final Value<DateTime?> endedAt;
   const EventMatchCompanion({
     this.id = const Value.absent(),
-    this.userId = const Value.absent(),
     this.eventId = const Value.absent(),
     this.firstTeamId = const Value.absent(),
     this.secondTeamId = const Value.absent(),
@@ -3741,7 +3482,6 @@ class EventMatchCompanion extends UpdateCompanion<EventMatchData> {
   });
   EventMatchCompanion.insert({
     this.id = const Value.absent(),
-    required String userId,
     required int eventId,
     required int firstTeamId,
     required int secondTeamId,
@@ -3752,8 +3492,7 @@ class EventMatchCompanion extends UpdateCompanion<EventMatchData> {
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.endedAt = const Value.absent(),
-  }) : userId = Value(userId),
-       eventId = Value(eventId),
+  }) : eventId = Value(eventId),
        firstTeamId = Value(firstTeamId),
        secondTeamId = Value(secondTeamId),
        name = Value(name),
@@ -3761,7 +3500,6 @@ class EventMatchCompanion extends UpdateCompanion<EventMatchData> {
        halfScoreToEliminate = Value(halfScoreToEliminate);
   static Insertable<EventMatchData> custom({
     Expression<int>? id,
-    Expression<String>? userId,
     Expression<int>? eventId,
     Expression<int>? firstTeamId,
     Expression<int>? secondTeamId,
@@ -3775,7 +3513,6 @@ class EventMatchCompanion extends UpdateCompanion<EventMatchData> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (userId != null) 'user_id': userId,
       if (eventId != null) 'event_id': eventId,
       if (firstTeamId != null) 'first_team_id': firstTeamId,
       if (secondTeamId != null) 'second_team_id': secondTeamId,
@@ -3792,7 +3529,6 @@ class EventMatchCompanion extends UpdateCompanion<EventMatchData> {
 
   EventMatchCompanion copyWith({
     Value<int>? id,
-    Value<String>? userId,
     Value<int>? eventId,
     Value<int>? firstTeamId,
     Value<int>? secondTeamId,
@@ -3806,7 +3542,6 @@ class EventMatchCompanion extends UpdateCompanion<EventMatchData> {
   }) {
     return EventMatchCompanion(
       id: id ?? this.id,
-      userId: userId ?? this.userId,
       eventId: eventId ?? this.eventId,
       firstTeamId: firstTeamId ?? this.firstTeamId,
       secondTeamId: secondTeamId ?? this.secondTeamId,
@@ -3825,9 +3560,6 @@ class EventMatchCompanion extends UpdateCompanion<EventMatchData> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
-    }
-    if (userId.present) {
-      map['user_id'] = Variable<String>(userId.value);
     }
     if (eventId.present) {
       map['event_id'] = Variable<int>(eventId.value);
@@ -3868,7 +3600,6 @@ class EventMatchCompanion extends UpdateCompanion<EventMatchData> {
   String toString() {
     return (StringBuffer('EventMatchCompanion(')
           ..write('id: $id, ')
-          ..write('userId: $userId, ')
           ..write('eventId: $eventId, ')
           ..write('firstTeamId: $firstTeamId, ')
           ..write('secondTeamId: $secondTeamId, ')
@@ -3902,15 +3633,6 @@ class $MatchScoreTable extends MatchScore
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
     ),
-  );
-  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
-  @override
-  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
-    'user_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
   );
   static const VerificationMeta _matchIdMeta = const VerificationMeta(
     'matchId',
@@ -3980,7 +3702,6 @@ class $MatchScoreTable extends MatchScore
   @override
   List<GeneratedColumn> get $columns => [
     id,
-    userId,
     matchId,
     teamId,
     reversed,
@@ -4001,14 +3722,6 @@ class $MatchScoreTable extends MatchScore
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('user_id')) {
-      context.handle(
-        _userIdMeta,
-        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_userIdMeta);
     }
     if (data.containsKey('match_id')) {
       context.handle(
@@ -4057,10 +3770,6 @@ class $MatchScoreTable extends MatchScore
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      userId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}user_id'],
-      )!,
       matchId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}match_id'],
@@ -4092,7 +3801,6 @@ class $MatchScoreTable extends MatchScore
 
 class MatchScoreData extends DataClass implements Insertable<MatchScoreData> {
   final int id;
-  final String userId;
   final int matchId;
   final int teamId;
   final bool reversed;
@@ -4100,7 +3808,6 @@ class MatchScoreData extends DataClass implements Insertable<MatchScoreData> {
   final DateTime updatedAt;
   const MatchScoreData({
     required this.id,
-    required this.userId,
     required this.matchId,
     required this.teamId,
     required this.reversed,
@@ -4111,7 +3818,6 @@ class MatchScoreData extends DataClass implements Insertable<MatchScoreData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['user_id'] = Variable<String>(userId);
     map['match_id'] = Variable<int>(matchId);
     map['team_id'] = Variable<int>(teamId);
     map['reversed'] = Variable<bool>(reversed);
@@ -4123,7 +3829,6 @@ class MatchScoreData extends DataClass implements Insertable<MatchScoreData> {
   MatchScoreCompanion toCompanion(bool nullToAbsent) {
     return MatchScoreCompanion(
       id: Value(id),
-      userId: Value(userId),
       matchId: Value(matchId),
       teamId: Value(teamId),
       reversed: Value(reversed),
@@ -4139,7 +3844,6 @@ class MatchScoreData extends DataClass implements Insertable<MatchScoreData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return MatchScoreData(
       id: serializer.fromJson<int>(json['id']),
-      userId: serializer.fromJson<String>(json['userId']),
       matchId: serializer.fromJson<int>(json['matchId']),
       teamId: serializer.fromJson<int>(json['teamId']),
       reversed: serializer.fromJson<bool>(json['reversed']),
@@ -4152,7 +3856,6 @@ class MatchScoreData extends DataClass implements Insertable<MatchScoreData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'userId': serializer.toJson<String>(userId),
       'matchId': serializer.toJson<int>(matchId),
       'teamId': serializer.toJson<int>(teamId),
       'reversed': serializer.toJson<bool>(reversed),
@@ -4163,7 +3866,6 @@ class MatchScoreData extends DataClass implements Insertable<MatchScoreData> {
 
   MatchScoreData copyWith({
     int? id,
-    String? userId,
     int? matchId,
     int? teamId,
     bool? reversed,
@@ -4171,7 +3873,6 @@ class MatchScoreData extends DataClass implements Insertable<MatchScoreData> {
     DateTime? updatedAt,
   }) => MatchScoreData(
     id: id ?? this.id,
-    userId: userId ?? this.userId,
     matchId: matchId ?? this.matchId,
     teamId: teamId ?? this.teamId,
     reversed: reversed ?? this.reversed,
@@ -4181,7 +3882,6 @@ class MatchScoreData extends DataClass implements Insertable<MatchScoreData> {
   MatchScoreData copyWithCompanion(MatchScoreCompanion data) {
     return MatchScoreData(
       id: data.id.present ? data.id.value : this.id,
-      userId: data.userId.present ? data.userId.value : this.userId,
       matchId: data.matchId.present ? data.matchId.value : this.matchId,
       teamId: data.teamId.present ? data.teamId.value : this.teamId,
       reversed: data.reversed.present ? data.reversed.value : this.reversed,
@@ -4194,7 +3894,6 @@ class MatchScoreData extends DataClass implements Insertable<MatchScoreData> {
   String toString() {
     return (StringBuffer('MatchScoreData(')
           ..write('id: $id, ')
-          ..write('userId: $userId, ')
           ..write('matchId: $matchId, ')
           ..write('teamId: $teamId, ')
           ..write('reversed: $reversed, ')
@@ -4206,13 +3905,12 @@ class MatchScoreData extends DataClass implements Insertable<MatchScoreData> {
 
   @override
   int get hashCode =>
-      Object.hash(id, userId, matchId, teamId, reversed, createdAt, updatedAt);
+      Object.hash(id, matchId, teamId, reversed, createdAt, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is MatchScoreData &&
           other.id == this.id &&
-          other.userId == this.userId &&
           other.matchId == this.matchId &&
           other.teamId == this.teamId &&
           other.reversed == this.reversed &&
@@ -4222,7 +3920,6 @@ class MatchScoreData extends DataClass implements Insertable<MatchScoreData> {
 
 class MatchScoreCompanion extends UpdateCompanion<MatchScoreData> {
   final Value<int> id;
-  final Value<String> userId;
   final Value<int> matchId;
   final Value<int> teamId;
   final Value<bool> reversed;
@@ -4230,7 +3927,6 @@ class MatchScoreCompanion extends UpdateCompanion<MatchScoreData> {
   final Value<DateTime> updatedAt;
   const MatchScoreCompanion({
     this.id = const Value.absent(),
-    this.userId = const Value.absent(),
     this.matchId = const Value.absent(),
     this.teamId = const Value.absent(),
     this.reversed = const Value.absent(),
@@ -4239,18 +3935,15 @@ class MatchScoreCompanion extends UpdateCompanion<MatchScoreData> {
   });
   MatchScoreCompanion.insert({
     this.id = const Value.absent(),
-    required String userId,
     required int matchId,
     required int teamId,
     this.reversed = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
-  }) : userId = Value(userId),
-       matchId = Value(matchId),
+  }) : matchId = Value(matchId),
        teamId = Value(teamId);
   static Insertable<MatchScoreData> custom({
     Expression<int>? id,
-    Expression<String>? userId,
     Expression<int>? matchId,
     Expression<int>? teamId,
     Expression<bool>? reversed,
@@ -4259,7 +3952,6 @@ class MatchScoreCompanion extends UpdateCompanion<MatchScoreData> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (userId != null) 'user_id': userId,
       if (matchId != null) 'match_id': matchId,
       if (teamId != null) 'team_id': teamId,
       if (reversed != null) 'reversed': reversed,
@@ -4270,7 +3962,6 @@ class MatchScoreCompanion extends UpdateCompanion<MatchScoreData> {
 
   MatchScoreCompanion copyWith({
     Value<int>? id,
-    Value<String>? userId,
     Value<int>? matchId,
     Value<int>? teamId,
     Value<bool>? reversed,
@@ -4279,7 +3970,6 @@ class MatchScoreCompanion extends UpdateCompanion<MatchScoreData> {
   }) {
     return MatchScoreCompanion(
       id: id ?? this.id,
-      userId: userId ?? this.userId,
       matchId: matchId ?? this.matchId,
       teamId: teamId ?? this.teamId,
       reversed: reversed ?? this.reversed,
@@ -4293,9 +3983,6 @@ class MatchScoreCompanion extends UpdateCompanion<MatchScoreData> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
-    }
-    if (userId.present) {
-      map['user_id'] = Variable<String>(userId.value);
     }
     if (matchId.present) {
       map['match_id'] = Variable<int>(matchId.value);
@@ -4319,7 +4006,6 @@ class MatchScoreCompanion extends UpdateCompanion<MatchScoreData> {
   String toString() {
     return (StringBuffer('MatchScoreCompanion(')
           ..write('id: $id, ')
-          ..write('userId: $userId, ')
           ..write('matchId: $matchId, ')
           ..write('teamId: $teamId, ')
           ..write('reversed: $reversed, ')
@@ -4426,7 +4112,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 typedef $$EventTableCreateCompanionBuilder =
     EventCompanion Function({
       Value<int> id,
-      required String userId,
       required String name,
       Value<int> maxScore,
       Value<int> maxPlayerPerTeam,
@@ -4443,7 +4128,6 @@ typedef $$EventTableCreateCompanionBuilder =
 typedef $$EventTableUpdateCompanionBuilder =
     EventCompanion Function({
       Value<int> id,
-      Value<String> userId,
       Value<String> name,
       Value<int> maxScore,
       Value<int> maxPlayerPerTeam,
@@ -4509,11 +4193,6 @@ class $$EventTableFilterComposer extends Composer<_$AppDatabase, $EventTable> {
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get userId => $composableBuilder(
-    column: $table.userId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4642,11 +4321,6 @@ class $$EventTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get userId => $composableBuilder(
-    column: $table.userId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
     builder: (column) => ColumnOrderings(column),
@@ -4719,9 +4393,6 @@ class $$EventTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get userId =>
-      $composableBuilder(column: $table.userId, builder: (column) => column);
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
@@ -4849,7 +4520,6 @@ class $$EventTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<String> userId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<int> maxScore = const Value.absent(),
                 Value<int> maxPlayerPerTeam = const Value.absent(),
@@ -4864,7 +4534,6 @@ class $$EventTableTableManager
                 Value<DateTime?> endedAt = const Value.absent(),
               }) => EventCompanion(
                 id: id,
-                userId: userId,
                 name: name,
                 maxScore: maxScore,
                 maxPlayerPerTeam: maxPlayerPerTeam,
@@ -4881,7 +4550,6 @@ class $$EventTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required String userId,
                 required String name,
                 Value<int> maxScore = const Value.absent(),
                 Value<int> maxPlayerPerTeam = const Value.absent(),
@@ -4896,7 +4564,6 @@ class $$EventTableTableManager
                 Value<DateTime?> endedAt = const Value.absent(),
               }) => EventCompanion.insert(
                 id: id,
-                userId: userId,
                 name: name,
                 maxScore: maxScore,
                 maxPlayerPerTeam: maxPlayerPerTeam,
@@ -4994,7 +4661,6 @@ typedef $$EventTableProcessedTableManager =
 typedef $$PlayerTableCreateCompanionBuilder =
     PlayerCompanion Function({
       Value<int> id,
-      required String userId,
       required String name,
       required String gender,
       required String level,
@@ -5004,7 +4670,6 @@ typedef $$PlayerTableCreateCompanionBuilder =
 typedef $$PlayerTableUpdateCompanionBuilder =
     PlayerCompanion Function({
       Value<int> id,
-      Value<String> userId,
       Value<String> name,
       Value<String> gender,
       Value<String> level,
@@ -5048,11 +4713,6 @@ class $$PlayerTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get userId => $composableBuilder(
-    column: $table.userId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5121,11 +4781,6 @@ class $$PlayerTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get userId => $composableBuilder(
-    column: $table.userId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
     builder: (column) => ColumnOrderings(column),
@@ -5163,9 +4818,6 @@ class $$PlayerTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get userId =>
-      $composableBuilder(column: $table.userId, builder: (column) => column);
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
@@ -5237,7 +4889,6 @@ class $$PlayerTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<String> userId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> gender = const Value.absent(),
                 Value<String> level = const Value.absent(),
@@ -5245,7 +4896,6 @@ class $$PlayerTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => PlayerCompanion(
                 id: id,
-                userId: userId,
                 name: name,
                 gender: gender,
                 level: level,
@@ -5255,7 +4905,6 @@ class $$PlayerTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required String userId,
                 required String name,
                 required String gender,
                 required String level,
@@ -5263,7 +4912,6 @@ class $$PlayerTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => PlayerCompanion.insert(
                 id: id,
-                userId: userId,
                 name: name,
                 gender: gender,
                 level: level,
@@ -5328,7 +4976,6 @@ typedef $$PlayerTableProcessedTableManager =
 typedef $$EventTeamTableCreateCompanionBuilder =
     EventTeamCompanion Function({
       Value<int> id,
-      required String userId,
       required int eventId,
       required String name,
       Value<DateTime> createdAt,
@@ -5337,7 +4984,6 @@ typedef $$EventTeamTableCreateCompanionBuilder =
 typedef $$EventTeamTableUpdateCompanionBuilder =
     EventTeamCompanion Function({
       Value<int> id,
-      Value<String> userId,
       Value<int> eventId,
       Value<String> name,
       Value<DateTime> createdAt,
@@ -5416,11 +5062,6 @@ class $$EventTeamTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get userId => $composableBuilder(
-    column: $table.userId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5527,11 +5168,6 @@ class $$EventTeamTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get userId => $composableBuilder(
-    column: $table.userId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
     builder: (column) => ColumnOrderings(column),
@@ -5582,9 +5218,6 @@ class $$EventTeamTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get userId =>
-      $composableBuilder(column: $table.userId, builder: (column) => column);
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
@@ -5702,14 +5335,12 @@ class $$EventTeamTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<String> userId = const Value.absent(),
                 Value<int> eventId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => EventTeamCompanion(
                 id: id,
-                userId: userId,
                 eventId: eventId,
                 name: name,
                 createdAt: createdAt,
@@ -5718,14 +5349,12 @@ class $$EventTeamTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required String userId,
                 required int eventId,
                 required String name,
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => EventTeamCompanion.insert(
                 id: id,
-                userId: userId,
                 eventId: eventId,
                 name: name,
                 createdAt: createdAt,
@@ -5855,7 +5484,6 @@ typedef $$EventTeamTableProcessedTableManager =
     >;
 typedef $$EventTeamPlayerTableCreateCompanionBuilder =
     EventTeamPlayerCompanion Function({
-      required String userId,
       required int teamId,
       required int playerId,
       Value<DateTime> createdAt,
@@ -5864,7 +5492,6 @@ typedef $$EventTeamPlayerTableCreateCompanionBuilder =
     });
 typedef $$EventTeamPlayerTableUpdateCompanionBuilder =
     EventTeamPlayerCompanion Function({
-      Value<String> userId,
       Value<int> teamId,
       Value<int> playerId,
       Value<DateTime> createdAt,
@@ -5932,11 +5559,6 @@ class $$EventTeamPlayerTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get userId => $composableBuilder(
-    column: $table.userId,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
@@ -6003,11 +5625,6 @@ class $$EventTeamPlayerTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get userId => $composableBuilder(
-    column: $table.userId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -6074,9 +5691,6 @@ class $$EventTeamPlayerTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get userId =>
-      $composableBuilder(column: $table.userId, builder: (column) => column);
-
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -6160,14 +5774,12 @@ class $$EventTeamPlayerTableTableManager
               $$EventTeamPlayerTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<String> userId = const Value.absent(),
                 Value<int> teamId = const Value.absent(),
                 Value<int> playerId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => EventTeamPlayerCompanion(
-                userId: userId,
                 teamId: teamId,
                 playerId: playerId,
                 createdAt: createdAt,
@@ -6176,14 +5788,12 @@ class $$EventTeamPlayerTableTableManager
               ),
           createCompanionCallback:
               ({
-                required String userId,
                 required int teamId,
                 required int playerId,
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => EventTeamPlayerCompanion.insert(
-                userId: userId,
                 teamId: teamId,
                 playerId: playerId,
                 createdAt: createdAt,
@@ -6277,7 +5887,6 @@ typedef $$EventTeamPlayerTableProcessedTableManager =
 typedef $$EventMatchTableCreateCompanionBuilder =
     EventMatchCompanion Function({
       Value<int> id,
-      required String userId,
       required int eventId,
       required int firstTeamId,
       required int secondTeamId,
@@ -6292,7 +5901,6 @@ typedef $$EventMatchTableCreateCompanionBuilder =
 typedef $$EventMatchTableUpdateCompanionBuilder =
     EventMatchCompanion Function({
       Value<int> id,
-      Value<String> userId,
       Value<int> eventId,
       Value<int> firstTeamId,
       Value<int> secondTeamId,
@@ -6395,11 +6003,6 @@ class $$EventMatchTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get userId => $composableBuilder(
-    column: $table.userId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6547,11 +6150,6 @@ class $$EventMatchTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get userId => $composableBuilder(
-    column: $table.userId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
     builder: (column) => ColumnOrderings(column),
@@ -6668,9 +6266,6 @@ class $$EventMatchTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get userId =>
-      $composableBuilder(column: $table.userId, builder: (column) => column);
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
@@ -6824,7 +6419,6 @@ class $$EventMatchTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<String> userId = const Value.absent(),
                 Value<int> eventId = const Value.absent(),
                 Value<int> firstTeamId = const Value.absent(),
                 Value<int> secondTeamId = const Value.absent(),
@@ -6837,7 +6431,6 @@ class $$EventMatchTableTableManager
                 Value<DateTime?> endedAt = const Value.absent(),
               }) => EventMatchCompanion(
                 id: id,
-                userId: userId,
                 eventId: eventId,
                 firstTeamId: firstTeamId,
                 secondTeamId: secondTeamId,
@@ -6852,7 +6445,6 @@ class $$EventMatchTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required String userId,
                 required int eventId,
                 required int firstTeamId,
                 required int secondTeamId,
@@ -6865,7 +6457,6 @@ class $$EventMatchTableTableManager
                 Value<DateTime?> endedAt = const Value.absent(),
               }) => EventMatchCompanion.insert(
                 id: id,
-                userId: userId,
                 eventId: eventId,
                 firstTeamId: firstTeamId,
                 secondTeamId: secondTeamId,
@@ -7009,7 +6600,6 @@ typedef $$EventMatchTableProcessedTableManager =
 typedef $$MatchScoreTableCreateCompanionBuilder =
     MatchScoreCompanion Function({
       Value<int> id,
-      required String userId,
       required int matchId,
       required int teamId,
       Value<bool> reversed,
@@ -7019,7 +6609,6 @@ typedef $$MatchScoreTableCreateCompanionBuilder =
 typedef $$MatchScoreTableUpdateCompanionBuilder =
     MatchScoreCompanion Function({
       Value<int> id,
-      Value<String> userId,
       Value<int> matchId,
       Value<int> teamId,
       Value<bool> reversed,
@@ -7079,11 +6668,6 @@ class $$MatchScoreTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get userId => $composableBuilder(
-    column: $table.userId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7163,11 +6747,6 @@ class $$MatchScoreTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get userId => $composableBuilder(
-    column: $table.userId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<bool> get reversed => $composableBuilder(
     column: $table.reversed,
     builder: (column) => ColumnOrderings(column),
@@ -7241,9 +6820,6 @@ class $$MatchScoreTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get userId =>
-      $composableBuilder(column: $table.userId, builder: (column) => column);
 
   GeneratedColumn<bool> get reversed =>
       $composableBuilder(column: $table.reversed, builder: (column) => column);
@@ -7330,7 +6906,6 @@ class $$MatchScoreTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<String> userId = const Value.absent(),
                 Value<int> matchId = const Value.absent(),
                 Value<int> teamId = const Value.absent(),
                 Value<bool> reversed = const Value.absent(),
@@ -7338,7 +6913,6 @@ class $$MatchScoreTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => MatchScoreCompanion(
                 id: id,
-                userId: userId,
                 matchId: matchId,
                 teamId: teamId,
                 reversed: reversed,
@@ -7348,7 +6922,6 @@ class $$MatchScoreTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required String userId,
                 required int matchId,
                 required int teamId,
                 Value<bool> reversed = const Value.absent(),
@@ -7356,7 +6929,6 @@ class $$MatchScoreTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => MatchScoreCompanion.insert(
                 id: id,
-                userId: userId,
                 matchId: matchId,
                 teamId: teamId,
                 reversed: reversed,

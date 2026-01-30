@@ -3,29 +3,18 @@ import 'package:matchmaker/src/common/shared/exceptions.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/services/database/database.dart';
 import 'package:result/result.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'events_repository.dart';
 
 class EventsLocalRepository implements EventsRepository {
-  late final Session? _session;
-  late final AppDatabase _db;
+  final AppDatabase _db;
 
-  EventsLocalRepository(AppDatabase app) {
-    _session = Supabase.instance.client.auth.currentSession;
-    _db = app;
-  }
+  const EventsLocalRepository(this._db);
 
   @override
   AsyncResult<List<EventEntity>> findMany() async {
     try {
-      final userId = _session?.user.id;
-
-      if (userId == null) {
-        return const Result.error(AppException('Você precisa estar autenticado para realizar esta ação!'));
-      }
-
-      return await _db.getEventsWithLastMatch(userId);
+      return await _db.getEventsWithLastMatch();
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
@@ -47,19 +36,12 @@ class EventsLocalRepository implements EventsRepository {
   @override
   AsyncResult<EventEntity> insertOne(InsertOneEventParams params) async {
     try {
-      final userId = _session?.user.id;
-
-      if (userId == null) {
-        return const Result.error(AppException('Você precisa estar autenticado para realizar esta ação!'));
-      }
-
       return await _db.transaction(
         () async {
           final event = await _db
               .into(_db.event)
               .insertReturning(
                 EventCompanion.insert(
-                  userId: userId,
                   name: params.name,
                   maxScore: Value(params.maxScore),
                   halfScoreToEliminate: Value(params.halfScoreToEliminate),
@@ -77,18 +59,18 @@ class EventsLocalRepository implements EventsRepository {
                 .into(_db.eventTeam)
                 .insert(
                   EventTeamCompanion.insert(
-                    userId: userId,
                     eventId: event.id,
                     name: t.name,
                   ),
                 );
 
             for (final p in t.players) {
+              if (p.isJoker) continue;
+
               final player = await _db
                   .into(_db.player)
                   .insertReturning(
                     PlayerCompanion.insert(
-                      userId: userId,
                       name: p.name,
                       gender: p.gender.value,
                       level: p.level.value,
@@ -103,7 +85,6 @@ class EventsLocalRepository implements EventsRepository {
                   .into(_db.eventTeamPlayer)
                   .insert(
                     EventTeamPlayerCompanion.insert(
-                      userId: userId,
                       teamId: teamId,
                       playerId: player.id,
                     ),
@@ -119,7 +100,6 @@ class EventsLocalRepository implements EventsRepository {
               .into(_db.eventMatch)
               .insert(
                 EventMatchCompanion.insert(
-                  userId: userId,
                   eventId: event.id,
                   name: 'Partida #1',
                   firstTeamId: starterTeams.first,
@@ -170,7 +150,6 @@ class EventsLocalRepository implements EventsRepository {
             balancedByGender: params.balancedByGender != null ? Value(params.balancedByGender!) : const Value.absent(),
             balancedByLevel: params.balancedByLevel != null ? Value(params.balancedByLevel!) : const Value.absent(),
             maxWinsInARow: params.maxWinsInARow != null ? Value(params.maxWinsInARow!) : const Value.absent(),
-            // queue: ,
             ended: params.ended != null ? Value(params.ended!) : const Value.absent(),
             endedAt: params.ended != null && params.ended == true
                 ? Value(DateTime.now().toUtc())

@@ -228,7 +228,10 @@ class CreateEventController extends ChangeNotifier {
       while (teams[i].players.length < _event.maxPlayerPerTeam) {
         final womenCount = teams[i].players.where((p) => p.isWoman).length;
         final menCount = teams[i].players.where((p) => p.isMan).length;
-        final jokerGender = womenCount <= menCount ? PlayerGender.female : PlayerGender.male;
+        final jokerGender = switch (_event.balancedByGender) {
+          true => womenCount <= menCount ? PlayerGender.female : PlayerGender.male,
+          false => PlayerGender.unknown,
+        };
 
         teams[i] = teams[i].copyWith(
           players: [

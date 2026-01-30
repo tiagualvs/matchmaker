@@ -26,14 +26,14 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  AsyncResult<List<EventEntity>> getEventsWithLastMatch(String userId) async {
-    final result = await (select(eventWithLastMatch)..where((tb) => tb.userId.equals(userId))).get();
+  AsyncResult<List<EventEntity>> getEventsWithLastMatch() async {
+    final result = await select(eventWithLastMatch).get();
 
     return Result.ok(result.map(EventEntity.withLastMatch).toList());
   }
 
-  AsyncResult<List<EventEntity>> getEventsWithAllData(String userId) async {
-    final result = await (select(eventWithAllData)..where((tb) => tb.userId.equals(userId))).get();
+  AsyncResult<List<EventEntity>> getEventsWithAllData() async {
+    final result = await select(eventWithAllData).get();
 
     return Result.ok(result.map(EventEntity.withAllData).toList());
   }
@@ -48,8 +48,8 @@ class AppDatabase extends _$AppDatabase {
     return Result.ok(EventEntity.withAllData(result));
   }
 
-  AsyncResult<MatchEntity> getMatchWithAllData(int id) async {
-    final result = await (select(matchWithAllData)..where((tb) => tb.id.equals(id))).getSingleOrNull();
+  AsyncResult<MatchEntity> getMatchWithAllData(int matchId) async {
+    final result = await (select(matchWithAllData)..where((tb) => tb.id.equals(matchId))).getSingleOrNull();
 
     if (result == null) {
       return Result.error(Exception('Partida não encontrada!'));

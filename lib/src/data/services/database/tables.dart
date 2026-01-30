@@ -2,7 +2,6 @@ import 'package:drift/drift.dart';
 
 class Player extends Table {
   late final IntColumn id = integer().autoIncrement()();
-  late final TextColumn userId = text().named('user_id')();
   late final TextColumn name = text().unique()();
   late final TextColumn gender = text().check(gender.isIn(['male', 'female', 'unknown']))();
   late final TextColumn level = text().check(level.isIn(['basic', 'intermediate', 'advanced']))();
@@ -15,7 +14,6 @@ class Player extends Table {
 
 class Event extends Table {
   late final IntColumn id = integer().autoIncrement()();
-  late final TextColumn userId = text().named('user_id')();
   late final TextColumn name = text()();
   late final IntColumn maxScore = integer().named('max_score').clientDefault(() => 12)();
   late final IntColumn maxPlayerPerTeam = integer().named('max_player_per_team').clientDefault(() => 4)();
@@ -35,7 +33,6 @@ class Event extends Table {
 
 class EventTeam extends Table {
   late final IntColumn id = integer().autoIncrement()();
-  late final TextColumn userId = text().named('user_id')();
   late final IntColumn eventId = integer().named('event_id').references(Event, #id, onDelete: .cascade)();
   late final TextColumn name = text()();
   late final DateTimeColumn createdAt = dateTime().named('created_at').clientDefault(() => DateTime.now().toUtc())();
@@ -46,7 +43,6 @@ class EventTeam extends Table {
 }
 
 class EventTeamPlayer extends Table {
-  late final TextColumn userId = text().named('user_id')();
   late final IntColumn teamId = integer().named('team_id').references(EventTeam, #id, onDelete: .cascade)();
   late final IntColumn playerId = integer().named('player_id').references(Player, #id, onDelete: .cascade)();
   late final DateTimeColumn createdAt = dateTime().named('created_at').clientDefault(() => DateTime.now().toUtc())();
@@ -61,7 +57,6 @@ class EventTeamPlayer extends Table {
 
 class EventMatch extends Table {
   late final IntColumn id = integer().autoIncrement()();
-  late final TextColumn userId = text().named('user_id')();
   late final IntColumn eventId = integer().named('event_id').references(Event, #id, onDelete: .cascade)();
   late final IntColumn firstTeamId = integer().named('first_team_id').references(EventTeam, #id, onDelete: .cascade)();
   late final IntColumn secondTeamId = integer()
@@ -81,7 +76,6 @@ class EventMatch extends Table {
 
 class MatchScore extends Table {
   late final IntColumn id = integer().autoIncrement()();
-  late final TextColumn userId = text().named('user_id')();
   late final IntColumn matchId = integer().named('match_id').references(EventMatch, #id, onDelete: .cascade)();
   late final IntColumn teamId = integer().named('team_id').references(EventTeam, #id, onDelete: .cascade)();
   late final BoolColumn reversed = boolean().clientDefault(() => false)();

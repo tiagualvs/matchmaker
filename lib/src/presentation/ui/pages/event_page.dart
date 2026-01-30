@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/others/dialogs.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/others/text_span_builder.dart';
 import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
@@ -13,6 +14,7 @@ import 'package:matchmaker/src/presentation/controllers/event_controller.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/current_match_widget.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/players_dialog.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/team_card_widget.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:widgets_to_image/widgets_to_image.dart';
 
 class EventPage extends StatefulWidget {
@@ -85,6 +87,21 @@ class _EventPageState extends State<EventPage> {
     );
   }
 
+  Future<void> onNeedsJoker(TeamEntity team, List<PlayerEntity> suggestions) async {
+    return await Dialogs.show(
+      context,
+      title: 'Jogador ausente!',
+      content:
+          'O time [b]${team.name}[/b] precisa de ${event.maxPlayerPerTeam - team.players.length} jogadores para completar a equipe!${suggestions.isNotEmpty ? '\n\nJogadores sugeridos:\n${suggestions.map((player) => player.name).join('\n')}' : ''}',
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(),
+          child: const Text('OK'),
+        ),
+      ],
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -97,6 +114,7 @@ class _EventPageState extends State<EventPage> {
       return await controller.loadDependencies(
         widget.id,
         onMaxWinsInARow: whenMaxWinsInARow,
+        onNeedsJoker: onNeedsJoker,
       );
     });
   }
@@ -117,7 +135,7 @@ class _EventPageState extends State<EventPage> {
             true => [],
             false => [
               FloatingActionButtonMenuItem(
-                icon: const Icon(Icons.settings_rounded),
+                icon: const Icon(Symbols.settings_rounded),
                 label: const Text('Configurações'),
                 onPressed: () async {
                   await context.pushNamed(
@@ -130,11 +148,12 @@ class _EventPageState extends State<EventPage> {
                   return controller.loadDependencies(
                     widget.id,
                     onMaxWinsInARow: whenMaxWinsInARow,
+                    onNeedsJoker: onNeedsJoker,
                   );
                 },
               ),
               FloatingActionButtonMenuItem(
-                icon: const Icon(Icons.list_rounded),
+                icon: const Icon(Symbols.list_rounded),
                 label: const Text('Histórico de partidas'),
                 onPressed: () => context.pushNamed(
                   'match-history',
@@ -266,7 +285,11 @@ class _EventPageState extends State<EventPage> {
                                   'matchId': currentMatch?.id.toString() ?? '',
                                 },
                               );
-                              await controller.loadDependencies(widget.id, onMaxWinsInARow: whenMaxWinsInARow);
+                              await controller.loadDependencies(
+                                widget.id,
+                                onMaxWinsInARow: whenMaxWinsInARow,
+                                onNeedsJoker: onNeedsJoker,
+                              );
                             },
                           ),
                         ],
@@ -375,8 +398,8 @@ class _EventPageState extends State<EventPage> {
                             final team = event.teams[index];
 
                             return TeamCardWidget(
-                              team: team,
                               initiallyExpanded: controller.sharing,
+                              team: team,
                             );
                           },
                         ),

@@ -9,6 +9,7 @@ import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/create_event_controller.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/event_settings_dialog.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/team_card_widget.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class CreateEventPage extends StatefulWidget {
   const CreateEventPage({super.key, required this.controller});
@@ -54,7 +55,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
         return FloatingActionButtonMenu(
           menus: [
             FloatingActionButtonMenuItem(
-              icon: const Icon(Icons.settings_rounded),
+              icon: const Icon(Symbols.settings_rounded),
               label: const Text('Configurações do evento'),
               onPressed: () async {
                 final changedEvent = await showGeneralDialog<EventEntity>(
@@ -74,14 +75,14 @@ class _CreateEventPageState extends State<CreateEventPage> {
             ),
             if (controller.event.teams.isNotEmpty) ...[
               FloatingActionButtonMenuItem(
-                icon: const Icon(Icons.refresh_rounded),
+                icon: const Icon(Symbols.refresh_rounded),
                 label: const Text('Desfazer times'),
                 onPressed: () => controller.handleEventChanges(
                   controller.event.copyWith(teams: []),
                 ),
               ),
               FloatingActionButtonMenuItem(
-                icon: const Icon(Icons.save_rounded),
+                icon: const Icon(Symbols.save_rounded),
                 label: const Text('Salvar evento'),
                 onPressed: () => controller.handleSaveEvent(
                   onSuccess: () {
@@ -97,7 +98,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
             ],
             if (controller.event.teams.isEmpty) ...[
               FloatingActionButtonMenuItem(
-                icon: const Icon(Icons.groups_rounded),
+                icon: const Icon(Symbols.groups_rounded),
                 label: const Text('Gerar times'),
                 onPressed: () => controller.handleGenerateTeams(onError: SnackBars.error),
               ),
@@ -106,7 +107,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
           child: Scaffold(
             appBar: AppBar(
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_rounded),
+                icon: const Icon(Symbols.arrow_back_ios_rounded),
                 onPressed: () {
                   controller.resetController();
                   return context.pop();
@@ -153,7 +154,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                   FocusScope.of(context).unfocus();
                                   return await controller.importFromRawList(onError: SnackBars.error);
                                 },
-                          icon: const Icon(Icons.upload_file_rounded),
+                          icon: const Icon(Symbols.upload_file_rounded),
                           label: const Text('Importar'),
                         );
                       },
@@ -204,7 +205,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                   FocusScope.of(context).unfocus();
                                   return await controller.handleAddPlayer(onError: SnackBars.error);
                                 },
-                          icon: const Icon(Icons.person_add_rounded),
+                          icon: const Icon(Symbols.person_add_rounded),
                           label: const Text('Adicionar'),
                         );
                       },
@@ -325,7 +326,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                                       style: FilledButton.styleFrom(
                                                         backgroundColor: context.colorScheme.error,
                                                       ),
-                                                      icon: const Icon(Icons.cancel),
+                                                      icon: const Icon(Symbols.cancel),
                                                       label: const Text('Cancelar'),
                                                     ),
                                                   ),
@@ -338,7 +339,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                                           level: level.first,
                                                         ),
                                                       ),
-                                                      icon: const Icon(Icons.save),
+                                                      icon: const Icon(Symbols.save),
                                                       label: const Text('Salvar'),
                                                     ),
                                                   ),
@@ -378,17 +379,17 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                         padding: const .all(4.0),
                                         child: switch (player.gender) {
                                           PlayerGender.male => const Icon(
-                                            Icons.male_rounded,
+                                            Symbols.male_rounded,
                                             color: Colors.blue,
                                             size: 22.0,
                                           ),
                                           PlayerGender.female => const Icon(
-                                            Icons.female_rounded,
+                                            Symbols.female_rounded,
                                             color: Colors.pink,
                                             size: 22.0,
                                           ),
                                           _ => const Icon(
-                                            Icons.person_rounded,
+                                            Symbols.agender_rounded,
                                             color: Colors.blueGrey,
                                             size: 22.0,
                                           ),
@@ -403,7 +404,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                     ),
                                     IconButton(
                                       onPressed: () => controller.handleRemovePlayer(index),
-                                      icon: const Icon(Icons.delete_rounded),
+                                      icon: const Icon(Symbols.delete_rounded),
                                     ),
                                   ],
                                 ),

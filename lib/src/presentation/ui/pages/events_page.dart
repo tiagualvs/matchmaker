@@ -6,6 +6,7 @@ import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/events_controller.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key, required this.controller});
@@ -46,7 +47,7 @@ class _EventsPageState extends State<EventsPage> {
         return FloatingActionButtonMenu(
           menus: [
             FloatingActionButtonMenuItem(
-              icon: const Icon(Icons.event_rounded),
+              icon: const Icon(Symbols.event_rounded),
               label: const Text('Criar novo evento'),
               onPressed: () async {
                 await context.pushNamed<bool>('createEvent');

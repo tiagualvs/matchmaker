@@ -3,33 +3,21 @@ import 'package:matchmaker/src/common/shared/exceptions.dart';
 import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:matchmaker/src/data/services/database/database.dart';
 import 'package:result/result.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'scores_repository.dart';
 
 class ScoresLocalRepository implements ScoresRepository {
-  late final AppDatabase _db;
-  late final Session? _session;
+  final AppDatabase _db;
 
-  ScoresLocalRepository(AppDatabase app) {
-    _session = Supabase.instance.client.auth.currentSession;
-    _db = app;
-  }
+  const ScoresLocalRepository(this._db);
 
   @override
   AsyncResult<ScoreEntity> insertOne(InsertOneScoreParams params) async {
     try {
-      final userId = _session?.user.id;
-
-      if (userId == null) {
-        return const Result.error(AppException('Usuário não autenticado!'));
-      }
-
       final score = await _db
           .into(_db.matchScore)
           .insertReturning(
             MatchScoreCompanion(
-              userId: Value(userId),
               matchId: Value(params.matchId),
               teamId: Value(params.teamId),
             ),

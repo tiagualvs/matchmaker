@@ -3,33 +3,21 @@ import 'package:matchmaker/src/common/shared/exceptions.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/services/database/database.dart';
 import 'package:result/result.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'players_repository.dart';
 
 class PlayersLocalRepository implements PlayersRepository {
-  late final AppDatabase _db;
-  late final Session? _session;
+  final AppDatabase _db;
 
-  PlayersLocalRepository(AppDatabase app) {
-    _session = Supabase.instance.client.auth.currentSession;
-    _db = app;
-  }
+  const PlayersLocalRepository(this._db);
 
   @override
   AsyncResult<PlayerEntity> insertOne(InsertOnePlayerParams params) async {
     try {
-      final userId = _session?.user.id;
-
-      if (userId == null) {
-        return const Result.error(AppException('Você precisa estar logado para realizar essa ação!'));
-      }
-
       final player = await _db
           .into(_db.player)
           .insertReturning(
             PlayerCompanion.insert(
-              userId: userId,
               name: params.name,
               gender: params.gender,
               level: params.level,

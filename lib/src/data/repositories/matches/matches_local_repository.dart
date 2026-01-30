@@ -3,34 +3,22 @@ import 'package:matchmaker/src/common/shared/exceptions.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/services/database/database.dart';
 import 'package:result/result.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'matches_repository.dart';
 
 class MatchesLocalRepository implements MatchesRepository {
-  late final AppDatabase _db;
-  late final Session? _session;
+  final AppDatabase _db;
 
-  MatchesLocalRepository(AppDatabase app) {
-    _session = Supabase.instance.client.auth.currentSession;
-    _db = app;
-  }
+  const MatchesLocalRepository(this._db);
 
   @override
   AsyncResult<MatchEntity> insertOne(InsertOneMatchParams params) async {
-    final userId = _session?.user.id;
-
-    if (userId == null) {
-      return const Result.error(AppException('Usuário não autenticado!'));
-    }
-
     try {
       return await _db.transaction(() async {
         final matchId = await _db
             .into(_db.eventMatch)
             .insert(
               EventMatchCompanion.insert(
-                userId: userId,
                 eventId: params.eventId,
                 name: params.name,
                 firstTeamId: params.firstTeamId,
