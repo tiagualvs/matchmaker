@@ -93,7 +93,7 @@ class _FloatingActionButtonMenuState extends State<FloatingActionButtonMenu> wit
                           foregroundColor: context.colorScheme.primaryContainer,
                         ),
                       ],
-                      const SizedBox(height: 24.0),
+                      SizedBox(height: MediaQuery.of(context).padding.bottom + 24.0),
                     ],
                   ),
                 ),

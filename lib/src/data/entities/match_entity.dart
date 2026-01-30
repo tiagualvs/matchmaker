@@ -205,7 +205,7 @@ abstract class MatchEntity with _$MatchEntity {
   }
 
   String get details {
-    return '$name - ${firstTeam.name} ($firstTeamScore) vs ($secondTeamScore) ${secondTeam.name}';
+    return '${firstTeam.name} ($firstTeamScore) vs ($secondTeamScore) ${secondTeam.name}';
   }
 
   ScoreEntity get lastScore {

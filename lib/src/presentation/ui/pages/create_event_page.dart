@@ -8,7 +8,6 @@ import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/create_event_controller.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/event_settings_dialog.dart';
-import 'package:matchmaker/src/presentation/ui/widgets/label_widget.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/team_card_widget.dart';
 
 class CreateEventPage extends StatefulWidget {
@@ -152,7 +151,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                               ? null
                               : () async {
                                   FocusScope.of(context).unfocus();
-                                  await controller.importFromRawList(onError: SnackBars.error);
+                                  return await controller.importFromRawList(onError: SnackBars.error);
                                 },
                           icon: const Icon(Icons.upload_file_rounded),
                           label: const Text('Importar'),
@@ -185,6 +184,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                     ),
                     SegmentedButton<PlayerGender>(
                       emptySelectionAllowed: true,
+                      selectedIcon: const SizedBox.shrink(),
                       segments: [
                         const ButtonSegment(value: PlayerGender.male, label: Text('Masculino')),
                         const ButtonSegment(value: PlayerGender.female, label: Text('Feminino')),
@@ -248,6 +248,8 @@ class _CreateEventPageState extends State<CreateEventPage> {
 
                                 Set<PlayerGender> gender = {player.gender};
 
+                                Set<PlayerLevel> level = {player.level};
+
                                 final changedPlayed = await showModalBottomSheet<PlayerEntity>(
                                   context: context,
                                   isScrollControlled: true,
@@ -255,7 +257,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                     return StatefulBuilder(
                                       builder: (context, setState) {
                                         return Padding(
-                                          padding: const .all(16.0),
+                                          padding: const .all(24.0),
                                           child: Column(
                                             spacing: 16.0,
                                             mainAxisSize: .min,
@@ -265,36 +267,54 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                                 'Editar Jogador',
                                                 style: context.textTheme.titleMedium,
                                               ),
-                                              LabelWidget(
-                                                label: 'Nome do Jogador',
-                                                child: TextFormField(
-                                                  initialValue: name,
-                                                  onChanged: (value) => setState(() => name = value),
-                                                  decoration: const InputDecoration(
-                                                    hintText: 'Fulano de Tal',
-                                                  ),
+                                              TextFormField(
+                                                initialValue: name,
+                                                onChanged: (value) => setState(() => name = value),
+                                                decoration: const InputDecoration(
+                                                  hintText: 'Fulano de Tal',
+                                                  labelText: 'Nome do Jogador',
+                                                  floatingLabelBehavior: .always,
                                                 ),
                                               ),
-                                              LabelWidget(
-                                                label: 'Gênero',
-                                                spacing: 0,
-                                                child: SegmentedButton<PlayerGender>(
-                                                  emptySelectionAllowed: true,
-                                                  segments: [
-                                                    const ButtonSegment(
-                                                      value: PlayerGender.male,
-                                                      label: Text('Masculino'),
-                                                    ),
-                                                    const ButtonSegment(
-                                                      value: PlayerGender.female,
-                                                      label: Text('Feminino'),
-                                                    ),
-                                                  ],
-                                                  onSelectionChanged: (value) => setState(() {
-                                                    gender = value;
-                                                  }),
-                                                  selected: gender,
-                                                ),
+                                              SegmentedButton<PlayerGender>(
+                                                emptySelectionAllowed: true,
+                                                selectedIcon: const SizedBox.shrink(),
+                                                segments: [
+                                                  const ButtonSegment(
+                                                    value: PlayerGender.male,
+                                                    label: Text('Masculino'),
+                                                  ),
+                                                  const ButtonSegment(
+                                                    value: PlayerGender.female,
+                                                    label: Text('Feminino'),
+                                                  ),
+                                                ],
+                                                onSelectionChanged: (value) => setState(() {
+                                                  gender = value;
+                                                }),
+                                                selected: gender,
+                                              ),
+                                              SegmentedButton<PlayerLevel>(
+                                                emptySelectionAllowed: true,
+                                                selectedIcon: const SizedBox.shrink(),
+                                                segments: [
+                                                  const ButtonSegment(
+                                                    value: PlayerLevel.basic,
+                                                    label: Text('⭐'),
+                                                  ),
+                                                  const ButtonSegment(
+                                                    value: PlayerLevel.intermediate,
+                                                    label: Text('⭐⭐'),
+                                                  ),
+                                                  const ButtonSegment(
+                                                    value: PlayerLevel.advanced,
+                                                    label: Text('⭐⭐⭐'),
+                                                  ),
+                                                ],
+                                                onSelectionChanged: (value) => setState(() {
+                                                  level = value;
+                                                }),
+                                                selected: level,
                                               ),
                                               Row(
                                                 spacing: 16.0,
@@ -315,6 +335,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                                                         player.copyWith(
                                                           name: name,
                                                           gender: gender.first,
+                                                          level: level.first,
                                                         ),
                                                       ),
                                                       icon: const Icon(Icons.save),

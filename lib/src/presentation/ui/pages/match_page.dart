@@ -33,6 +33,14 @@ class _MatchPageState extends State<MatchPage> {
 
   TeamEntity get secondTeam => match.secondTeam;
 
+  bool swapped = false;
+
+  void toggleSwap() {
+    setState(() {
+      swapped = !swapped;
+    });
+  }
+
   Future<bool> confirmEndOfMatch({
     required TeamEntity team,
     required String score,
@@ -134,126 +142,129 @@ class _MatchPageState extends State<MatchPage> {
           }
         });
 
+        final firstTeamWidget = Expanded(
+          child: GestureDetector(
+            onTap: () => controller.incrementScore(
+              firstTeam.id,
+              confirmEndOfMatch: () => confirmEndOfMatch(
+                team: firstTeam,
+                score: '${match.firstTeamScore} x ${match.secondTeamScore}',
+              ),
+              onError: (error) {
+                return SnackBars.error(error);
+              },
+            ),
+            onVerticalDragEnd: (details) async {
+              if (details.velocity.pixelsPerSecond.dy > 8) {
+                return controller.reverseScore(
+                  firstTeam.id,
+                  onError: (error) {
+                    return SnackBars.error(error);
+                  },
+                );
+              }
+            },
+            child: Material(
+              color: Colors.blue,
+              elevation: 0.0,
+              child: FittedBox(
+                child: Text(
+                  match.firstTeamScore.toString(),
+                  style: context.textTheme.displayLarge?.copyWith(
+                    fontWeight: .bold,
+                    color: switch (match.firstTeamScoreByOne || match.firstTeamWon) {
+                      true => Colors.yellow,
+                      false => Colors.white,
+                    },
+                    // fontSize: 256.0,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final secondTeamWidget = Expanded(
+          child: GestureDetector(
+            onTap: () => controller.incrementScore(
+              secondTeam.id,
+              confirmEndOfMatch: () => confirmEndOfMatch(
+                team: secondTeam,
+                score: '${match.secondTeamScore} x ${match.firstTeamScore}',
+              ),
+              onError: (error) {
+                return SnackBars.error(error);
+              },
+            ),
+            onVerticalDragEnd: (details) async {
+              if (details.velocity.pixelsPerSecond.dy > 8) {
+                return controller.reverseScore(
+                  secondTeam.id,
+                  onError: (error) {
+                    return SnackBars.error(error);
+                  },
+                );
+              }
+            },
+            child: Material(
+              color: Colors.red,
+              elevation: 0.0,
+              child: FittedBox(
+                child: Text(
+                  match.secondTeamScore.toString(),
+                  style: context.textTheme.displayLarge?.copyWith(
+                    fontWeight: .bold,
+                    color: switch (match.secondTeamScoreByOne || match.secondTeamWon) {
+                      true => Colors.yellow,
+                      false => Colors.white,
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
         return SafeArea(
           child: Scaffold(
-            body: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                spacing: 16.0,
-                mainAxisSize: .max,
-                crossAxisAlignment: .stretch,
-                children: [
-                  Row(
-                    mainAxisAlignment: .spaceBetween,
+            body: Stack(
+              children: [
+                Row(
+                  spacing: 16.0,
+                  children: switch (swapped) {
+                    true => [secondTeamWidget, firstTeamWidget],
+                    false => [firstTeamWidget, secondTeamWidget],
+                  },
+                ),
+                Positioned(
+                  bottom: 16.0,
+                  left: 16.0,
+                  right: 16.0,
+                  child: Row(
+                    mainAxisAlignment: .spaceEvenly,
                     children: [
                       Text(
-                        '${match.name} - ${match.firstTeam.name} vs. ${match.secondTeam.name}',
-                        style: context.textTheme.headlineMedium,
+                        swapped ? secondTeam.name : firstTeam.name,
+                        style: context.textTheme.titleLarge?.copyWith(
+                          fontWeight: .bold,
+                          color: Colors.white,
+                        ),
                       ),
-
+                      FloatingActionButton(
+                        onPressed: toggleSwap,
+                        child: const Icon(Icons.swap_horiz_rounded),
+                      ),
                       Text(
-                        'Termina em ${match.maxScore}',
-                        style: context.textTheme.headlineMedium,
+                        swapped ? firstTeam.name : secondTeam.name,
+                        style: context.textTheme.titleLarge?.copyWith(
+                          fontWeight: .bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ],
                   ),
-                  Expanded(
-                    child: IntrinsicHeight(
-                      child: Row(
-                        spacing: 16.0,
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => controller.incrementScore(
-                                firstTeam.id,
-                                confirmEndOfMatch: () => confirmEndOfMatch(
-                                  team: firstTeam,
-                                  score: '${match.firstTeamScore} x ${match.secondTeamScore}',
-                                ),
-                                onError: (error) {
-                                  return SnackBars.error(error);
-                                },
-                              ),
-                              onVerticalDragEnd: (details) async {
-                                if (details.velocity.pixelsPerSecond.dy > 8) {
-                                  return controller.reverseScore(
-                                    firstTeam.id,
-                                    onError: (error) {
-                                      return SnackBars.error(error);
-                                    },
-                                  );
-                                }
-                              },
-                              child: Material(
-                                color: Colors.blue,
-                                elevation: 0.0,
-                                child: Center(
-                                  child: Text(
-                                    match.firstTeamScore.toString(),
-                                    style: context.textTheme.displayLarge?.copyWith(
-                                      fontWeight: .bold,
-                                      color: switch (match.firstTeamScoreByOne || match.firstTeamWon) {
-                                        true => Colors.yellow,
-                                        false => Colors.white,
-                                      },
-                                      fontSize: 256.0,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Text(
-                            'vs',
-                            style: context.textTheme.headlineLarge,
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => controller.incrementScore(
-                                secondTeam.id,
-                                confirmEndOfMatch: () => confirmEndOfMatch(
-                                  team: secondTeam,
-                                  score: '${match.secondTeamScore} x ${match.firstTeamScore}',
-                                ),
-                                onError: (error) {
-                                  return SnackBars.error(error);
-                                },
-                              ),
-                              onVerticalDragEnd: (details) async {
-                                if (details.velocity.pixelsPerSecond.dy > 8) {
-                                  return controller.reverseScore(
-                                    secondTeam.id,
-                                    onError: (error) {
-                                      return SnackBars.error(error);
-                                    },
-                                  );
-                                }
-                              },
-                              child: Material(
-                                color: Colors.red,
-                                elevation: 0.0,
-                                child: Center(
-                                  child: Text(
-                                    match.secondTeamScore.toString(),
-                                    style: context.textTheme.displayLarge?.copyWith(
-                                      fontWeight: .bold,
-                                      color: switch (match.secondTeamScoreByOne || match.secondTeamWon) {
-                                        true => Colors.yellow,
-                                        false => Colors.white,
-                                      },
-                                      fontSize: 256.0,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );

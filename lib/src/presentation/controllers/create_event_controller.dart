@@ -7,6 +7,23 @@ import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 
+const teamNames = <String>[
+  'Aperreados',
+  'Arrochados',
+  'Bonequeiros',
+  'Cabras da Peste',
+  'Cangaceiros',
+  'Desmantelados',
+  'Esfomeados',
+  'Fuleragens',
+  'Fubangas',
+  'Gaiatos',
+  'Marmotas',
+  'Miseráveis',
+  'Ruma de Doido',
+  'Aí Dento 🫳',
+];
+
 class CreateEventController extends ChangeNotifier {
   CreateEventController(this._repository);
 
@@ -60,36 +77,46 @@ class CreateEventController extends ChangeNotifier {
       return onError?.call('Não é possível gerar eventos com menos de 2 times!');
     }
 
-    final teams = List.generate(numTeams, (index) => TeamEntity.empty('Time ${index + 1}'));
+    final randomTeamNames = List<String>.from(teamNames)..shuffle();
 
-    final women = _players.where((player) => player.isWoman).toList()..shuffle();
+    final teams = randomTeamNames.take(numTeams).map(TeamEntity.empty).toList();
 
-    final men = _players.where((player) => player.isMan).toList()..shuffle();
+    // Separate players by gender and sort by level (advanced first)
+    final women = _players.where((player) => player.isWoman).toList()
+      ..sort((a, b) {
+        // Sort by level: advanced (2) > intermediate (1) > basic (0)
+        final levelOrder = {
+          PlayerLevel.advanced: 2,
+          PlayerLevel.intermediate: 1,
+          PlayerLevel.basic: 0,
+        };
+        return (levelOrder[b.level] ?? 0).compareTo(levelOrder[a.level] ?? 0);
+      });
+
+    final men = _players.where((player) => player.isMan).toList()
+      ..sort((a, b) {
+        final levelOrder = {
+          PlayerLevel.advanced: 2,
+          PlayerLevel.intermediate: 1,
+          PlayerLevel.basic: 0,
+        };
+        return (levelOrder[b.level] ?? 0).compareTo(levelOrder[a.level] ?? 0);
+      });
 
     // Calculate how many teams we can fully fill
     final fullTeamsCount = (_players.length / _event.maxPlayerPerTeam).floor();
-
-    // We treat the "fullTeamsCount" teams as priority targets to be balanced.
-    // If (numTeams > fullTeamsCount), the last team takes the overflow.
-    // Edge case: if fullTeamsCount == numTeams, all teams are targets.
-    // Edge case: if fullTeamsCount == 0 (should shouldn't happen with numTeams >= 2 check usually,
-    // unless max is huge, but then numTeams would be 1 and error out),
-    // but code handles targetTeamsCount=0 gracefully by skipping loop and dumping to remainder.
     final targetTeamsCount = fullTeamsCount;
 
+    // Distribute women in round-robin fashion to balance skill levels
     var teamIndex = 0;
-
     for (final woman in women) {
       bool placed = false;
-      // Distribute Round-Robin only among the Target Teams
+
       if (targetTeamsCount > 0) {
         for (int i = 0; i < targetTeamsCount; i++) {
           if (teams[teamIndex].players.length < _event.maxPlayerPerTeam) {
             teams[teamIndex] = teams[teamIndex].copyWith(
-              players: [
-                ...teams[teamIndex].players,
-                woman,
-              ],
+              players: [...teams[teamIndex].players, woman],
             );
             teamIndex = (teamIndex + 1) % targetTeamsCount;
             placed = true;
@@ -103,26 +130,21 @@ class CreateEventController extends ChangeNotifier {
       if (!placed && numTeams > targetTeamsCount) {
         final remainderIndex = numTeams - 1;
         teams[remainderIndex] = teams[remainderIndex].copyWith(
-          players: [
-            ...teams[remainderIndex].players,
-            woman,
-          ],
+          players: [...teams[remainderIndex].players, woman],
         );
       }
     }
 
+    // Distribute men in round-robin fashion to balance skill levels
     teamIndex = 0;
-
     for (final man in men) {
       bool placed = false;
+
       if (targetTeamsCount > 0) {
         for (int i = 0; i < targetTeamsCount; i++) {
           if (teams[teamIndex].players.length < _event.maxPlayerPerTeam) {
             teams[teamIndex] = teams[teamIndex].copyWith(
-              players: [
-                ...teams[teamIndex].players,
-                man,
-              ],
+              players: [...teams[teamIndex].players, man],
             );
             teamIndex = (teamIndex + 1) % targetTeamsCount;
             placed = true;
@@ -135,22 +157,17 @@ class CreateEventController extends ChangeNotifier {
       if (!placed && numTeams > targetTeamsCount) {
         final remainderIndex = numTeams - 1;
         teams[remainderIndex] = teams[remainderIndex].copyWith(
-          players: [
-            ...teams[remainderIndex].players,
-            man,
-          ],
+          players: [...teams[remainderIndex].players, man],
         );
       }
     }
 
+    // Fill remaining spots with joker players, maintaining gender balance
     int jokerIndex = 0;
-
     for (var i = 0; i < teams.length; i++) {
       while (teams[i].players.length < _event.maxPlayerPerTeam) {
         final womenCount = teams[i].players.where((p) => p.isWoman).length;
-
         final menCount = teams[i].players.where((p) => p.isMan).length;
-
         final jokerGender = womenCount <= menCount ? PlayerGender.female : PlayerGender.male;
 
         teams[i] = teams[i].copyWith(

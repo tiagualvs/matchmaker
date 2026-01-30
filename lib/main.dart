@@ -1,9 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/app_provider.dart';
 import 'package:matchmaker/src/app_widget.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
@@ -19,10 +16,6 @@ void main() async {
   if (session == null) {
     await Supabase.instance.client.auth.signInAnonymously();
   }
-
-  final dir = await getApplicationSupportDirectory();
-
-  await File('${dir.path}/database.sqlite').delete();
 
   runApp(const AppProvider(child: AppWidget()));
 }

@@ -19,6 +19,7 @@ class TeamCardWidget extends StatelessWidget {
       data: context.theme.copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
         initiallyExpanded: initiallyExpanded,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
         childrenPadding: const EdgeInsets.symmetric(horizontal: 16.0).copyWith(bottom: 16.0),
         expandedCrossAxisAlignment: .stretch,
         backgroundColor: context.colorScheme.onPrimary,
@@ -36,7 +37,7 @@ class TeamCardWidget extends StatelessWidget {
           ),
         ),
         title: Text(
-          team.name,
+          'Time ${team.name}',
           style: context.textTheme.titleMedium,
         ),
         children: List.from(
@@ -45,7 +46,6 @@ class TeamCardWidget extends StatelessWidget {
               padding: const .only(bottom: 8.0),
               child: Row(
                 spacing: 8.0,
-
                 children: [
                   SizedBox(
                     width: 24.0,
@@ -55,11 +55,27 @@ class TeamCardWidget extends StatelessWidget {
                       _ => const Icon(Icons.info_outline_rounded),
                     },
                   ),
-                  Text(
-                    player.name,
-                    textAlign: .start,
-                    style: context.textTheme.bodyMedium,
+                  Expanded(
+                    child: Text(
+                      player.name,
+                      textAlign: .start,
+                      style: context.textTheme.bodyMedium,
+                    ),
                   ),
+                  switch (player.level) {
+                    PlayerLevel.basic => const Text(
+                      '⭐',
+                      textAlign: .end,
+                    ),
+                    PlayerLevel.intermediate => const Text(
+                      '⭐⭐',
+                      textAlign: .end,
+                    ),
+                    PlayerLevel.advanced => const Text(
+                      '⭐⭐⭐',
+                      textAlign: .end,
+                    ),
+                  },
                 ],
               ),
             ),

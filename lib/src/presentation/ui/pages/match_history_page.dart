@@ -92,15 +92,8 @@ class _MatchHistoryPageState extends State<MatchHistoryPage> {
                       color: context.colorScheme.surfaceContainerHighest,
                     ),
                   ),
-                  title: Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(text: '${match.name} | '),
-                        TextSpan(text: '${match.firstTeam.name} (${match.firstTeamScore})'),
-                        const TextSpan(text: ' x '),
-                        TextSpan(text: '(${match.secondTeamScore}) ${match.secondTeam.name}'),
-                      ],
-                    ),
+                  title: Text(
+                    '${match.firstTeam.name} (${match.firstTeamScore}) x (${match.secondTeamScore}) ${match.secondTeam.name}',
                     style: context.textTheme.titleMedium?.copyWith(fontWeight: .normal),
                   ),
                   children: List.from(

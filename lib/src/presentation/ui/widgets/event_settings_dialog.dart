@@ -162,7 +162,13 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
               materialTapTargetSize: .shrinkWrap,
               title: const Text('Balancear por nível?'),
               subtitle: const Text('Mesma quantidade de jogadores por nível por time.'),
-              onChanged: null,
+              onChanged: event.teams.isEmpty || !event.ended
+                  ? (value) {
+                      return handleEventChanges(
+                        event.copyWith(balancedByLevel: value),
+                      );
+                    }
+                  : null,
             ),
           ],
         ),
