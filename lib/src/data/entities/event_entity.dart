@@ -226,6 +226,8 @@ abstract class EventEntity with _$EventEntity {
   bool teamHasMaxWinsInARow(int teamId) {
     if (maxWinsInARow == 0) return false;
 
+    if (queue.length < 2) return false;
+
     final ids = endedMatches.map((match) => match.winner?.id ?? -1).where((id) => !id.isNegative);
 
     if (ids.length < maxWinsInARow) return false;

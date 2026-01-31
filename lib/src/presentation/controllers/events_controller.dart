@@ -5,38 +5,44 @@ import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 class EventsController extends ChangeNotifier {
   EventsController(this._eventsRepository);
 
+  void setState(void Function() func) {
+    func();
+    notifyListeners();
+  }
+
   final EventsRepository _eventsRepository;
 
-  bool _loading = false;
+  bool loading = true;
 
-  bool get loading => _loading;
-
-  List<EventEntity> _events = [];
-
-  List<EventEntity> get events => _events;
+  List<EventEntity> events = [];
 
   Future<void> getEventsList({
     void Function(String error)? onError,
   }) async {
-    _loading = true;
-
-    notifyListeners();
+    setState(() {
+      loading = true;
+    });
 
     final result = await _eventsRepository.findMany();
 
     return result.fold(
       (events) {
-        _events = events;
-        _loading = false;
-        notifyListeners();
+        return setState(() {
+          loading = false;
+          this.events = events;
+        });
       },
       (error) {
-        _loading = false;
-        notifyListeners();
-        return onError?.call(error.toString());
+        return setState(() {
+          loading = false;
+          return onError?.call(error.toString());
+        });
       },
     );
   }
 
-  Future<void> newDay() async {}
+  void resetController() {
+    events = [];
+    loading = true;
+  }
 }

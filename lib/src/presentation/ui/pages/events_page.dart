@@ -3,49 +3,55 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
-import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/events_controller.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:provider/provider.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
-class EventsPage extends StatefulWidget {
-  const EventsPage({super.key, required this.controller});
-
-  final EventsController controller;
-
-  @override
-  State<EventsPage> createState() => _EventsPageState();
-}
-
-class _EventsPageState extends State<EventsPage> {
-  EventsController get controller => widget.controller;
-
-  List<EventEntity> get events => controller.events;
+class EventsPage extends StatelessWidget {
+  const EventsPage({super.key});
 
   @override
-  void initState() {
-    super.initState();
+  Widget build(BuildContext context) {
+    final controller = context.read<EventsController>();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
       ]);
-      await controller.getEventsList();
-    });
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: controller,
-      builder: (context, child) {
-        if (controller.loading) {
-          return const Center(child: CircularProgressIndicator());
-        }
+      await controller.getEventsList(onError: SnackBars.error);
+    });
+
+    return Consumer<EventsController>(
+      builder: (context, controller, _) {
+        final loading = controller.loading;
+        final events = controller.events;
 
         return FloatingActionButtonMenu(
           menus: [
+            FloatingActionButtonMenuItem(
+              icon: const Icon(Symbols.add_rounded),
+              label: const Text('Partida avulsa'),
+              onPressed: () async {
+                await context.pushNamed(
+                  'match',
+                  pathParameters: {
+                    'matchId': '-99',
+                  },
+                );
+
+                await WakelockPlus.disable();
+
+                await SystemChrome.setPreferredOrientations([
+                  DeviceOrientation.portraitUp,
+                  DeviceOrientation.portraitDown,
+                ]);
+              },
+            ),
             FloatingActionButtonMenuItem(
               icon: const Icon(Symbols.event_rounded),
               label: const Text('Criar novo evento'),
@@ -60,8 +66,9 @@ class _EventsPageState extends State<EventsPage> {
             appBar: AppBar(
               title: const Text('Matchmaker'),
             ),
-            body: switch (events.isEmpty) {
-              true => Column(
+            body: switch (loading) {
+              true => const Center(child: CircularProgressIndicator()),
+              false when events.isEmpty => Column(
                 crossAxisAlignment: .stretch,
                 mainAxisAlignment: .center,
                 children: [

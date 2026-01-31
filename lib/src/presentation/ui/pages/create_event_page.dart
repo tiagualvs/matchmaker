@@ -10,22 +10,14 @@ import 'package:matchmaker/src/presentation/controllers/create_event_controller.
 import 'package:matchmaker/src/presentation/ui/widgets/event_settings_dialog.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/team_card_widget.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:provider/provider.dart';
 
-class CreateEventPage extends StatefulWidget {
-  const CreateEventPage({super.key, required this.controller});
-
-  final CreateEventController controller;
-
-  @override
-  State<CreateEventPage> createState() => _CreateEventPageState();
-}
-
-class _CreateEventPageState extends State<CreateEventPage> {
-  CreateEventController get controller => widget.controller;
+class CreateEventPage extends StatelessWidget {
+  const CreateEventPage({super.key});
 
   @override
-  void initState() {
-    super.initState();
+  Widget build(BuildContext context) {
+    context.read<CreateEventController>().resetController();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await SystemChrome.setPreferredOrientations([
@@ -33,24 +25,11 @@ class _CreateEventPageState extends State<CreateEventPage> {
         DeviceOrientation.portraitDown,
       ]);
     });
-  }
 
-  @override
-  void dispose() {
-    controller.resetController();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: controller,
-      builder: (context, child) {
-        if (controller.loading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
+    return Consumer<CreateEventController>(
+      builder: (context, controller, _) {
+        final loading = controller.loading;
+        final event = controller.event;
 
         return FloatingActionButtonMenu(
           menus: [
@@ -73,12 +52,19 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 }
               },
             ),
-            if (controller.event.teams.isNotEmpty) ...[
+            if (event.teams.isNotEmpty) ...[
               FloatingActionButtonMenuItem(
                 icon: const Icon(Symbols.refresh_rounded),
                 label: const Text('Desfazer times'),
                 onPressed: () => controller.handleEventChanges(
-                  controller.event.copyWith(teams: []),
+                  event.copyWith(teams: []),
+                ),
+              ),
+              FloatingActionButtonMenuItem(
+                icon: const Icon(Symbols.shuffle_rounded),
+                label: const Text('Regerar times'),
+                onPressed: () => controller.handleGenerateTeams(
+                  onError: SnackBars.error,
                 ),
               ),
               FloatingActionButtonMenuItem(
@@ -96,7 +82,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 ),
               ),
             ],
-            if (controller.event.teams.isEmpty) ...[
+            if (event.teams.isEmpty) ...[
               FloatingActionButtonMenuItem(
                 icon: const Icon(Symbols.groups_rounded),
                 label: const Text('Gerar times'),
@@ -115,309 +101,309 @@ class _CreateEventPageState extends State<CreateEventPage> {
               ),
               title: Text(controller.event.name),
             ),
-            body: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0).copyWith(bottom: 128.0),
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                spacing: 16.0,
-                crossAxisAlignment: .stretch,
-                children: [
-                  if (controller.event.teams.isNotEmpty) ...[
-                    for (final team in controller.event.teams) ...[
-                      TeamCardWidget(team: team, initiallyExpanded: true),
+            body: switch (loading) {
+              true => const Center(child: CircularProgressIndicator()),
+              false => SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0).copyWith(bottom: 128.0),
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  spacing: 16.0,
+                  crossAxisAlignment: .stretch,
+                  children: [
+                    if (controller.event.teams.isNotEmpty) ...[
+                      for (final team in controller.event.teams) ...[
+                        TeamCardWidget(team: team, initiallyExpanded: true),
+                      ],
                     ],
-                  ],
-                  if (controller.event.teams.isEmpty) ...[
-                    Text(
-                      'Importar Jogadores',
-                      style: context.textTheme.titleMedium,
-                    ),
-                    TextField(
-                      minLines: 5,
-                      maxLines: 7,
-                      controller: controller.importerController,
-                      decoration: const InputDecoration(
-                        alignLabelWithHint: true,
-                        hintText: '1 - Fulano de Tal - H\n2 - Sicrano de Tal\n3 - Elma Maria - M',
-                        labelText: 'Lista de Jogadores',
-                        floatingLabelBehavior: .always,
+                    if (controller.event.teams.isEmpty) ...[
+                      Text(
+                        'Importar Jogadores',
+                        style: context.textTheme.titleMedium,
                       ),
-                    ),
-                    ListenableBuilder(
-                      listenable: controller.importerController,
-                      builder: (context, child) {
-                        final disabled = controller.importerController.text.isEmpty;
-                        return FilledButton.icon(
-                          onPressed: disabled
-                              ? null
-                              : () async {
-                                  FocusScope.of(context).unfocus();
-                                  return await controller.importFromRawList(onError: SnackBars.error);
-                                },
-                          icon: const Icon(Symbols.upload_file_rounded),
-                          label: const Text('Importar'),
-                        );
-                      },
-                    ),
-                    Row(
-                      spacing: 16.0,
-                      crossAxisAlignment: .center,
-                      children: [
-                        const Expanded(child: Divider()),
-                        Text(
-                          'ou',
-                          style: context.textTheme.bodyMedium,
+                      TextFormField(
+                        minLines: 5,
+                        maxLines: 7,
+                        controller: controller.importer,
+                        decoration: const InputDecoration(
+                          alignLabelWithHint: true,
+                          hintText: '1 - Fulano de Tal - H\n2 - Sicrano de Tal\n3 - Elma Maria - M',
+                          labelText: 'Lista de Jogadores',
+                          floatingLabelBehavior: .always,
                         ),
-                        const Expanded(child: Divider()),
-                      ],
-                    ),
-                    Text(
-                      'Adicione Manualmente',
-                      style: context.textTheme.titleMedium,
-                    ),
-                    TextFormField(
-                      controller: controller.nameController,
-                      decoration: const InputDecoration(
-                        hintText: 'Fulano de Tal',
-                        labelText: 'Nome do Jogador',
-                        floatingLabelBehavior: .always,
                       ),
-                    ),
-                    SegmentedButton<PlayerGender>(
-                      emptySelectionAllowed: true,
-                      selectedIcon: const SizedBox.shrink(),
-                      segments: [
-                        const ButtonSegment(value: PlayerGender.male, label: Text('Masculino')),
-                        const ButtonSegment(value: PlayerGender.female, label: Text('Feminino')),
-                      ],
-                      onSelectionChanged: controller.handleGenderChange,
-                      selected: controller.selectedGender,
-                    ),
-                    ListenableBuilder(
-                      listenable: controller.nameController,
-                      builder: (context, child) {
-                        final disabled = controller.nameController.text.isEmpty || controller.selectedGender.isEmpty;
-
-                        return FilledButton.icon(
-                          onPressed: disabled
-                              ? null
-                              : () async {
-                                  FocusScope.of(context).unfocus();
-                                  return await controller.handleAddPlayer(onError: SnackBars.error);
-                                },
-                          icon: const Icon(Symbols.person_add_rounded),
-                          label: const Text('Adicionar'),
-                        );
-                      },
-                    ),
-                    if (controller.players.isNotEmpty) ...[
+                      ValueListenableBuilder(
+                        valueListenable: controller.importer,
+                        builder: (context, value, child) {
+                          return FilledButton.icon(
+                            onPressed: value.text.isEmpty
+                                ? null
+                                : () async {
+                                    FocusScope.of(context).unfocus();
+                                    return await controller.importFromRawList(onError: SnackBars.error);
+                                  },
+                            icon: const Icon(Symbols.upload_file_rounded),
+                            label: const Text('Importar'),
+                          );
+                        },
+                      ),
                       Row(
                         spacing: 16.0,
                         crossAxisAlignment: .center,
                         children: [
                           const Expanded(child: Divider()),
                           Text(
-                            'Lista de Jogadores (${controller.players.length}) / Times (${controller.numTeams})',
+                            'ou',
                             style: context.textTheme.bodyMedium,
                           ),
                           const Expanded(child: Divider()),
                         ],
                       ),
-                      ListView.separated(
-                        separatorBuilder: (_, _) => const SizedBox(height: 8.0),
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: controller.players.length,
-                        itemBuilder: (context, index) {
-                          final player = controller.players[index];
-
-                          return Material(
-                            clipBehavior: .antiAlias,
-                            color: context.colorScheme.onPrimary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-                              side: BorderSide(
-                                width: 0.5,
-                                color: context.colorScheme.primaryFixed,
-                              ),
-                            ),
-                            child: InkWell(
-                              onTap: () async {
-                                FocusManager.instance.primaryFocus?.unfocus();
-
-                                String name = player.name;
-
-                                Set<PlayerGender> gender = {player.gender};
-
-                                Set<PlayerLevel> level = {player.level};
-
-                                final changedPlayed = await showModalBottomSheet<PlayerEntity>(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  builder: (context) {
-                                    return StatefulBuilder(
-                                      builder: (context, setState) {
-                                        return Padding(
-                                          padding: const .all(24.0),
-                                          child: Column(
-                                            spacing: 16.0,
-                                            mainAxisSize: .min,
-                                            crossAxisAlignment: .stretch,
-                                            children: [
-                                              Text(
-                                                'Editar Jogador',
-                                                style: context.textTheme.titleMedium,
-                                              ),
-                                              TextFormField(
-                                                initialValue: name,
-                                                onChanged: (value) => setState(() => name = value),
-                                                decoration: const InputDecoration(
-                                                  hintText: 'Fulano de Tal',
-                                                  labelText: 'Nome do Jogador',
-                                                  floatingLabelBehavior: .always,
-                                                ),
-                                              ),
-                                              SegmentedButton<PlayerGender>(
-                                                emptySelectionAllowed: true,
-                                                selectedIcon: const SizedBox.shrink(),
-                                                segments: [
-                                                  const ButtonSegment(
-                                                    value: PlayerGender.male,
-                                                    label: Text('Masculino'),
-                                                  ),
-                                                  const ButtonSegment(
-                                                    value: PlayerGender.female,
-                                                    label: Text('Feminino'),
-                                                  ),
-                                                ],
-                                                onSelectionChanged: (value) => setState(() {
-                                                  gender = value;
-                                                }),
-                                                selected: gender,
-                                              ),
-                                              SegmentedButton<PlayerLevel>(
-                                                emptySelectionAllowed: true,
-                                                selectedIcon: const SizedBox.shrink(),
-                                                segments: [
-                                                  const ButtonSegment(
-                                                    value: PlayerLevel.basic,
-                                                    label: Text('⭐'),
-                                                  ),
-                                                  const ButtonSegment(
-                                                    value: PlayerLevel.intermediate,
-                                                    label: Text('⭐⭐'),
-                                                  ),
-                                                  const ButtonSegment(
-                                                    value: PlayerLevel.advanced,
-                                                    label: Text('⭐⭐⭐'),
-                                                  ),
-                                                ],
-                                                onSelectionChanged: (value) => setState(() {
-                                                  level = value;
-                                                }),
-                                                selected: level,
-                                              ),
-                                              Row(
-                                                spacing: 16.0,
-                                                children: [
-                                                  Expanded(
-                                                    child: FilledButton.icon(
-                                                      onPressed: () => context.pop(),
-                                                      style: FilledButton.styleFrom(
-                                                        backgroundColor: context.colorScheme.error,
-                                                      ),
-                                                      icon: const Icon(Symbols.cancel),
-                                                      label: const Text('Cancelar'),
-                                                    ),
-                                                  ),
-                                                  Expanded(
-                                                    child: FilledButton.icon(
-                                                      onPressed: () => context.pop(
-                                                        player.copyWith(
-                                                          name: name,
-                                                          gender: gender.first,
-                                                          level: level.first,
-                                                        ),
-                                                      ),
-                                                      icon: const Icon(Symbols.save),
-                                                      label: const Text('Salvar'),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    );
+                      Text(
+                        'Adicione Manualmente',
+                        style: context.textTheme.titleMedium,
+                      ),
+                      TextFormField(
+                        controller: controller.playerName,
+                        decoration: const InputDecoration(
+                          hintText: 'Fulano de Tal',
+                          labelText: 'Nome do Jogador',
+                          floatingLabelBehavior: .always,
+                        ),
+                      ),
+                      SegmentedButton<PlayerGender>(
+                        emptySelectionAllowed: true,
+                        selectedIcon: const SizedBox.shrink(),
+                        segments: [
+                          const ButtonSegment(value: PlayerGender.male, label: Text('Masculino')),
+                          const ButtonSegment(value: PlayerGender.female, label: Text('Feminino')),
+                        ],
+                        onSelectionChanged: controller.handleGenderChange,
+                        selected: controller.playerGender,
+                      ),
+                      ValueListenableBuilder(
+                        valueListenable: controller.playerName,
+                        builder: (context, value, child) {
+                          return FilledButton.icon(
+                            onPressed: value.text.isEmpty || controller.playerGender.isEmpty
+                                ? null
+                                : () async {
+                                    FocusScope.of(context).unfocus();
+                                    return await controller.handleAddPlayer(onError: SnackBars.error);
                                   },
-                                );
-
-                                if (changedPlayed == null) return;
-
-                                await controller.handlePlayerChanges(
-                                  index,
-                                  changedPlayed,
-                                  onError: SnackBars.error,
-                                );
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0).copyWith(
-                                  right: 0.0,
-                                ),
-                                child: Row(
-                                  spacing: 16.0,
-                                  children: [
-                                    Material(
-                                      shape: const CircleBorder(),
-                                      color: switch (player.gender) {
-                                        PlayerGender.male => Colors.blue.withAlpha((255 * 0.1).toInt()),
-                                        PlayerGender.female => Colors.pink.withAlpha((255 * 0.1).toInt()),
-                                        _ => Colors.blueGrey.withAlpha((255 * 0.1).toInt()),
-                                      },
-                                      child: Padding(
-                                        padding: const .all(4.0),
-                                        child: switch (player.gender) {
-                                          PlayerGender.male => const Icon(
-                                            Symbols.male_rounded,
-                                            color: Colors.blue,
-                                            size: 22.0,
-                                          ),
-                                          PlayerGender.female => const Icon(
-                                            Symbols.female_rounded,
-                                            color: Colors.pink,
-                                            size: 22.0,
-                                          ),
-                                          _ => const Icon(
-                                            Symbols.agender_rounded,
-                                            color: Colors.blueGrey,
-                                            size: 22.0,
-                                          ),
-                                        },
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        player.name,
-                                        style: context.textTheme.titleMedium,
-                                      ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () => controller.handleRemovePlayer(index),
-                                      icon: const Icon(Symbols.delete_rounded),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                            icon: const Icon(Symbols.person_add_rounded),
+                            label: const Text('Adicionar'),
                           );
                         },
                       ),
+                      if (controller.players.isNotEmpty) ...[
+                        Row(
+                          spacing: 16.0,
+                          crossAxisAlignment: .center,
+                          children: [
+                            const Expanded(child: Divider()),
+                            Text(
+                              'Lista de Jogadores (${controller.players.length}) / Times (${controller.numTeams})',
+                              style: context.textTheme.bodyMedium,
+                            ),
+                            const Expanded(child: Divider()),
+                          ],
+                        ),
+                        ListView.separated(
+                          separatorBuilder: (_, _) => const SizedBox(height: 8.0),
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: controller.players.length,
+                          itemBuilder: (context, index) {
+                            final player = controller.players[index];
+
+                            return Material(
+                              clipBehavior: .antiAlias,
+                              color: context.colorScheme.onPrimary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                                side: BorderSide(
+                                  width: 0.5,
+                                  color: context.colorScheme.primaryFixed,
+                                ),
+                              ),
+                              child: InkWell(
+                                onTap: () async {
+                                  FocusManager.instance.primaryFocus?.unfocus();
+
+                                  String name = player.name;
+
+                                  Set<PlayerGender> gender = {player.gender};
+
+                                  Set<PlayerLevel> level = {player.level};
+
+                                  final changedPlayed = await showModalBottomSheet<PlayerEntity>(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    builder: (context) {
+                                      return StatefulBuilder(
+                                        builder: (context, setState) {
+                                          return Padding(
+                                            padding: const .all(24.0),
+                                            child: Column(
+                                              spacing: 16.0,
+                                              mainAxisSize: .min,
+                                              crossAxisAlignment: .stretch,
+                                              children: [
+                                                Text(
+                                                  'Editar Jogador',
+                                                  style: context.textTheme.titleMedium,
+                                                ),
+                                                TextFormField(
+                                                  initialValue: name,
+                                                  onChanged: (value) => setState(() => name = value),
+                                                  decoration: const InputDecoration(
+                                                    hintText: 'Fulano de Tal',
+                                                    labelText: 'Nome do Jogador',
+                                                    floatingLabelBehavior: .always,
+                                                  ),
+                                                ),
+                                                SegmentedButton<PlayerGender>(
+                                                  emptySelectionAllowed: true,
+                                                  selectedIcon: const SizedBox.shrink(),
+                                                  segments: [
+                                                    const ButtonSegment(
+                                                      value: PlayerGender.male,
+                                                      label: Text('Masculino'),
+                                                    ),
+                                                    const ButtonSegment(
+                                                      value: PlayerGender.female,
+                                                      label: Text('Feminino'),
+                                                    ),
+                                                  ],
+                                                  onSelectionChanged: (value) => setState(() {
+                                                    gender = value;
+                                                  }),
+                                                  selected: gender,
+                                                ),
+                                                SegmentedButton<PlayerLevel>(
+                                                  emptySelectionAllowed: true,
+                                                  selectedIcon: const SizedBox.shrink(),
+                                                  segments: [
+                                                    const ButtonSegment(
+                                                      value: PlayerLevel.basic,
+                                                      label: Text('⭐'),
+                                                    ),
+                                                    const ButtonSegment(
+                                                      value: PlayerLevel.intermediate,
+                                                      label: Text('⭐⭐'),
+                                                    ),
+                                                    const ButtonSegment(
+                                                      value: PlayerLevel.advanced,
+                                                      label: Text('⭐⭐⭐'),
+                                                    ),
+                                                  ],
+                                                  onSelectionChanged: (value) => setState(() {
+                                                    level = value;
+                                                  }),
+                                                  selected: level,
+                                                ),
+                                                Row(
+                                                  spacing: 16.0,
+                                                  children: [
+                                                    Expanded(
+                                                      child: FilledButton.icon(
+                                                        onPressed: () => context.pop(),
+                                                        style: FilledButton.styleFrom(
+                                                          backgroundColor: context.colorScheme.error,
+                                                        ),
+                                                        icon: const Icon(Symbols.cancel),
+                                                        label: const Text('Cancelar'),
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: FilledButton.icon(
+                                                        onPressed: () => context.pop(
+                                                          player.copyWith(
+                                                            name: name,
+                                                            gender: gender.first,
+                                                            level: level.first,
+                                                          ),
+                                                        ),
+                                                        icon: const Icon(Symbols.save),
+                                                        label: const Text('Salvar'),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                  );
+
+                                  if (changedPlayed == null) return;
+
+                                  await controller.handlePlayerChanges(
+                                    index,
+                                    changedPlayed,
+                                    onError: SnackBars.error,
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0).copyWith(
+                                    right: 0.0,
+                                  ),
+                                  child: Row(
+                                    spacing: 16.0,
+                                    children: [
+                                      Material(
+                                        shape: const CircleBorder(),
+                                        color: switch (player.gender) {
+                                          PlayerGender.male => Colors.blue.withAlpha((255 * 0.1).toInt()),
+                                          PlayerGender.female => Colors.pink.withAlpha((255 * 0.1).toInt()),
+                                          _ => Colors.blueGrey.withAlpha((255 * 0.1).toInt()),
+                                        },
+                                        child: Padding(
+                                          padding: const .all(4.0),
+                                          child: switch (player.gender) {
+                                            PlayerGender.male => const Icon(
+                                              Symbols.male_rounded,
+                                              color: Colors.blue,
+                                              size: 22.0,
+                                            ),
+                                            PlayerGender.female => const Icon(
+                                              Symbols.female_rounded,
+                                              color: Colors.pink,
+                                              size: 22.0,
+                                            ),
+                                            _ => const Icon(
+                                              Symbols.agender_rounded,
+                                              color: Colors.blueGrey,
+                                              size: 22.0,
+                                            ),
+                                          },
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          player.name,
+                                          style: context.textTheme.titleMedium,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: () => controller.handleRemovePlayer(index),
+                                        icon: const Icon(Symbols.delete_rounded),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ],
                   ],
-                ],
+                ),
               ),
-            ),
+            },
           ),
         );
       },

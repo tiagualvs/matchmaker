@@ -6,7 +6,8 @@ import 'package:matchmaker/src/presentation/ui/pages/event_settings_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/events_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/match_history_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/match_page.dart';
-import 'package:provider/provider.dart';
+import 'package:matchmaker/src/presentation/ui/pages/team_add_page.dart';
+import 'package:matchmaker/src/presentation/ui/pages/teams_page.dart';
 
 abstract class AppRouter {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -21,9 +22,7 @@ abstract class AppRouter {
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: EventsPage(
-              controller: context.read(),
-            ),
+            page: const EventsPage(),
           );
         },
       ),
@@ -35,7 +34,6 @@ abstract class AppRouter {
             key: state.pageKey,
             page: EventPage(
               id: int.parse(state.pathParameters['id'] ?? '-1'),
-              controller: context.read(),
             ),
           );
         },
@@ -48,7 +46,30 @@ abstract class AppRouter {
             key: state.pageKey,
             page: EventSettingsPage(
               eventId: int.parse(state.pathParameters['eventId'] ?? '-1'),
-              controller: context.read(),
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/teams/:eventId',
+        name: 'teams',
+        pageBuilder: (context, state) {
+          return defaultTransition(
+            key: state.pageKey,
+            page: TeamsPage(
+              eventId: int.parse(state.pathParameters['eventId'] ?? '-1'),
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/teams/:eventId/add',
+        name: 'teamAdd',
+        pageBuilder: (context, state) {
+          return defaultTransition(
+            key: state.pageKey,
+            page: TeamAddPage(
+              eventId: int.parse(state.pathParameters['eventId'] ?? '-1'),
             ),
           );
         },
@@ -59,9 +80,7 @@ abstract class AppRouter {
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: CreateEventPage(
-              controller: context.read(),
-            ),
+            page: const CreateEventPage(),
           );
         },
       ),
@@ -73,7 +92,6 @@ abstract class AppRouter {
             key: state.pageKey,
             page: MatchPage(
               matchId: int.parse(state.pathParameters['matchId'] ?? '-1'),
-              controller: context.read(),
             ),
           );
         },
@@ -86,7 +104,6 @@ abstract class AppRouter {
             key: state.pageKey,
             page: MatchHistoryPage(
               eventId: int.parse(state.pathParameters['eventId'] ?? '-1'),
-              controller: context.read(),
             ),
           );
         },

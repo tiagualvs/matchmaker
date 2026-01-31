@@ -1,30 +1,64 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
+import 'package:matchmaker/src/data/entities/score_entity.dart';
+import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
 import 'package:matchmaker/src/data/repositories/scores/scores_repository.dart';
 
 class MatchController extends ChangeNotifier {
   MatchController(this._matchesRepository, this._scoresRepository);
 
+  void setState(VoidCallback fn) {
+    fn();
+    return notifyListeners();
+  }
+
   final MatchesRepository _matchesRepository;
 
   final ScoresRepository _scoresRepository;
 
-  MatchEntity _match = MatchEntity.empty();
+  bool loading = true;
 
-  MatchEntity get match => _match;
+  bool swapped = false;
 
-  Future<void> loadDependencies(int matchId) async {
+  MatchEntity match = MatchEntity.empty();
+
+  Future<void> loadDependencies(
+    int matchId, {
+    void Function(String error)? onError,
+  }) async {
+    setState(() {
+      loading = true;
+    });
+
+    if (matchId == -99) {
+      return setState(() {
+        match = MatchEntity.detached();
+
+        loading = false;
+      });
+    }
+
     final result = await _matchesRepository.findOne(matchId);
 
-    _match = result.fold((ok) => ok, (_) => _match);
+    return result.fold(
+      (value) {
+        return setState(() {
+          match = value;
 
-    log(_match.halfScoreToEliminate.toString());
+          loading = false;
+        });
+      },
+      (error) {
+        return setState(() {
+          loading = false;
 
-    notifyListeners();
+          return onError?.call(error.toString());
+        });
+      },
+    );
   }
 
   Future<void> reverseScore(
@@ -32,7 +66,19 @@ class MatchController extends ChangeNotifier {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
-    final scores = _match.scores.where((score) => score.teamId == teamId && !score.reversed);
+    if (match.isDetached) {
+      return setState(() {
+        final scores = match.scores.where((score) => score.teamId == teamId);
+
+        if (scores.isEmpty) return;
+
+        match = match.copyWith(
+          scores: List.from(match.scores)..remove(scores.first),
+        );
+      });
+    }
+
+    final scores = match.scores.where((score) => score.teamId == teamId && !score.reversed);
 
     if (scores.isEmpty) return;
 
@@ -42,15 +88,15 @@ class MatchController extends ChangeNotifier {
 
     return result.fold(
       (score) async {
-        final index = _match.scores.indexWhere((element) => element.id == scoreId);
+        return setState(() {
+          final index = match.scores.indexWhere((element) => element.id == scoreId);
 
-        _match = _match.copyWith(
-          scores: List.from(_match.scores)
-            ..[index] = score
-            ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
-        );
-
-        notifyListeners();
+          match = match.copyWith(
+            scores: List.from(match.scores)
+              ..[index] = score
+              ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
+          );
+        });
       },
       (error) {
         return onError?.call(error.toString());
@@ -60,63 +106,130 @@ class MatchController extends ChangeNotifier {
 
   Future<void> incrementScore(
     int teamId, {
-    required FutureOr<bool> Function() confirmEndOfMatch,
+    required FutureOr<bool> Function(TeamEntity team, String score) confirmEndOfMatch,
     void Function(String error)? onError,
   }) async {
-    if (_match.ended) return;
+    if (match.ended) return;
 
-    final result = await _scoresRepository.insertOne(
+    if (match.isDetached) {
+      setState(() async {
+        match = match.copyWith(
+          scores: List.from(match.scores)
+            ..add(
+              ScoreEntity(
+                id: match.scores.length + 1,
+                matchId: match.id,
+                teamId: teamId,
+                createdAt: DateTime.now(),
+                updatedAt: DateTime.now(),
+              ),
+            )
+            ..sort((a, b) => b.id.compareTo(a.id)),
+        );
+      });
+
+      if (match.isTiedWhenByOne) {
+        setState(() {
+          match = match.copyWith(
+            maxScore: match.maxScore + 1,
+          );
+        });
+      }
+
+      if (match.firstTeamWon || match.secondTeamWon) {
+        final winner = match.firstTeamWon ? match.firstTeam : match.secondTeam;
+        final currentScore = match.firstTeamWon
+            ? '${match.firstTeamScore} x ${match.secondTeamScore}'
+            : '${match.secondTeamScore} x ${match.firstTeamScore}';
+
+        if (!await confirmEndOfMatch(winner, currentScore)) {
+          setState(() {
+            match = match.copyWith(
+              scores: List.from(match.scores)..removeLast(),
+            );
+          });
+        } else {
+          setState(() {
+            match = match.copyWith(ended: true);
+          });
+        }
+      }
+
+      return;
+    }
+
+    final result0 = await _scoresRepository.insertOne(
       InsertOneScoreParams(
-        matchId: _match.id,
+        matchId: match.id,
         teamId: teamId,
       ),
     );
 
-    return result.fold(
-      (score) async {
-        _match = _match.copyWith(
-          scores: [score, ..._match.scores],
+    if (result0.hasError) return onError?.call(result0.error.toString());
+
+    final score = result0.value;
+
+    setState(() {
+      match = match.copyWith(
+        scores: [score, ...match.scores],
+      );
+    });
+
+    if (match.isTiedWhenByOne) {
+      final result = await _matchesRepository.updateOne(
+        match.id,
+        UpdateOneMatchParams(maxScore: match.maxScore + 1),
+      );
+
+      setState(() {
+        match = result.fold((ok) => ok.copyWith(scores: match.scores), (_) => match);
+      });
+    }
+
+    if (match.firstTeamWon || match.secondTeamWon) {
+      final winner = match.firstTeamWon ? match.firstTeam : match.secondTeam;
+      final currentScore = match.firstTeamWon
+          ? '${match.firstTeamScore} x ${match.secondTeamScore}'
+          : '${match.secondTeamScore} x ${match.firstTeamScore}';
+
+      if (!await confirmEndOfMatch(winner, currentScore)) {
+        final deleteResult = await _scoresRepository.deleteOne(score.id);
+
+        return deleteResult.fold(
+          (_) {
+            return setState(() {
+              match = match.copyWith(scores: List.from(match.scores)..remove(score));
+            });
+          },
+          (err) {
+            return onError?.call(err.toString());
+          },
         );
+      }
 
-        notifyListeners();
+      final result = await _matchesRepository.updateOne(
+        match.id,
+        const UpdateOneMatchParams(ended: true),
+      );
 
-        if (_match.isTiedWhenByOne) {
-          final result = await _matchesRepository.updateOne(
-            _match.id,
-            UpdateOneMatchParams(maxScore: _match.maxScore + 1),
-          );
+      setState(() {
+        match = result.fold((ok) => ok.copyWith(scores: match.scores), (_) => match);
+      });
+    }
+  }
 
-          _match = result.fold((ok) => ok.copyWith(scores: _match.scores), (_) => _match);
-        } else if (_match.firstTeamWon || _match.secondTeamWon) {
-          if (!await confirmEndOfMatch()) {
-            final deleteResult = await _scoresRepository.deleteOne(score.id);
-
-            return deleteResult.fold(
-              (_) {
-                _match = _match.copyWith(scores: List.from(_match.scores)..remove(score));
-
-                notifyListeners();
-              },
-              (err) {
-                return onError?.call(err.toString());
-              },
-            );
-          }
-
-          final result = await _matchesRepository.updateOne(_match.id, const UpdateOneMatchParams(ended: true));
-
-          _match = result.fold((ok) => ok.copyWith(scores: _match.scores), (_) => _match);
-        }
-
-        notifyListeners();
-      },
-      (error) {
-        return onError?.call(error.toString());
-      },
-    );
+  void restartDetachedMatch() {
+    setState(() {
+      match = match.copyWith(
+        ended: false,
+        scores: [],
+      );
+    });
   }
 
   void resetController() {
-    _match = MatchEntity.empty();
+    match = MatchEntity.empty();
+    swapped = false;
+    loading = true;
   }
 }

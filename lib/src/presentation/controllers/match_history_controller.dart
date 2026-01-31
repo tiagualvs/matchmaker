@@ -3,42 +3,43 @@ import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 
 class MatchHistoryController extends ChangeNotifier {
-  final EventsRepository _eventRepository;
-
   MatchHistoryController(this._eventRepository);
 
-  bool _loading = false;
+  void setState(void Function() func) {
+    func();
+    notifyListeners();
+  }
 
-  bool get loading => _loading;
+  final EventsRepository _eventRepository;
 
-  EventEntity _event = EventEntity.empty();
+  bool loading = false;
 
-  EventEntity get event => _event;
+  EventEntity event = EventEntity.empty();
 
   Future<void> loadDependencies(
     int eventId, {
     void Function(String error)? onError,
   }) async {
-    _loading = true;
-
-    notifyListeners();
+    setState(() {
+      loading = true;
+    });
 
     final result = await _eventRepository.findOne(eventId);
 
     return result.fold(
       (event) {
-        _event = event;
+        return setState(() {
+          this.event = event;
 
-        _loading = false;
-
-        notifyListeners();
+          loading = false;
+        });
       },
       (error) {
-        _loading = false;
+        return setState(() {
+          loading = false;
 
-        notifyListeners();
-
-        return onError?.call(error.toString());
+          return onError?.call(error.toString());
+        });
       },
     );
   }

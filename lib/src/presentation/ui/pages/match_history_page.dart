@@ -2,57 +2,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
-import 'package:matchmaker/src/data/entities/event_entity.dart';
-import 'package:matchmaker/src/data/entities/match_entity.dart';
+import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/presentation/controllers/match_history_controller.dart';
+import 'package:provider/provider.dart';
 
-class MatchHistoryPage extends StatefulWidget {
-  const MatchHistoryPage({super.key, required this.eventId, required this.controller});
+class MatchHistoryPage extends StatelessWidget {
+  const MatchHistoryPage({super.key, required this.eventId});
 
   final int eventId;
-  final MatchHistoryController controller;
 
   @override
-  State<MatchHistoryPage> createState() => _MatchHistoryPageState();
-}
-
-class _MatchHistoryPageState extends State<MatchHistoryPage> {
-  MatchHistoryController get controller => widget.controller;
-
-  EventEntity get event => controller.event;
-
-  List<MatchEntity> get matches => event.matches.where((match) => match.ended).toList();
-
-  @override
-  void initState() {
-    super.initState();
+  Widget build(BuildContext context) {
+    final controller = context.read<MatchHistoryController>();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
       ]);
-      return await controller.loadDependencies(widget.eventId);
-    });
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: widget.controller,
-      builder: (context, child) {
-        if (widget.controller.loading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
+      return await controller.loadDependencies(eventId, onError: SnackBars.error);
+    });
+
+    return Consumer<MatchHistoryController>(
+      builder: (context, controller, _) {
+        final loading = controller.loading;
+
+        final matches = controller.event.endedMatches;
 
         return Scaffold(
           appBar: AppBar(
             title: const Text('Histórico de Partidas'),
           ),
-          body: switch (matches.isEmpty) {
-            true => Column(
+          body: switch (loading) {
+            true => const Center(child: CircularProgressIndicator()),
+            false when matches.isEmpty => Column(
               crossAxisAlignment: .stretch,
               mainAxisAlignment: .center,
               children: [

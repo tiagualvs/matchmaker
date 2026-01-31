@@ -36,6 +36,7 @@ abstract final class AppTheme {
       cardBackgroundSchemeColor: SchemeColor.onPrimary,
       cardBorderSchemeColor: SchemeColor.surfaceContainerHighest,
       cardBorderWidth: 0.5,
+      dialogBackgroundSchemeColor: SchemeColor.onPrimary,
     ),
     visualDensity: FlexColorScheme.comfortablePlatformDensity,
     cupertinoOverrideTheme: const CupertinoThemeData(applyThemeToAll: true),

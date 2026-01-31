@@ -160,6 +160,8 @@ abstract class MatchEntity with _$MatchEntity {
 
   bool get isNotEmpty => !isEmpty;
 
+  bool get isDetached => id == -99;
+
   TeamEntity? get winner {
     if (!ended) return null;
 
@@ -202,6 +204,34 @@ abstract class MatchEntity with _$MatchEntity {
       maxScore: 0,
       createdAt: DateTime(0),
       updatedAt: DateTime(0),
+    );
+  }
+
+  factory MatchEntity.detached({int maxScore = 12}) {
+    return MatchEntity(
+      id: -99,
+      eventId: 0,
+      name: 'Partida Avulsa',
+      firstTeam: TeamEntity(
+        id: -1,
+        eventId: 0,
+        name: 'Time A',
+        players: [],
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      secondTeam: TeamEntity(
+        id: -2,
+        eventId: 0,
+        name: 'Time B',
+        players: [],
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      halfScoreToEliminate: false,
+      maxScore: maxScore,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     );
   }
 }

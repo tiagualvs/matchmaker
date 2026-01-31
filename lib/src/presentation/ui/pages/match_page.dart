@@ -4,45 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/others/dialogs.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/others/text_span_builder.dart';
-import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/match_controller.dart';
+import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-class MatchPage extends StatefulWidget {
-  const MatchPage({
-    super.key,
-    required this.matchId,
-    required this.controller,
-  });
+class MatchPage extends StatelessWidget {
+  const MatchPage({super.key, required this.matchId});
 
   final int matchId;
-  final MatchController controller;
 
-  @override
-  State<MatchPage> createState() => _MatchPageState();
-}
-
-class _MatchPageState extends State<MatchPage> {
-  MatchController get controller => widget.controller;
-
-  MatchEntity get match => controller.match;
-
-  TeamEntity get firstTeam => match.firstTeam;
-
-  TeamEntity get secondTeam => match.secondTeam;
-
-  bool swapped = false;
-
-  void toggleSwap() {
-    setState(() {
-      swapped = !swapped;
-    });
-  }
-
-  Future<bool> confirmEndOfMatch({
+  Future<bool> confirmEndOfMatch(
+    BuildContext context, {
     required TeamEntity team,
     required String score,
   }) async {
@@ -79,8 +55,8 @@ class _MatchPageState extends State<MatchPage> {
   }
 
   @override
-  void initState() {
-    super.initState();
+  Widget build(BuildContext context) {
+    final controller = context.read<MatchController>()..resetController();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await WakelockPlus.enable();
@@ -89,49 +65,38 @@ class _MatchPageState extends State<MatchPage> {
         DeviceOrientation.landscapeRight,
         DeviceOrientation.landscapeLeft,
       ]);
-      return controller.loadDependencies(widget.matchId);
+
+      return controller.loadDependencies(matchId, onError: SnackBars.error);
     });
-  }
 
-  @override
-  void dispose() {
-    scheduleMicrotask(
-      () async {
-        await WakelockPlus.disable();
+    return Consumer<MatchController>(
+      builder: (context, controller, _) {
+        final loading = controller.loading;
 
-        await SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitDown,
-        ]);
+        final swapped = controller.swapped;
 
-        controller.resetController();
-      },
-    );
-    super.dispose();
-  }
+        final match = controller.match;
 
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: controller,
-      builder: (context, child) {
-        if (match.isEmpty) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
+        final firstTeam = match.firstTeam;
 
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (match.ended) return context.pop();
-        });
+        final firstTeamScore = match.firstTeamScore;
+
+        final firstTeamByOneOrWon = match.firstTeamScoreByOne || match.firstTeamWon;
+
+        final secondTeam = match.secondTeam;
+
+        final secondTeamScore = match.secondTeamScore;
+
+        final secondTeamByOneOrWon = match.secondTeamScoreByOne || match.secondTeamWon;
 
         final firstTeamWidget = Expanded(
           child: GestureDetector(
             onTap: () => controller.incrementScore(
               firstTeam.id,
-              confirmEndOfMatch: () => confirmEndOfMatch(
-                team: firstTeam,
-                score: '${match.firstTeamScore} x ${match.secondTeamScore}',
+              confirmEndOfMatch: (team, score) => confirmEndOfMatch(
+                context,
+                team: team,
+                score: score,
               ),
               onError: (error) {
                 return SnackBars.error(error);
@@ -152,10 +117,10 @@ class _MatchPageState extends State<MatchPage> {
               elevation: 0.0,
               child: FittedBox(
                 child: Text(
-                  match.firstTeamScore.toString(),
+                  firstTeamScore.toString(),
                   style: context.textTheme.displayLarge?.copyWith(
                     fontWeight: .bold,
-                    color: switch (match.firstTeamScoreByOne || match.firstTeamWon) {
+                    color: switch (firstTeamByOneOrWon) {
                       true => Colors.yellow,
                       false => Colors.white,
                     },
@@ -171,9 +136,10 @@ class _MatchPageState extends State<MatchPage> {
           child: GestureDetector(
             onTap: () => controller.incrementScore(
               secondTeam.id,
-              confirmEndOfMatch: () => confirmEndOfMatch(
-                team: secondTeam,
-                score: '${match.secondTeamScore} x ${match.firstTeamScore}',
+              confirmEndOfMatch: (team, score) => confirmEndOfMatch(
+                context,
+                team: team,
+                score: score,
               ),
               onError: (error) {
                 return SnackBars.error(error);
@@ -194,10 +160,10 @@ class _MatchPageState extends State<MatchPage> {
               elevation: 0.0,
               child: FittedBox(
                 child: Text(
-                  match.secondTeamScore.toString(),
+                  secondTeamScore.toString(),
                   style: context.textTheme.displayLarge?.copyWith(
                     fontWeight: .bold,
-                    color: switch (match.secondTeamScoreByOne || match.secondTeamWon) {
+                    color: switch (secondTeamByOneOrWon) {
                       true => Colors.yellow,
                       false => Colors.white,
                     },
@@ -208,52 +174,149 @@ class _MatchPageState extends State<MatchPage> {
           ),
         );
 
-        return SafeArea(
-          child: Scaffold(
-            body: Stack(
-              children: [
-                Row(
-                  spacing: 16.0,
-                  children: switch (swapped) {
-                    true => [secondTeamWidget, firstTeamWidget],
-                    false => [firstTeamWidget, secondTeamWidget],
-                  },
-                ),
-                Positioned(
-                  bottom: 16.0,
-                  left: 16.0,
-                  right: 16.0,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          swapped ? secondTeam.name : firstTeam.name,
-                          textAlign: .center,
-                          style: context.textTheme.titleLarge?.copyWith(
-                            fontWeight: .bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      FloatingActionButton(
-                        onPressed: toggleSwap,
-                        child: const Icon(Icons.swap_horiz_rounded),
-                      ),
-                      Expanded(
-                        child: Text(
-                          swapped ? firstTeam.name : secondTeam.name,
-                          textAlign: .center,
-                          style: context.textTheme.titleLarge?.copyWith(
-                            fontWeight: .bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (match.ended && match.isDetached) {
+            final confirm = await Dialogs.show(
+              context,
+              title: 'Fim de partida',
+              content: 'Deseja iniciar uma nova partida?',
+              actions: [
+                TextButton(
+                  onPressed: () => context.pop(false),
+                  style: TextButton.styleFrom(
+                    foregroundColor: context.colorScheme.error,
                   ),
+                  child: const Text('Não'),
+                ),
+                TextButton(
+                  onPressed: () => context.pop(true),
+                  child: const Text('Sim'),
                 ),
               ],
-            ),
+            );
+
+            if (!context.mounted) return;
+
+            if (confirm ?? false) {
+              return controller.restartDetachedMatch();
+            }
+
+            return context.pop();
+          }
+
+          if (match.ended) {
+            return context.pop();
+          }
+        });
+
+        return SafeArea(
+          child: Scaffold(
+            body: switch (loading) {
+              true => const Center(child: CircularProgressIndicator()),
+              false => Stack(
+                children: [
+                  Row(
+                    spacing: 16.0,
+                    children: switch (swapped) {
+                      true => [secondTeamWidget, firstTeamWidget],
+                      false => [firstTeamWidget, secondTeamWidget],
+                    },
+                  ),
+                  Positioned(
+                    bottom: 16.0,
+                    left: 16.0,
+                    right: 16.0,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            swapped ? secondTeam.name : firstTeam.name,
+                            textAlign: .center,
+                            style: context.textTheme.titleLarge?.copyWith(
+                              fontWeight: .bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        if (match.isDetached) ...[
+                          FloatingActionButton(
+                            heroTag: 'settings',
+                            onPressed: () async {
+                              await Dialogs.display(
+                                context,
+                                constraints: const BoxConstraints(minWidth: 480.0),
+                                title: const Text('Configurações'),
+                                content: ListenableBuilder(
+                                  listenable: controller,
+                                  builder: (context, child) {
+                                    return Column(
+                                      children: [
+                                        TextFormField(
+                                          initialValue: controller.match.maxScore.toString(),
+                                          onChanged: (value) => controller.setState(() {
+                                            controller.match = controller.match.copyWith(
+                                              maxScore: int.tryParse(value) ?? controller.match.maxScore,
+                                            );
+                                          }),
+                                          decoration: const InputDecoration(
+                                            labelText: 'Quantitade de pontos para vencer',
+                                            floatingLabelBehavior: .always,
+                                          ),
+                                        ),
+                                        SwitchListTile(
+                                          value: controller.match.halfScoreToEliminate,
+                                          contentPadding: .zero,
+                                          materialTapTargetSize: .shrinkWrap,
+                                          title: const Text('Eliminar na metade?'),
+                                          subtitle: Text(
+                                            'Elimina no ${(controller.match.maxScore / 2).round()} x 0.',
+                                          ),
+                                          onChanged: (value) => controller.setState(() {
+                                            controller.match = controller.match.copyWith(
+                                              halfScoreToEliminate: value,
+                                            );
+                                          }),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => context.pop(),
+                                    child: const Text('Ok'),
+                                  ),
+                                ],
+                              );
+                            },
+                            child: const Icon(Icons.settings_rounded),
+                          ),
+                        ],
+                        if (!match.isDetached) ...[
+                          FloatingActionButton(
+                            heroTag: 'swap',
+                            onPressed: () => controller.setState(() {
+                              controller.swapped = !controller.swapped;
+                            }),
+                            child: const Icon(Icons.swap_horiz_rounded),
+                          ),
+                        ],
+                        Expanded(
+                          child: Text(
+                            swapped ? firstTeam.name : secondTeam.name,
+                            textAlign: .center,
+                            style: context.textTheme.titleLarge?.copyWith(
+                              fontWeight: .bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            },
           ),
         );
       },

@@ -16,6 +16,8 @@ import 'package:matchmaker/src/presentation/controllers/event_settings_controlle
 import 'package:matchmaker/src/presentation/controllers/events_controller.dart';
 import 'package:matchmaker/src/presentation/controllers/match_controller.dart';
 import 'package:matchmaker/src/presentation/controllers/match_history_controller.dart';
+import 'package:matchmaker/src/presentation/controllers/team_add_controller.dart';
+import 'package:matchmaker/src/presentation/controllers/teams_controller.dart';
 import 'package:provider/provider.dart';
 
 class AppProvider extends StatelessWidget {
@@ -45,23 +47,29 @@ class AppProvider extends StatelessWidget {
         Provider<PlayersRepository>(
           create: (ctx) => PlayersLocalRepository(ctx.read()),
         ),
-        InheritedProvider<EventsController>(
+        ChangeNotifierProvider<EventsController>(
           create: (ctx) => EventsController(ctx.read()),
         ),
-        InheritedProvider<EventController>(
-          create: (ctx) => EventController(ctx.read(), ctx.read(), ctx.read(), ctx.read()),
+        ChangeNotifierProvider<EventController>(
+          create: (ctx) => EventController(ctx.read(), ctx.read()),
         ),
-        InheritedProvider<CreateEventController>(
+        ChangeNotifierProvider<CreateEventController>(
           create: (ctx) => CreateEventController(ctx.read(), ctx.read()),
         ),
-        InheritedProvider<MatchController>(
+        ChangeNotifierProvider<MatchController>(
           create: (ctx) => MatchController(ctx.read(), ctx.read()),
         ),
-        InheritedProvider<MatchHistoryController>(
+        ChangeNotifierProvider<MatchHistoryController>(
           create: (ctx) => MatchHistoryController(ctx.read()),
         ),
-        InheritedProvider<EventSettingsController>(
+        ChangeNotifierProvider<EventSettingsController>(
           create: (ctx) => EventSettingsController(ctx.read(), ctx.read()),
+        ),
+        ChangeNotifierProvider<TeamsController>(
+          create: (ctx) => TeamsController(ctx.read()),
+        ),
+        ChangeNotifierProvider<TeamAddController>(
+          create: (ctx) => TeamAddController(ctx.read(), ctx.read(), ctx.read()),
         ),
       ],
       child: child,

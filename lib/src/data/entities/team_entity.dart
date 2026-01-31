@@ -36,7 +36,6 @@ abstract class TeamEntity with _$TeamEntity {
     'Marmotas',
     'Miseráveis',
     'Ruma de Doido',
-    'Aí Dento 🫳',
   ];
 
   factory TeamEntity.fromDrift(TeamData data) {

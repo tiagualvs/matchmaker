@@ -20,6 +20,20 @@ class UpdateOneTeamParams {
   const UpdateOneTeamParams({required this.name});
 }
 
+class SwapPlayersParams {
+  final int firstTeamId;
+  final int secondTeamId;
+  final int firstPlayerId;
+  final int secondPlayerId;
+
+  const SwapPlayersParams({
+    required this.firstTeamId,
+    required this.secondTeamId,
+    required this.firstPlayerId,
+    required this.secondPlayerId,
+  });
+}
+
 abstract interface class TeamsRepository {
   AsyncResult<List<TeamEntity>> findMany(int eventId);
   AsyncResult<TeamEntity> findOne(int id);
@@ -28,4 +42,5 @@ abstract interface class TeamsRepository {
   AsyncResult<void> deleteOne(int id);
   AsyncResult<void> insertPlayer(int teamId, int playerId);
   AsyncResult<void> deletePlayer(int teamId, int playerId);
+  AsyncResult<void> swapPlayers(SwapPlayersParams params);
 }

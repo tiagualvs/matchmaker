@@ -142,4 +142,43 @@ class TeamsLocalRepository implements TeamsRepository {
       return Result.error(AppException('Falha ao atualizar time', e));
     }
   }
+
+  @override
+  AsyncResult<void> swapPlayers(SwapPlayersParams params) async {
+    try {
+      return await _db.transaction(() async {
+        await (_db.delete(
+          _db.teamPlayer,
+        )..where((tb) => tb.teamId.equals(params.firstTeamId) & tb.playerId.equals(params.firstPlayerId))).go();
+
+        await (_db.delete(
+          _db.teamPlayer,
+        )..where((tb) => tb.teamId.equals(params.secondTeamId) & tb.playerId.equals(params.secondPlayerId))).go();
+
+        await _db
+            .into(_db.teamPlayer)
+            .insert(
+              TeamPlayerCompanion.insert(
+                teamId: params.firstTeamId,
+                playerId: params.secondPlayerId,
+              ),
+            );
+
+        await _db
+            .into(_db.teamPlayer)
+            .insert(
+              TeamPlayerCompanion.insert(
+                teamId: params.secondTeamId,
+                playerId: params.firstPlayerId,
+              ),
+            );
+
+        return const Result.value(null);
+      });
+    } on DriftWrappedException catch (e) {
+      return Result.error(AppException(e.message));
+    } on Exception catch (e) {
+      return Result.error(AppException('Falha ao trocar jogadores de times!', e));
+    }
+  }
 }

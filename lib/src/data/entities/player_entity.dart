@@ -17,8 +17,8 @@ enum PlayerGender {
 
   static PlayerGender fromValue(String value) {
     return switch (value) {
-      'male' => PlayerGender.male,
-      'female' => PlayerGender.female,
+      'male' || 'h' || 'H' => PlayerGender.male,
+      'female' || 'm' || 'M' => PlayerGender.female,
       _ => PlayerGender.unknown,
     };
   }
