@@ -30,7 +30,7 @@ abstract class MatchEntity with _$MatchEntity {
 
   factory MatchEntity.fromJson(Map<String, dynamic> json) => _$MatchEntityFromJson(json);
 
-  factory MatchEntity.fromDrift(EventMatchData data) {
+  factory MatchEntity.fromDrift(MatchData data) {
     return MatchEntity(
       id: data.id,
       eventId: data.eventId,

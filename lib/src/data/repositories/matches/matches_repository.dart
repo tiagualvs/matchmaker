@@ -1,5 +1,5 @@
+import 'package:matchmaker/src/common/shared/result.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
-import 'package:result/result.dart';
 
 class InsertOneMatchParams {
   final int eventId;

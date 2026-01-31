@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/services/database/database.dart';
@@ -20,7 +22,24 @@ abstract class TeamEntity with _$TeamEntity {
 
   factory TeamEntity.fromJson(Map<String, dynamic> json) => _$TeamEntityFromJson(json);
 
-  factory TeamEntity.fromDrift(EventTeamData data) {
+  static const List<String> names = <String>[
+    'Aperreados',
+    'Arrochados',
+    'Bonequeiros',
+    'Cabras da Peste',
+    'Cangaceiros',
+    'Desmantelados',
+    'Esfomeados',
+    'Fuleragens',
+    'Fubangas',
+    'Gaiatos',
+    'Marmotas',
+    'Miseráveis',
+    'Ruma de Doido',
+    'Aí Dento 🫳',
+  ];
+
+  factory TeamEntity.fromDrift(TeamData data) {
     return TeamEntity(
       id: data.id,
       eventId: data.eventId,
@@ -31,16 +50,25 @@ abstract class TeamEntity with _$TeamEntity {
     );
   }
 
-  factory TeamEntity.fromSupabase(Map<String, dynamic> data) {
+  factory TeamEntity.withPlayers(TeamWithPlayer data) {
     return TeamEntity(
-      id: data['id'] as int,
-      eventId: data['event_id'] as int,
-      name: data['name'] as String,
+      id: data.id,
+      eventId: data.eventId,
+      name: data.name,
       players: List.from(
-        (data['players'] as List?)?.map((playerData) => PlayerEntity.fromSupabase(playerData)) ?? [],
+        (json.decode(data.players) as List).map(
+          (player) => PlayerEntity(
+            id: player['id'],
+            name: player['name'],
+            gender: PlayerGender.fromValue(player['gender']),
+            level: PlayerLevel.fromValue(player['level']),
+            createdAt: DateTime.parse(player['createdAt']).toLocal(),
+            updatedAt: DateTime.parse(player['updatedAt']).toLocal(),
+          ),
+        ),
       ),
-      createdAt: DateTime.parse(data['created_at'] as String),
-      updatedAt: DateTime.parse(data['updated_at'] as String),
+      createdAt: DateTime.parse(data.createdAt).toLocal(),
+      updatedAt: DateTime.parse(data.updatedAt).toLocal(),
     );
   }
 

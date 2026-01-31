@@ -452,10 +452,10 @@ packages:
     dependency: transitive
     description:
       name: lints
-      sha256: a5e2b223cb7c9c8efdc663ef484fdd95bb243bff242ef5b13e26883547fce9a0
+      sha256: "12f842a479589fea194fe5c5a3095abc7be0c1f2ddfa9a0e76aed1dbd26a87df"
       url: "https://pub.dev"
     source: hosted
-    version: "6.0.0"
+    version: "6.1.0"
   logging:
     dependency: transitive
     description:
@@ -680,15 +680,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.0"
-  result:
-    dependency: "direct main"
-    description:
-      path: result
-      ref: HEAD
-      resolved-ref: a00700981bc55ec475db38b0bda77a81b228533a
-      url: "https://github.com/tiagualvs/common.git"
-    source: git
-    version: "0.0.2"
   rfc_6901:
     dependency: transitive
     description:

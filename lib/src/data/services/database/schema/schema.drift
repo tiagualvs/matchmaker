@@ -36,7 +36,7 @@ SELECT
                   'updatedAt', p.updated_at
                 )
               )
-              FROM tb_event_team_players tp
+              FROM tb_team_players tp
               JOIN tb_players p ON p.id = tp.player_id
               WHERE tp.team_id = t.id
             ),
@@ -44,7 +44,7 @@ SELECT
           )
         )
       )
-      FROM tb_event_teams t
+      FROM tb_teams t
       WHERE t.event_id = e.id
     ),
     json('[]')
@@ -86,7 +86,7 @@ SELECT
           )
         )
       )
-      FROM tb_event_matches m
+      FROM tb_matches m
       WHERE m.event_id = e.id
       ORDER BY m.id ASC
     ),
@@ -147,14 +147,14 @@ SELECT
                       'updatedAt', p.updated_at
                     )
                   )
-                  FROM tb_event_team_players tp
+                  FROM tb_team_players tp
                   JOIN tb_players p ON p.id = tp.player_id
                   WHERE tp.team_id = t.id
                 ),
                 json('[]')
               )
             )
-            FROM tb_event_teams t
+            FROM tb_teams t
             WHERE t.id = m.first_team_id
           ),
 
@@ -178,14 +178,14 @@ SELECT
                       'updatedAt', p.updated_at
                     )
                   )
-                  FROM tb_event_team_players tp
+                  FROM tb_team_players tp
                   JOIN tb_players p ON p.id = tp.player_id
                   WHERE tp.team_id = t.id
                 ),
                 json('[]')
               )
             )
-            FROM tb_event_teams t
+            FROM tb_teams t
             WHERE t.id = m.second_team_id
           ),
 
@@ -210,12 +210,12 @@ SELECT
           )
         )
       )
-      FROM tb_event_matches m
+      FROM tb_matches m
       WHERE m.event_id = e.id
         AND m.ended = 0
         AND m.id = (
           SELECT MAX(id)
-          FROM tb_event_matches
+          FROM tb_matches
           WHERE event_id = e.id
             AND ended = 0
         )
@@ -263,7 +263,7 @@ SELECT
                         )
                     )
                 FROM
-                    tb_event_team_players tp
+                    tb_team_players tp
                     JOIN tb_players p ON p.id = tp.player_id
                 WHERE
                     tp.team_id = t1.id
@@ -296,7 +296,7 @@ SELECT
                         )
                     )
                 FROM
-                    tb_event_team_players tp
+                    tb_team_players tp
                     JOIN tb_players p ON p.id = tp.player_id
                 WHERE
                     tp.team_id = t2.id
@@ -324,8 +324,36 @@ SELECT
         json('[]')
     ) AS scores
 FROM
-    tb_event_matches m
-    JOIN tb_event_teams t1 ON t1.id = m.first_team_id
-    JOIN tb_event_teams t2 ON t2.id = m.second_team_id;
+    tb_matches m
+    JOIN tb_teams t1 ON t1.id = m.first_team_id
+    JOIN tb_teams t2 ON t2.id = m.second_team_id;
 
-    
+CREATE VIEW IF NOT EXISTS team_with_players AS
+SELECT
+    CAST(t.id AS INT) AS id,
+    CAST(t.event_id AS INT) AS eventId,
+    CAST(t.name AS TEXT) AS name,
+    CAST(t.created_at AS TEXT) AS createdAt,
+    CAST(t.updated_at AS TEXT) AS updatedAt,
+    COALESCE(
+        (
+            SELECT json_group_array(
+                    json_object(
+                        'id', p.id, 
+                        'name', p.name, 
+                        'gender', p.gender, 
+                        'level', p.level, 
+                        'createdAt', p.created_at, 
+                        'updatedAt', p.updated_at
+                    )
+                )
+            FROM
+                tb_team_players tp
+                JOIN tb_players p ON p.id = tp.player_id
+            WHERE
+                tp.team_id = t.id
+        ),
+        json('[]')
+    ) AS players
+FROM
+    tb_teams t;

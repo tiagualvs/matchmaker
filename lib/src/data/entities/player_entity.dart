@@ -51,7 +51,7 @@ abstract class PlayerEntity with _$PlayerEntity {
   const factory PlayerEntity({
     required int id,
     required String name,
-    required PlayerGender gender,
+    @Default(PlayerGender.unknown) PlayerGender gender,
     @Default(PlayerLevel.basic) PlayerLevel level,
     required DateTime createdAt,
     required DateTime updatedAt,

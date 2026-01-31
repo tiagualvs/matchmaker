@@ -1,9 +1,10 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:flutter/foundation.dart';
+import 'package:matchmaker/src/common/shared/result.dart' hide Value;
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:result/result.dart';
 
 import 'tables.dart';
 
@@ -21,7 +22,7 @@ class AppDatabase extends _$AppDatabase {
       name: 'database',
       native: const DriftNativeOptions(
         databaseDirectory: getApplicationSupportDirectory,
-        isolateDebugLog: true,
+        isolateDebugLog: kDebugMode,
       ),
     );
   }
@@ -29,13 +30,13 @@ class AppDatabase extends _$AppDatabase {
   AsyncResult<List<EventEntity>> getEventsWithLastMatch() async {
     final result = await select(eventWithLastMatch).get();
 
-    return Result.ok(result.map(EventEntity.withLastMatch).toList());
+    return Result.value(result.map(EventEntity.withLastMatch).toList());
   }
 
   AsyncResult<List<EventEntity>> getEventsWithAllData() async {
     final result = await select(eventWithAllData).get();
 
-    return Result.ok(result.map(EventEntity.withAllData).toList());
+    return Result.value(result.map(EventEntity.withAllData).toList());
   }
 
   AsyncResult<EventEntity> getEventWithAllData(int eventId) async {
@@ -45,7 +46,7 @@ class AppDatabase extends _$AppDatabase {
       return Result.error(Exception('Evento não encontrado!'));
     }
 
-    return Result.ok(EventEntity.withAllData(result));
+    return Result.value(EventEntity.withAllData(result));
   }
 
   AsyncResult<MatchEntity> getMatchWithAllData(int matchId) async {
@@ -55,6 +56,6 @@ class AppDatabase extends _$AppDatabase {
       return Result.error(Exception('Partida não encontrada!'));
     }
 
-    return Result.ok(MatchEntity.withAllData(result));
+    return Result.value(MatchEntity.withAllData(result));
   }
 }

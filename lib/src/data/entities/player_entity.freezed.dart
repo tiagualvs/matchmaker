@@ -214,12 +214,12 @@ return $default(_that.id,_that.name,_that.gender,_that.level,_that.createdAt,_th
 @JsonSerializable()
 
 class _PlayerEntity extends PlayerEntity {
-  const _PlayerEntity({required this.id, required this.name, required this.gender, this.level = PlayerLevel.basic, required this.createdAt, required this.updatedAt}): super._();
+  const _PlayerEntity({required this.id, required this.name, this.gender = PlayerGender.unknown, this.level = PlayerLevel.basic, required this.createdAt, required this.updatedAt}): super._();
   factory _PlayerEntity.fromJson(Map<String, dynamic> json) => _$PlayerEntityFromJson(json);
 
 @override final  int id;
 @override final  String name;
-@override final  PlayerGender gender;
+@override@JsonKey() final  PlayerGender gender;
 @override@JsonKey() final  PlayerLevel level;
 @override final  DateTime createdAt;
 @override final  DateTime updatedAt;

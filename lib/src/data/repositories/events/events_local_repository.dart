@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:matchmaker/src/common/shared/exceptions.dart';
+import 'package:matchmaker/src/common/shared/result.dart' hide Value;
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/services/database/database.dart';
-import 'package:result/result.dart';
 
 import 'events_repository.dart';
 
@@ -56,9 +56,9 @@ class EventsLocalRepository implements EventsRepository {
 
           for (final t in params.teams) {
             final teamId = await _db
-                .into(_db.eventTeam)
+                .into(_db.team)
                 .insert(
-                  EventTeamCompanion.insert(
+                  TeamCompanion.insert(
                     eventId: event.id,
                     name: t.name,
                   ),
@@ -72,19 +72,19 @@ class EventsLocalRepository implements EventsRepository {
                   .insertReturning(
                     PlayerCompanion.insert(
                       name: p.name,
-                      gender: p.gender.value,
-                      level: p.level.value,
+                      gender: Value(p.gender.value),
+                      level: Value(p.level.value),
                     ),
                     onConflict: DoUpdate(
                       (old) => PlayerCompanion.custom(id: old.id),
-                      target: [_db.player.name],
+                      target: [_db.player.name, _db.player.gender],
                     ),
                   );
 
               await _db
-                  .into(_db.eventTeamPlayer)
+                  .into(_db.teamPlayer)
                   .insert(
-                    EventTeamPlayerCompanion.insert(
+                    TeamPlayerCompanion.insert(
                       teamId: teamId,
                       playerId: player.id,
                     ),
@@ -97,9 +97,9 @@ class EventsLocalRepository implements EventsRepository {
           final starterTeams = teamIds.take(2);
 
           await _db
-              .into(_db.eventMatch)
+              .into(_db.match)
               .insert(
-                EventMatchCompanion.insert(
+                MatchCompanion.insert(
                   eventId: event.id,
                   name: 'Partida #1',
                   firstTeamId: starterTeams.first,
@@ -123,7 +123,7 @@ class EventsLocalRepository implements EventsRepository {
             return const Result.error(AppException('Evento não encontrado!'));
           }
 
-          return Result.ok(EventEntity.withAllData(result));
+          return Result.value(EventEntity.withAllData(result));
         },
       );
     } on DriftWrappedException catch (e) {
@@ -150,6 +150,7 @@ class EventsLocalRepository implements EventsRepository {
             balancedByGender: params.balancedByGender != null ? Value(params.balancedByGender!) : const Value.absent(),
             balancedByLevel: params.balancedByLevel != null ? Value(params.balancedByLevel!) : const Value.absent(),
             maxWinsInARow: params.maxWinsInARow != null ? Value(params.maxWinsInARow!) : const Value.absent(),
+            queue: params.queue != null ? Value(params.queue!.join(',')) : const Value.absent(),
             ended: params.ended != null ? Value(params.ended!) : const Value.absent(),
             endedAt: params.ended != null && params.ended == true
                 ? Value(DateTime.now().toUtc())
@@ -166,7 +167,7 @@ class EventsLocalRepository implements EventsRepository {
           return const Result.error(AppException('Evento não encontrado!'));
         }
 
-        return Result.ok(EventEntity.withAllData(result));
+        return Result.value(EventEntity.withAllData(result));
       });
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
@@ -180,7 +181,7 @@ class EventsLocalRepository implements EventsRepository {
     try {
       await (_db.delete(_db.event)..where((tb) => tb.id.equals(id))).go();
 
-      return const Result.ok(null);
+      return const Result.value(null);
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
     } on Exception catch (e) {

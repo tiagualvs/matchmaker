@@ -274,6 +274,12 @@ abstract class EventEntity with _$EventEntity {
 
   bool get isNotEmpty => !isEmpty;
 
+  bool get hasIncompleteTeams => teams.any((team) => team.players.length != maxPlayerPerTeam);
+
+  bool hasPlayer(int id) {
+    return teams.any((team) => team.players.any((player) => player.id == id));
+  }
+
   factory EventEntity.empty() {
     return EventEntity(
       id: -1,

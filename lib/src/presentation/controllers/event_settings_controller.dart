@@ -89,7 +89,7 @@ class EventSettingsController extends ChangeNotifier {
             UpdateOneMatchParams(halfScoreToEliminate: event.halfScoreToEliminate),
           );
 
-          if (result1.isError) return onError?.call(result1.failure.toString());
+          if (result1.hasError) return onError?.call(result1.error.toString());
         }
 
         return onSuccess?.call();

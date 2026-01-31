@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:matchmaker/src/common/shared/exceptions.dart';
+import 'package:matchmaker/src/common/shared/result.dart' hide Value;
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/services/database/database.dart';
-import 'package:result/result.dart';
 
 import 'matches_repository.dart';
 
@@ -16,9 +16,9 @@ class MatchesLocalRepository implements MatchesRepository {
     try {
       return await _db.transaction(() async {
         final matchId = await _db
-            .into(_db.eventMatch)
+            .into(_db.match)
             .insert(
-              EventMatchCompanion.insert(
+              MatchCompanion.insert(
                 eventId: params.eventId,
                 name: params.name,
                 firstTeamId: params.firstTeamId,
@@ -41,7 +41,7 @@ class MatchesLocalRepository implements MatchesRepository {
           return const Result.error(AppException('Partida não encontrada!'));
         }
 
-        return Result.ok(MatchEntity.withAllData(result));
+        return Result.value(MatchEntity.withAllData(result));
       });
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
@@ -63,8 +63,8 @@ class MatchesLocalRepository implements MatchesRepository {
   AsyncResult<MatchEntity> updateOne(int id, UpdateOneMatchParams params) async {
     try {
       return await _db.transaction(() async {
-        await (_db.update(_db.eventMatch)..where((tb) => tb.id.equals(id))).write(
-          EventMatchCompanion(
+        await (_db.update(_db.match)..where((tb) => tb.id.equals(id))).write(
+          MatchCompanion(
             name: params.name != null ? Value(params.name!) : const Value.absent(),
             maxScore: params.maxScore != null ? Value(params.maxScore!) : const Value.absent(),
             halfScoreToEliminate: params.halfScoreToEliminate != null
@@ -84,7 +84,7 @@ class MatchesLocalRepository implements MatchesRepository {
           return const Result.error(AppException('Partida não encontrada!'));
         }
 
-        return Result.ok(MatchEntity.withAllData(result));
+        return Result.value(MatchEntity.withAllData(result));
       });
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
@@ -97,8 +97,8 @@ class MatchesLocalRepository implements MatchesRepository {
   AsyncResult<void> updateManyByEventId(int eventId, UpdateOneMatchParams params) async {
     try {
       return await _db.transaction(() async {
-        await (_db.update(_db.eventMatch)..where((tb) => tb.eventId.equals(eventId))).write(
-          EventMatchCompanion(
+        await (_db.update(_db.match)..where((tb) => tb.eventId.equals(eventId))).write(
+          MatchCompanion(
             name: params.name != null ? Value(params.name!) : const Value.absent(),
             maxScore: params.maxScore != null ? Value(params.maxScore!) : const Value.absent(),
             halfScoreToEliminate: params.halfScoreToEliminate != null
@@ -112,7 +112,7 @@ class MatchesLocalRepository implements MatchesRepository {
           ),
         );
 
-        return const Result.ok(null);
+        return const Result.value(null);
       });
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
@@ -124,8 +124,8 @@ class MatchesLocalRepository implements MatchesRepository {
   @override
   AsyncResult<void> deleteOne(int id) async {
     try {
-      await (_db.delete(_db.eventMatch)..where((tb) => tb.id.equals(id))).go();
-      return const Result.ok(null);
+      await (_db.delete(_db.match)..where((tb) => tb.id.equals(id))).go();
+      return const Result.value(null);
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
@@ -136,8 +136,8 @@ class MatchesLocalRepository implements MatchesRepository {
   @override
   AsyncResult<void> deleteManyByEventId(int eventId) async {
     try {
-      await (_db.delete(_db.eventMatch)..where((tb) => tb.eventId.equals(eventId))).go();
-      return const Result.ok(null);
+      await (_db.delete(_db.match)..where((tb) => tb.eventId.equals(eventId))).go();
+      return const Result.value(null);
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
     } on Exception catch (e) {

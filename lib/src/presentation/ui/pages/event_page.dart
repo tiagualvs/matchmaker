@@ -12,6 +12,7 @@ import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/event_controller.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/current_match_widget.dart';
+import 'package:matchmaker/src/presentation/ui/widgets/player_tile_widget.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/players_dialog.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/team_card_widget.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -87,18 +88,284 @@ class _EventPageState extends State<EventPage> {
     );
   }
 
-  Future<void> onNeedsJoker(TeamEntity team, List<PlayerEntity> suggestions) async {
+  Future<void> onNeedsJoker(TeamEntity team) async {
     return await Dialogs.show(
       context,
       title: 'Jogador ausente!',
       content:
-          'O time [b]${team.name}[/b] precisa de ${event.maxPlayerPerTeam - team.players.length} jogadores para completar a equipe!${suggestions.isNotEmpty ? '\n\nJogadores sugeridos:\n${suggestions.map((player) => player.name).join('\n')}' : ''}',
+          'O time [b]${team.name}[/b] precisa de ${event.maxPlayerPerTeam - team.players.length} jogadores para completar a equipe!',
       actions: [
         TextButton(
           onPressed: () => context.pop(),
           child: const Text('OK'),
         ),
       ],
+    );
+  }
+
+  Future<void> handleAddPlayer() async {
+    final player = await showModalBottomSheet<PlayerEntity>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        String name = '';
+        Set<PlayerGender> gender = {};
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: const .all(24.0),
+              child: Column(
+                spacing: 16.0,
+                mainAxisSize: .min,
+                crossAxisAlignment: .stretch,
+                children: [
+                  Text(
+                    'Cadastrar Jogador',
+                    style: context.textTheme.titleMedium,
+                  ),
+                  TextFormField(
+                    initialValue: name,
+                    onChanged: (value) => setState(() => name = value),
+                    decoration: const InputDecoration(
+                      hintText: 'Fulano de Tal',
+                      labelText: 'Nome do Jogador',
+                      floatingLabelBehavior: .always,
+                    ),
+                  ),
+                  SegmentedButton<PlayerGender>(
+                    emptySelectionAllowed: true,
+                    selectedIcon: const SizedBox.shrink(),
+                    segments: [
+                      const ButtonSegment(
+                        value: PlayerGender.male,
+                        label: Text('Masculino'),
+                      ),
+                      const ButtonSegment(
+                        value: PlayerGender.female,
+                        label: Text('Feminino'),
+                      ),
+                    ],
+                    onSelectionChanged: (value) => setState(() {
+                      gender = value;
+                    }),
+                    selected: gender,
+                  ),
+                  Row(
+                    spacing: 16.0,
+                    children: [
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: () => context.pop(),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: context.colorScheme.error,
+                          ),
+                          icon: const Icon(Symbols.cancel),
+                          label: const Text('Cancelar'),
+                        ),
+                      ),
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: () => context.pop(
+                            PlayerEntity.empty(name, gender.first),
+                          ),
+                          icon: const Icon(Symbols.save),
+                          label: const Text('Adicionar'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (player == null) return;
+
+    return await controller.addPlayer(
+      player.name,
+      player.gender,
+      onError: SnackBars.error,
+    );
+  }
+
+  Future<void> handleAddTeam() async {
+    bool addPlayer = false;
+    String name = '';
+    Set<PlayerGender> gender = {};
+
+    TeamEntity team = TeamEntity.empty('');
+    List<PlayerEntity> players = [];
+
+    final result = await showModalBottomSheet<TeamEntity>(
+      context: context,
+      isScrollControlled: true,
+      isDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: const .all(24.0),
+              child: Column(
+                spacing: 16.0,
+                mainAxisSize: .min,
+                crossAxisAlignment: .stretch,
+                children: [
+                  Text(
+                    'Cadastrar Time',
+                    style: context.textTheme.titleMedium,
+                  ),
+                  DropdownMenuFormField<String>(
+                    width: MediaQuery.sizeOf(context).width - 48.0,
+                    dropdownMenuEntries: List.from(
+                      TeamEntity.names
+                          .where((name) => !event.teams.map((team) => team.name).contains(name))
+                          .map((name) => DropdownMenuEntry(value: name, label: name)),
+                    ),
+                    onSelected: (value) {
+                      if (value == null) return;
+                      setState(() => team = team.copyWith(name: value));
+                    },
+                    hintText: 'Selecione',
+                    label: const Text('Nome do Time'),
+                    inputDecorationTheme: context.theme.inputDecorationTheme.copyWith(
+                      floatingLabelBehavior: .always,
+                    ),
+                  ),
+                  if (players.isNotEmpty) ...[
+                    Text(
+                      'Jogadores',
+                      style: context.textTheme.titleMedium,
+                    ),
+                    for (final player in players) ...[
+                      PlayerTileWidget(player: player),
+                    ],
+                  ],
+                  if (addPlayer) ...[
+                    Text(
+                      'Cadastrar Jogador',
+                      style: context.textTheme.titleMedium,
+                    ),
+                    TextFormField(
+                      initialValue: name,
+                      onChanged: (value) => setState(
+                        () => name = value,
+                      ),
+                      decoration: const InputDecoration(
+                        hintText: 'Fulano de Tal',
+                        labelText: 'Nome do Jogador',
+                        floatingLabelBehavior: .always,
+                      ),
+                    ),
+                    SegmentedButton<PlayerGender>(
+                      emptySelectionAllowed: true,
+
+                      selectedIcon: const SizedBox.shrink(),
+                      segments: [
+                        const ButtonSegment(
+                          value: PlayerGender.male,
+                          label: Text('Masculino'),
+                        ),
+                        const ButtonSegment(
+                          value: PlayerGender.female,
+                          label: Text('Feminino'),
+                        ),
+                      ],
+                      onSelectionChanged: (value) => setState(
+                        () => gender = value,
+                      ),
+                      selected: gender,
+                    ),
+                    FilledButton.icon(
+                      onPressed: () async {
+                        if (name.isEmpty) {
+                          return SnackBars.error('Nome do jogador é obrigatório');
+                        }
+
+                        if (gender.isEmpty) {
+                          return SnackBars.error('Gênero do jogador é obrigatório');
+                        }
+
+                        return await controller.insertPlayer(
+                          name,
+                          gender.first,
+                          PlayerLevel.basic,
+                          onSuccess: (player) {
+                            if (event.hasPlayer(player.id)) {
+                              return SnackBars.error('Jogador já cadastrado em outro time!');
+                            }
+
+                            setState(() {
+                              players.add(player);
+                              name = '';
+                              gender.clear();
+                              addPlayer = false;
+                            });
+                          },
+                          onError: SnackBars.error,
+                        );
+                      },
+                      icon: const Icon(Symbols.add_rounded),
+                      label: const Text('Adicionar Jogador'),
+                    ),
+                  ],
+                  if (players.length < event.maxPlayerPerTeam && addPlayer == false) ...[
+                    FilledButton.icon(
+                      onPressed: () => setState(() => addPlayer = true),
+                      icon: const Icon(Symbols.add_rounded),
+                      label: const Text('Novo Jogador'),
+                    ),
+                  ],
+                  Row(
+                    spacing: 16.0,
+                    children: [
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: () {
+                            return context.pop();
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: context.colorScheme.error,
+                          ),
+                          icon: const Icon(Symbols.close_rounded),
+                          label: const Text('Cancelar'),
+                        ),
+                      ),
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: () {
+                            if (team.name.isEmpty) {
+                              return SnackBars.error('O nome do time deve ser informado');
+                            }
+
+                            if (players.isEmpty) {
+                              return SnackBars.error('Pelo menos um jogador deve ser adicionado');
+                            }
+
+                            return context.pop(team.copyWith(players: players));
+                          },
+                          icon: const Icon(Symbols.save),
+                          label: const Text('Salvar'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (result == null) return;
+
+    return await controller.addTeam(
+      result,
+      onError: SnackBars.error,
     );
   }
 
@@ -163,6 +430,20 @@ class _EventPageState extends State<EventPage> {
                 ),
               ),
               if (!event.ended) ...[
+                if (event.hasIncompleteTeams) ...[
+                  FloatingActionButtonMenuItem(
+                    icon: const Icon(Symbols.add_rounded),
+                    label: const Text('Cadastrar jogador'),
+                    onPressed: handleAddPlayer,
+                  ),
+                ],
+                if (!event.hasIncompleteTeams) ...[
+                  FloatingActionButtonMenuItem(
+                    icon: const Icon(Symbols.groups_rounded),
+                    label: const Text('Cadastrar time'),
+                    onPressed: handleAddTeam,
+                  ),
+                ],
                 FloatingActionButtonMenuItem(
                   icon: const Icon(Icons.flag_rounded),
                   label: const Text('Finalizar evento'),

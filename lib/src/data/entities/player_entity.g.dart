@@ -10,7 +10,9 @@ _PlayerEntity _$PlayerEntityFromJson(Map<String, dynamic> json) =>
     _PlayerEntity(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
-      gender: $enumDecode(_$PlayerGenderEnumMap, json['gender']),
+      gender:
+          $enumDecodeNullable(_$PlayerGenderEnumMap, json['gender']) ??
+          PlayerGender.unknown,
       level:
           $enumDecodeNullable(_$PlayerLevelEnumMap, json['level']) ??
           PlayerLevel.basic,

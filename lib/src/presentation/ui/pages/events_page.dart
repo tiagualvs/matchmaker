@@ -58,7 +58,7 @@ class _EventsPageState extends State<EventsPage> {
           ],
           child: Scaffold(
             appBar: AppBar(
-              title: const Text('Eventos'),
+              title: const Text('Matchmaker'),
             ),
             body: switch (events.isEmpty) {
               true => Column(

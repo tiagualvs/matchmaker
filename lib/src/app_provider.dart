@@ -7,6 +7,8 @@ import 'package:matchmaker/src/data/repositories/players/players_local_repositor
 import 'package:matchmaker/src/data/repositories/players/players_repository.dart';
 import 'package:matchmaker/src/data/repositories/scores/scores_local_repository.dart';
 import 'package:matchmaker/src/data/repositories/scores/scores_repository.dart';
+import 'package:matchmaker/src/data/repositories/teams/teams_local_repository.dart';
+import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
 import 'package:matchmaker/src/data/services/database/database.dart';
 import 'package:matchmaker/src/presentation/controllers/create_event_controller.dart';
 import 'package:matchmaker/src/presentation/controllers/event_controller.dart';
@@ -31,6 +33,9 @@ class AppProvider extends StatelessWidget {
         Provider<EventsRepository>(
           create: (ctx) => EventsLocalRepository(ctx.read()),
         ),
+        Provider<TeamsRepository>(
+          create: (ctx) => TeamsLocalRepository(ctx.read()),
+        ),
         Provider<MatchesRepository>(
           create: (ctx) => MatchesLocalRepository(ctx.read()),
         ),
@@ -44,7 +49,7 @@ class AppProvider extends StatelessWidget {
           create: (ctx) => EventsController(ctx.read()),
         ),
         InheritedProvider<EventController>(
-          create: (ctx) => EventController(ctx.read(), ctx.read()),
+          create: (ctx) => EventController(ctx.read(), ctx.read(), ctx.read(), ctx.read()),
         ),
         InheritedProvider<CreateEventController>(
           create: (ctx) => CreateEventController(ctx.read(), ctx.read()),

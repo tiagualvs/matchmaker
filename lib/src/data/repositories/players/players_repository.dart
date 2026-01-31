@@ -1,5 +1,5 @@
+import 'package:matchmaker/src/common/shared/result.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
-import 'package:result/result.dart';
 
 class InsertOnePlayerParams {
   final String name;

@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:matchmaker/src/common/shared/exceptions.dart';
+import 'package:matchmaker/src/common/shared/result.dart' hide Value;
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/services/database/database.dart';
-import 'package:result/result.dart';
 
 import 'players_repository.dart';
 
@@ -19,16 +19,16 @@ class PlayersLocalRepository implements PlayersRepository {
           .insertReturning(
             PlayerCompanion.insert(
               name: params.name,
-              gender: params.gender,
-              level: params.level,
+              gender: Value(params.gender),
+              level: Value(params.level),
             ),
             onConflict: DoUpdate(
               (old) => PlayerCompanion.custom(id: old.id),
-              target: [_db.player.name],
+              target: [_db.player.name, _db.player.gender],
             ),
           );
 
-      return Result.ok(PlayerEntity.fromDrift(player));
+      return Result.value(PlayerEntity.fromDrift(player));
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
@@ -45,7 +45,7 @@ class PlayersLocalRepository implements PlayersRepository {
         return const Result.error(AppException('Jogador não encontrado!'));
       }
 
-      return Result.ok(PlayerEntity.fromDrift(player));
+      return Result.value(PlayerEntity.fromDrift(player));
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
@@ -62,7 +62,7 @@ class PlayersLocalRepository implements PlayersRepository {
         return const Result.error(AppException('Jogador não encontrado!'));
       }
 
-      return Result.ok(PlayerEntity.fromDrift(player));
+      return Result.value(PlayerEntity.fromDrift(player));
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
@@ -90,7 +90,7 @@ class PlayersLocalRepository implements PlayersRepository {
         return const Result.error(AppException('Falha ao atualizar jogador!'));
       }
 
-      return Result.ok(PlayerEntity.fromDrift(players.first));
+      return Result.value(PlayerEntity.fromDrift(players.first));
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
     } on Exception catch (e) {

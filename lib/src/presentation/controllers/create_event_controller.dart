@@ -8,23 +8,6 @@ import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/players/players_repository.dart';
 
-const teamNames = <String>[
-  'Aperreados',
-  'Arrochados',
-  'Bonequeiros',
-  'Cabras da Peste',
-  'Cangaceiros',
-  'Desmantelados',
-  'Esfomeados',
-  'Fuleragens',
-  'Fubangas',
-  'Gaiatos',
-  'Marmotas',
-  'Miseráveis',
-  'Ruma de Doido',
-  'Aí Dento 🫳',
-];
-
 class CreateEventController extends ChangeNotifier {
   CreateEventController(this._eventsRepository, this._playersRepository);
 
@@ -80,7 +63,7 @@ class CreateEventController extends ChangeNotifier {
       return onError?.call('Não é possível gerar eventos com menos de 2 times!');
     }
 
-    final randomTeamNames = List<String>.from(teamNames)..shuffle();
+    final randomTeamNames = List<String>.from(TeamEntity.names)..shuffle();
 
     final teams = randomTeamNames.take(numTeams).map(TeamEntity.empty).toList();
 
@@ -303,7 +286,7 @@ class CreateEventController extends ChangeNotifier {
       ),
     );
 
-    if (result.isError) return onError?.call(result.failure.toString());
+    if (result.hasError) return onError?.call(result.error.toString());
 
     players.add(result.value);
 
@@ -333,7 +316,7 @@ class CreateEventController extends ChangeNotifier {
       ),
     );
 
-    if (result.isError) return onError?.call(result.failure.toString());
+    if (result.hasError) return onError?.call(result.error.toString());
 
     players[index] = result.value;
 
@@ -368,14 +351,14 @@ class CreateEventController extends ChangeNotifier {
     }
 
     for (final name in names) {
-      final result0 = await _playersRepository.findOneByName(name);
+      final match = RegExp(r'(.+)\s+-\s+(H|h|M|m)').firstMatch(name);
 
-      if (result0.isOk) {
-        players.add(result0.value);
-      } else {
-        final match = RegExp(r'(.+)\s+-\s+(H|h|M|m)').firstMatch(name);
+      if (match == null) {
+        final result = await _playersRepository.findOneByName(name);
 
-        if (match == null) {
+        if (result.hasValue) {
+          players.add(result.value);
+        } else {
           final result1 = await _playersRepository.insertOne(
             InsertOnePlayerParams(
               name: name,
@@ -384,13 +367,19 @@ class CreateEventController extends ChangeNotifier {
             ),
           );
 
-          if (result1.isError) return onError?.call(result1.failure.toString());
+          if (result1.hasError) return onError?.call(result1.error.toString());
 
           players.add(result1.value);
-        } else {
-          final playerName = match.group(1)!;
-          final playerGender = match.group(2)!;
+        }
+      } else {
+        final playerName = match.group(1)!;
+        final playerGender = match.group(2)!;
 
+        final result = await _playersRepository.findOneByName(playerName);
+
+        if (result.hasValue) {
+          players.add(result.value);
+        } else {
           final result1 = await _playersRepository.insertOne(
             InsertOnePlayerParams(
               name: playerName,
@@ -399,7 +388,7 @@ class CreateEventController extends ChangeNotifier {
             ),
           );
 
-          if (result1.isError) return onError?.call(result1.failure.toString());
+          if (result1.hasError) return onError?.call(result1.error.toString());
 
           players.add(result1.value);
         }

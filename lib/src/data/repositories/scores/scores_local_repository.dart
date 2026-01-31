@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:matchmaker/src/common/shared/exceptions.dart';
+import 'package:matchmaker/src/common/shared/result.dart' hide Value;
 import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:matchmaker/src/data/services/database/database.dart';
-import 'package:result/result.dart';
 
 import 'scores_repository.dart';
 
@@ -15,15 +15,15 @@ class ScoresLocalRepository implements ScoresRepository {
   AsyncResult<ScoreEntity> insertOne(InsertOneScoreParams params) async {
     try {
       final score = await _db
-          .into(_db.matchScore)
+          .into(_db.score)
           .insertReturning(
-            MatchScoreCompanion(
+            ScoreCompanion(
               matchId: Value(params.matchId),
               teamId: Value(params.teamId),
             ),
           );
 
-      return Result.ok(ScoreEntity.fromDrift(score));
+      return Result.value(ScoreEntity.fromDrift(score));
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
@@ -34,8 +34,8 @@ class ScoresLocalRepository implements ScoresRepository {
   @override
   AsyncResult<ScoreEntity> updateOne(int id, bool reversed) async {
     try {
-      final scores = await (_db.update(_db.matchScore)..where((tb) => tb.id.equals(id))).writeReturning(
-        MatchScoreCompanion(
+      final scores = await (_db.update(_db.score)..where((tb) => tb.id.equals(id))).writeReturning(
+        ScoreCompanion(
           reversed: Value(reversed),
           updatedAt: Value(DateTime.now().toUtc()),
         ),
@@ -45,7 +45,7 @@ class ScoresLocalRepository implements ScoresRepository {
         return const Result.error(AppException('Score não encontrado!'));
       }
 
-      return Result.ok(ScoreEntity.fromDrift(scores.first));
+      return Result.value(ScoreEntity.fromDrift(scores.first));
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
@@ -56,13 +56,13 @@ class ScoresLocalRepository implements ScoresRepository {
   @override
   AsyncResult<ScoreEntity> deleteOne(int id) async {
     try {
-      final scores = await (_db.delete(_db.matchScore)..where((tb) => tb.id.equals(id))).goAndReturn();
+      final scores = await (_db.delete(_db.score)..where((tb) => tb.id.equals(id))).goAndReturn();
 
       if (scores.isEmpty) {
         return const Result.error(AppException('Score não encontrado!'));
       }
 
-      return Result.ok(ScoreEntity.fromDrift(scores.first));
+      return Result.value(ScoreEntity.fromDrift(scores.first));
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
     } on Exception catch (e) {

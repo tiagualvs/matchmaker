@@ -1,6 +1,6 @@
+import 'package:matchmaker/src/common/shared/result.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
-import 'package:result/result.dart';
 
 class InsertOneEventParams {
   final String name;
@@ -32,6 +32,7 @@ class UpdateOneEventParams {
   final bool? balancedByGender;
   final bool? balancedByLevel;
   final int? maxWinsInARow;
+  final List<int>? queue;
   final bool? ended;
 
   const UpdateOneEventParams({
@@ -42,6 +43,7 @@ class UpdateOneEventParams {
     this.balancedByGender,
     this.balancedByLevel,
     this.maxWinsInARow,
+    this.queue,
     this.ended,
   });
 }

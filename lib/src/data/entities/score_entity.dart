@@ -19,7 +19,7 @@ abstract class ScoreEntity with _$ScoreEntity {
 
   factory ScoreEntity.fromJson(Map<String, dynamic> json) => _$ScoreEntityFromJson(json);
 
-  factory ScoreEntity.fromDrift(MatchScoreData data) {
+  factory ScoreEntity.fromDrift(ScoreData data) {
     return ScoreEntity(
       id: data.id,
       matchId: data.matchId,

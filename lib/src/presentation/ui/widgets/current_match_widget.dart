@@ -71,9 +71,7 @@ class CurrentMatchWidget extends StatelessWidget {
                     children: [
                       Text(
                         match.firstTeam.name,
-                        style: context.textTheme.titleMedium?.copyWith(
-                          color: context.colorScheme.primary,
-                        ),
+                        style: context.textTheme.titleMedium,
                       ),
                       Text(
                         '${match.firstTeamScore}',
@@ -103,9 +101,7 @@ class CurrentMatchWidget extends StatelessWidget {
                     children: [
                       Text(
                         match.secondTeam.name,
-                        style: context.textTheme.titleMedium?.copyWith(
-                          color: context.colorScheme.primary,
-                        ),
+                        style: context.textTheme.titleMedium,
                       ),
                       Text(
                         '${match.secondTeamScore}',
