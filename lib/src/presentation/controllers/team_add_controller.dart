@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:matchmaker/src/common/shared/controller.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -8,17 +8,12 @@ import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/players/players_repository.dart';
 import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
 
-class TeamAddController extends ChangeNotifier {
+class TeamAddController extends Controller {
   TeamAddController(
     this._eventsRepository,
     this._teamsRepository,
     this._playersRepository,
   );
-
-  void setState(void Function() fn) {
-    fn();
-    return notifyListeners();
-  }
 
   final EventsRepository _eventsRepository;
 
@@ -27,12 +22,6 @@ class TeamAddController extends ChangeNotifier {
   final PlayersRepository _playersRepository;
 
   bool loading = false;
-
-  bool adding = false;
-
-  String playerName = '';
-
-  Set<PlayerGender> playerGender = {};
 
   EventEntity event = EventEntity.empty();
 
@@ -47,65 +36,78 @@ class TeamAddController extends ChangeNotifier {
 
     return result.fold(
       (event) {
-        this.event = event;
+        return setState(() {
+          this.event = event;
 
-        loading = false;
+          loading = false;
 
-        notifyListeners();
-
-        return onSuccess?.call();
+          return onSuccess?.call();
+        });
       },
       (error) {
-        return onError?.call(error.toString());
+        return setState(() {
+          loading = false;
+
+          return onError?.call(error.toString());
+        });
       },
     );
   }
 
-  Future<void> addPlayer({
+  Future<void> handleInsertPlayer(
+    PlayerEntity player, {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
+    setState(() {
+      loading = true;
+    });
+
     final result = await _playersRepository.insertOne(
       InsertOnePlayerParams(
-        name: playerName,
-        gender: playerGender.first.value,
-        level: PlayerLevel.basic.value,
+        name: player.name,
+        gender: player.gender.value,
+        level: player.level.value,
       ),
     );
 
-    if (result.hasError) return onError?.call(result.error.toString());
+    if (result.hasError) {
+      return setState(() {
+        loading = false;
 
-    final player = result.value;
-
-    if (event.hasPlayer(player.id)) {
-      return onError?.call('Jogador já cadastrado em outro time!');
+        return onError?.call(result.error.toString());
+      });
     }
 
-    team = team.copyWith(
-      players: [
-        player,
-        ...team.players,
-      ],
-    );
+    final insertedPlayer = result.value;
 
-    adding = false;
+    if (event.hasPlayer(insertedPlayer.id)) {
+      return setState(() {
+        loading = false;
 
-    playerName = '';
+        return onError?.call('Jogador já cadastrado em outro time!');
+      });
+    }
 
-    playerGender.clear();
+    return setState(() {
+      loading = false;
 
-    notifyListeners();
+      team = team.copyWith(
+        players: [
+          insertedPlayer,
+          ...team.players,
+        ],
+      );
 
-    return onSuccess?.call();
+      return onSuccess?.call();
+    });
   }
 
   Future<void> save({
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
-    loading = true;
-
-    notifyListeners();
+    setState(() => loading = true);
 
     final result0 = await _teamsRepository.insertOne(
       InsertOneTeamParams(
@@ -115,37 +117,43 @@ class TeamAddController extends ChangeNotifier {
       ),
     );
 
-    return result0.fold(
-      (team) async {
-        final result1 = await _eventsRepository.updateOne(
-          event.id,
-          UpdateOneEventParams(
-            queue: [...event.queue, team.id],
-          ),
-        );
-
-        if (result1.hasError) return onError?.call(result1.error.toString());
-
-        this.team = team;
-
+    if (result0.hasError) {
+      return setState(() {
         loading = false;
 
-        notifyListeners();
+        return onError?.call(result0.error.toString());
+      });
+    }
 
-        return onSuccess?.call();
-      },
-      (error) {
-        return onError?.call(error.toString());
-      },
+    final insertedTeam = result0.value;
+
+    final result1 = await _eventsRepository.updateOne(
+      event.id,
+      UpdateOneEventParams(
+        queue: [...event.queue, insertedTeam.id],
+      ),
     );
+
+    if (result1.hasError) {
+      return setState(() {
+        loading = false;
+
+        return onError?.call(result1.error.toString());
+      });
+    }
+
+    return setState(() {
+      team = insertedTeam;
+
+      loading = false;
+
+      return onSuccess?.call();
+    });
   }
 
   void resetController() {
     event = EventEntity.empty();
     team = TeamEntity.empty('');
-    playerName = '';
-    playerGender.clear();
-    adding = false;
     loading = true;
   }
 }

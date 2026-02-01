@@ -25,14 +25,15 @@ enum PlayerGender {
 }
 
 enum PlayerLevel {
-  basic('basic'),
-  intermediate('intermediate'),
-  advanced('advanced')
+  basic('basic', '⭐'),
+  intermediate('intermediate', '⭐⭐'),
+  advanced('advanced', '⭐⭐⭐')
   ;
 
   final String value;
+  final String emoji;
 
-  const PlayerLevel(this.value);
+  const PlayerLevel(this.value, this.emoji);
 
   static PlayerLevel fromValue(String value) {
     return switch (value) {

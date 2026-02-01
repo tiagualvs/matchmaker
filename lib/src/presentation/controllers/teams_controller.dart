@@ -1,40 +1,84 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:matchmaker/src/common/shared/controller.dart';
+import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
+import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
+import 'package:matchmaker/src/data/repositories/players/players_repository.dart';
 import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
 
-class TeamsController extends ChangeNotifier {
-  TeamsController(this._teamsRepository);
+class TeamsController extends Controller {
+  TeamsController(this._eventsRepository, this._playersRepository, this._teamsRepository);
+
+  final EventsRepository _eventsRepository;
+
+  final PlayersRepository _playersRepository;
 
   final TeamsRepository _teamsRepository;
 
-  void setState(void Function() fn) {
-    fn();
-    notifyListeners();
-  }
-
   bool loading = true;
 
-  List<TeamEntity> teams = [];
+  EventEntity _event = EventEntity.empty();
+
+  EventEntity get event => _event;
+
+  List<TeamEntity> _teams = [];
+
+  List<TeamEntity> get teams => _teams;
 
   Future<void> loadDependencies(
     int eventId, {
     void Function(String error)? onError,
   }) async {
-    final result = await _teamsRepository.findMany(eventId);
+    setState(() {
+      loading = true;
+    });
+
+    final result = await _eventsRepository.findOne(eventId);
 
     return result.fold(
-      (teams) {
-        this.teams = teams;
+      (event) {
+        return setState(() {
+          _event = event;
+          _teams = [];
 
-        loading = false;
+          if (event.hasIncompleteTeams) {
+            for (final team in event.teams) {
+              final diff = event.maxPlayerPerTeam - team.players.length;
 
-        notifyListeners();
+              if (diff > 0) {
+                teams.add(
+                  team.copyWith(
+                    players: [
+                      ...team.players,
+                      ...List.generate(
+                        diff,
+                        (index) => PlayerEntity.joker(
+                          index,
+                          PlayerGender.unknown,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                teams.add(team);
+              }
+            }
+          } else {
+            _teams = List.from(event.teams);
+          }
+
+          loading = false;
+        });
       },
       (error) {
-        return onError?.call(error.toString());
+        return setState(() {
+          loading = false;
+
+          return onError?.call(error.toString());
+        });
       },
     );
   }
@@ -45,6 +89,8 @@ class TeamsController extends ChangeNotifier {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
+    if (firstPlayer.isJoker || secondPlayer.isJoker) return;
+
     final sourceTeams = teams;
 
     final firstTeam = teams.firstWhere((team) => team.players.contains(firstPlayer));
@@ -69,8 +115,6 @@ class TeamsController extends ChangeNotifier {
       players: List.from(secondTeam.players)..[secondPlayerIndex] = firstPlayer,
     );
 
-    notifyListeners();
-
     final result = await _teamsRepository.swapPlayers(
       SwapPlayersParams(
         firstTeamId: firstTeam.id,
@@ -82,20 +126,113 @@ class TeamsController extends ChangeNotifier {
 
     return result.fold(
       (_) {
+        setState();
         return onSuccess?.call();
       },
       (err) {
-        teams = sourceTeams;
-
-        notifyListeners();
+        _teams = sourceTeams;
 
         return onError?.call(err.toString());
       },
     );
   }
 
+  Future<void> deleteTeam(
+    int teamId, {
+    void Function()? onSuccess,
+    void Function(String error)? onError,
+  }) async {
+    setState(() => loading = true);
+
+    if (event.teams.length == 3) {
+      setState(() => loading = false);
+      return onError?.call('O evento chegou a quantidade mínima de times!');
+    }
+
+    final result0 = await _teamsRepository.deleteOne(teamId);
+
+    if (result0.hasError) {
+      setState(() => loading = false);
+      return onError?.call(result0.error.toString());
+    }
+
+    final result1 = await _eventsRepository.updateOne(
+      event.id,
+      UpdateOneEventParams(
+        queue: List.from(event.queue)..removeWhere((id) => id == teamId),
+      ),
+    );
+
+    if (result1.hasError) {
+      setState(() => loading = false);
+      return onError?.call(result1.error.toString());
+    }
+
+    return setState(() {
+      loading = false;
+
+      _teams = _teams.where((team) => team.id != teamId).toList();
+
+      return onSuccess?.call();
+    });
+  }
+
+  Future<void> insertPlayer(
+    int index,
+    int teamId,
+    PlayerEntity player, {
+    void Function()? onSuccess,
+    void Function(String error)? onError,
+  }) async {
+    setState(() => loading = true);
+
+    final result0 = await _playersRepository.insertOne(
+      InsertOnePlayerParams(
+        name: player.name,
+        gender: player.gender.value,
+        level: player.level.value,
+      ),
+    );
+
+    if (result0.hasError) {
+      setState(() => loading = false);
+      return onError?.call(result0.error.toString());
+    }
+
+    final insertedPlayer = result0.value;
+
+    if (event.hasPlayer(insertedPlayer.id)) {
+      setState(() => loading = false);
+      return onError?.call('Jogador já cadastrado em outro time!');
+    }
+
+    final result1 = await _teamsRepository.insertPlayer(teamId, insertedPlayer.id);
+
+    if (result1.hasError) {
+      setState(() => loading = false);
+      return onError?.call(result1.error.toString());
+    }
+
+    final teamIndex = teams.indexWhere((team) => team.id == teamId);
+
+    if (teamIndex == -1) return;
+
+    teams[teamIndex] = teams[teamIndex].copyWith(
+      players: [...teams[teamIndex].players]..[index] = insertedPlayer,
+    );
+
+    return setState(() {
+      loading = false;
+
+      _event = event.copyWith(teams: teams);
+
+      onSuccess?.call();
+    });
+  }
+
   void resetController() {
-    teams = [];
+    _event = EventEntity.empty();
+    _teams = [];
     loading = true;
   }
 }

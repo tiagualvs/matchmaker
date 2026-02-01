@@ -1,21 +1,16 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/string_ext.dart';
+import 'package:matchmaker/src/common/shared/controller.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/players/players_repository.dart';
 
-class CreateEventController extends ChangeNotifier {
+class CreateEventController extends Controller {
   CreateEventController(this._eventsRepository, this._playersRepository);
-
-  void setState(void Function() func) {
-    func();
-    notifyListeners();
-  }
 
   final EventsRepository _eventsRepository;
 
@@ -30,12 +25,6 @@ class CreateEventController extends ChangeNotifier {
   List<PlayerEntity> players = [];
 
   int get numTeams => (players.length / event.maxPlayerPerTeam).ceil();
-
-  final importer = TextEditingController();
-
-  final playerName = TextEditingController();
-
-  Set<PlayerGender> playerGender = {};
 
   Timer? _timer;
 
@@ -237,9 +226,11 @@ class CreateEventController extends ChangeNotifier {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
-    setState(() {
-      loading = true;
-    });
+    if (event.teams.length <= 2) {
+      return onError?.call('O evento precisa de pelo menos 3 times para ser gerado!');
+    }
+
+    setState(() => loading = true);
 
     final result = await _eventsRepository.insertOne(
       InsertOneEventParams(
@@ -268,32 +259,25 @@ class CreateEventController extends ChangeNotifier {
     );
   }
 
-  void handleGenderChange(Set<PlayerGender> genders) {
-    setState(() {
-      playerGender = genders;
-    });
-  }
-
-  Future<void> handleAddPlayer({
+  Future<void> handleAddPlayer(
+    PlayerEntity player, {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
     final result = await _playersRepository.insertOne(
       InsertOnePlayerParams(
-        name: playerName.text,
-        gender: playerGender.first.value,
-        level: PlayerLevel.basic.value,
+        name: player.name,
+        gender: player.gender.value,
+        level: player.level.value,
       ),
     );
 
     if (result.hasError) return onError?.call(result.error.toString());
 
+    final insertedPlayer = result.value;
+
     return setState(() {
-      players.add(result.value);
-
-      playerName.clear();
-
-      playerGender.clear();
+      players.add(insertedPlayer);
     });
   }
 
@@ -328,14 +312,15 @@ class CreateEventController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> importFromRawList({
+  Future<void> importFromRawList(
+    String list, {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
     final regex = RegExp(r'(.+)-(.+)');
 
     final names =
-        importer.text
+        list
             .split('\n')
             .where((line) => line.isNotEmpty)
             .where(regex.hasMatch)
@@ -347,8 +332,6 @@ class CreateEventController extends ChangeNotifier {
 
     if (names.isEmpty) {
       setState(() {
-        importer.clear();
-
         return onError?.call('Nenhum jogador encontrado na lista colada!');
       });
     }
@@ -403,8 +386,6 @@ class CreateEventController extends ChangeNotifier {
 
       players.sort((a, b) => a.name.compareTo(b.name));
 
-      importer.clear();
-
       return onSuccess?.call();
     });
   }
@@ -428,9 +409,6 @@ class CreateEventController extends ChangeNotifier {
   }
 
   void resetController() {
-    importer.clear();
-    playerName.clear();
-    playerGender.clear();
     players.clear();
     event = EventEntity.empty().copyWith(
       name: 'Evento do dia ${DateFormat('dd/MM/yyyy').format(DateTime.now())}',

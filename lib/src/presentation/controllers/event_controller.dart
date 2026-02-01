@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:matchmaker/src/common/shared/controller.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
@@ -6,13 +6,8 @@ import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart
 import 'package:share_plus/share_plus.dart';
 import 'package:widgets_to_image/widgets_to_image.dart';
 
-class EventController extends ChangeNotifier {
+class EventController extends Controller {
   EventController(this._eventsRepository, this._matchesRepository);
-
-  void setState(void Function() func) {
-    func();
-    notifyListeners();
-  }
 
   final EventsRepository _eventsRepository;
 
@@ -20,11 +15,17 @@ class EventController extends ChangeNotifier {
 
   final WidgetsToImageController widgetsToImageController = WidgetsToImageController();
 
-  bool loading = false;
+  bool _loading = true;
 
-  bool sharing = false;
+  bool get loading => _loading;
 
-  EventEntity event = EventEntity.empty();
+  bool _sharing = false;
+
+  bool get sharing => _sharing;
+
+  EventEntity _event = EventEntity.empty();
+
+  EventEntity get event => _event;
 
   Future<void> loadDependencies(
     int eventId, {
@@ -39,8 +40,8 @@ class EventController extends ChangeNotifier {
     void Function(String error)? onError,
   }) async {
     setState(() {
-      loading = true;
-      sharing = false;
+      _loading = true;
+      _sharing = false;
     });
 
     final result0 = await _eventsRepository.findOne(eventId);
@@ -78,16 +79,16 @@ class EventController extends ChangeNotifier {
 
             if (result1.hasError) {
               return setState(() {
-                loading = false;
+                _loading = false;
 
                 return onError?.call(result1.error.toString());
               });
             }
 
             return setState(() {
-              loading = false;
+              _loading = false;
 
-              this.event = event.copyWith(
+              _event = event.copyWith(
                 matches: [
                   ...event.matches,
                   result1.value.copyWith(
@@ -136,16 +137,16 @@ class EventController extends ChangeNotifier {
 
             if (result1.hasError) {
               return setState(() {
-                loading = false;
+                _loading = false;
 
                 return onError?.call(result1.error.toString());
               });
             }
 
             return setState(() {
-              loading = false;
+              _loading = false;
 
-              this.event = event.copyWith(
+              _event = event.copyWith(
                 matches: [
                   ...event.matches,
                   result1.value.copyWith(
@@ -159,15 +160,15 @@ class EventController extends ChangeNotifier {
           }
         } else {
           return setState(() {
-            loading = false;
-            this.event = event;
+            _loading = false;
+            _event = event;
           });
         }
       },
       (error) {
         return setState(() {
-          loading = false;
-          sharing = false;
+          _loading = false;
+          _sharing = false;
         });
       },
     );
@@ -178,7 +179,7 @@ class EventController extends ChangeNotifier {
     void Function(String error)? onError,
   }) async {
     setState(() {
-      loading = true;
+      _loading = true;
     });
 
     if (event.endedMatches.isEmpty) {
@@ -190,7 +191,7 @@ class EventController extends ChangeNotifier {
         },
         (error) {
           return setState(() {
-            loading = false;
+            _loading = false;
 
             return onError?.call(error.toString());
           });
@@ -210,7 +211,7 @@ class EventController extends ChangeNotifier {
 
           if (result1.hasError) {
             return setState(() {
-              loading = false;
+              _loading = false;
 
               return onError?.call(result1.error.toString());
             });
@@ -221,7 +222,7 @@ class EventController extends ChangeNotifier {
       },
       (error) {
         return setState(() {
-          loading = false;
+          _loading = false;
 
           return onError?.call(error.toString());
         });
@@ -234,7 +235,7 @@ class EventController extends ChangeNotifier {
     void Function(String error)? onError,
   }) async {
     setState(() {
-      sharing = true;
+      _sharing = true;
     });
 
     final bytes = await widgetsToImageController.capturePng(
@@ -259,14 +260,15 @@ class EventController extends ChangeNotifier {
     );
 
     return setState(() {
-      sharing = false;
+      _sharing = false;
+
       return onSuccess?.call();
     });
   }
 
   void resetController() {
-    event = EventEntity.empty();
-    loading = true;
-    sharing = false;
+    _event = EventEntity.empty();
+    _loading = true;
+    _sharing = false;
   }
 }

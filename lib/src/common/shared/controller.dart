@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
 
-abstract class Controller extends Listenable {
-  final List<VoidCallback> _liteners = [];
+abstract class Controller extends ChangeNotifier {
+  void setState([void Function()? func]) {
+    func?.call();
+    return notifyListeners();
+  }
+}
+
+mixin ControllerMixin<T extends StatefulWidget> on State<T> {
+  void _handleChanges() => setState(() {});
+
+  Controller get bind;
 
   @override
-  void addListener(VoidCallback listener) {
-    _liteners.add(listener);
+  void initState() {
+    super.initState();
+    bind.addListener(_handleChanges);
   }
 
   @override
-  void removeListener(VoidCallback listener) {
-    _liteners.remove(listener);
-  }
-
-  void setState(void Function() func) {
-    func();
-
-    for (var listener in _liteners) {
-      listener();
-    }
+  void dispose() {
+    bind.removeListener(_handleChanges);
+    super.dispose();
   }
 }

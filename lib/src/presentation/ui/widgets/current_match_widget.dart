@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
-import 'package:matchmaker/src/presentation/ui/pages/events_page.dart';
+import 'package:matchmaker/src/presentation/ui/widgets/pulse_animation_widget.dart';
 
 class CurrentMatchWidget extends StatelessWidget {
   const CurrentMatchWidget({super.key, required this.match, required this.onTap});
@@ -55,7 +55,7 @@ class CurrentMatchWidget extends StatelessWidget {
                           match.name,
                           style: context.textTheme.titleMedium?.copyWith(fontWeight: .bold),
                         ),
-                        const PulseAnimation(runningColor: Colors.green),
+                        const PulseAnimationWidget(runningColor: Colors.green),
                       ],
                     ),
                   ),

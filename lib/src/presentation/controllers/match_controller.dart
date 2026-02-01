@@ -1,27 +1,28 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:matchmaker/src/common/shared/controller.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
 import 'package:matchmaker/src/data/repositories/scores/scores_repository.dart';
 
-class MatchController extends ChangeNotifier {
+class MatchController extends Controller {
   MatchController(this._matchesRepository, this._scoresRepository);
-
-  void setState(VoidCallback fn) {
-    fn();
-    return notifyListeners();
-  }
 
   final MatchesRepository _matchesRepository;
 
   final ScoresRepository _scoresRepository;
 
-  bool loading = true;
+  bool _loading = true;
 
-  bool swapped = false;
+  bool get loading => _loading;
+
+  bool _swapped = false;
+
+  bool get swapped => _swapped;
+
+  void toggleSwap() => setState(() => _swapped = !_swapped);
 
   MatchEntity match = MatchEntity.empty();
 
@@ -30,14 +31,14 @@ class MatchController extends ChangeNotifier {
     void Function(String error)? onError,
   }) async {
     setState(() {
-      loading = true;
+      _loading = true;
     });
 
     if (matchId == -99) {
       return setState(() {
         match = MatchEntity.detached();
 
-        loading = false;
+        _loading = false;
       });
     }
 
@@ -48,12 +49,12 @@ class MatchController extends ChangeNotifier {
         return setState(() {
           match = value;
 
-          loading = false;
+          _loading = false;
         });
       },
       (error) {
         return setState(() {
-          loading = false;
+          _loading = false;
 
           return onError?.call(error.toString());
         });
@@ -229,7 +230,7 @@ class MatchController extends ChangeNotifier {
 
   void resetController() {
     match = MatchEntity.empty();
-    swapped = false;
-    loading = true;
+    _swapped = false;
+    _loading = true;
   }
 }

@@ -278,8 +278,8 @@ abstract class EventEntity with _$EventEntity {
 
   bool get hasIncompleteTeams => teams.any((team) => team.players.length != maxPlayerPerTeam);
 
-  bool hasPlayer(int id) {
-    return teams.any((team) => team.players.any((player) => player.id == id));
+  bool hasPlayer(int playerId) {
+    return teams.any((team) => team.players.any((player) => player.id == playerId));
   }
 
   factory EventEntity.empty() {

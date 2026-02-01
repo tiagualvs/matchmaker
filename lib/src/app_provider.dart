@@ -47,28 +47,28 @@ class AppProvider extends StatelessWidget {
         Provider<PlayersRepository>(
           create: (ctx) => PlayersLocalRepository(ctx.read()),
         ),
-        ChangeNotifierProvider<EventsController>(
+        ListenableProvider<EventsController>(
           create: (ctx) => EventsController(ctx.read()),
         ),
-        ChangeNotifierProvider<EventController>(
+        ListenableProvider<EventController>(
           create: (ctx) => EventController(ctx.read(), ctx.read()),
         ),
-        ChangeNotifierProvider<CreateEventController>(
+        ListenableProvider<CreateEventController>(
           create: (ctx) => CreateEventController(ctx.read(), ctx.read()),
         ),
-        ChangeNotifierProvider<MatchController>(
+        ListenableProvider<MatchController>(
           create: (ctx) => MatchController(ctx.read(), ctx.read()),
         ),
-        ChangeNotifierProvider<MatchHistoryController>(
+        ListenableProvider<MatchHistoryController>(
           create: (ctx) => MatchHistoryController(ctx.read()),
         ),
-        ChangeNotifierProvider<EventSettingsController>(
+        ListenableProvider<EventSettingsController>(
           create: (ctx) => EventSettingsController(ctx.read(), ctx.read()),
         ),
-        ChangeNotifierProvider<TeamsController>(
-          create: (ctx) => TeamsController(ctx.read()),
+        ListenableProvider<TeamsController>(
+          create: (ctx) => TeamsController(ctx.read(), ctx.read(), ctx.read()),
         ),
-        ChangeNotifierProvider<TeamAddController>(
+        ListenableProvider<TeamAddController>(
           create: (ctx) => TeamAddController(ctx.read(), ctx.read(), ctx.read()),
         ),
       ],

@@ -1,23 +1,22 @@
-import 'package:flutter/material.dart';
+import 'package:matchmaker/src/common/shared/controller.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
 
-class EventSettingsController extends ChangeNotifier {
+class EventSettingsController extends Controller {
   EventSettingsController(this._eventsRepository, this._matchesRepository);
-
-  void setState(void Function() func) {
-    func();
-    notifyListeners();
-  }
 
   final EventsRepository _eventsRepository;
 
   final MatchesRepository _matchesRepository;
 
-  bool loading = false;
+  bool _loading = false;
 
-  EventEntity event = EventEntity.empty();
+  bool get loading => _loading;
+
+  EventEntity _event = EventEntity.empty();
+
+  EventEntity get event => _event;
 
   Future<void> loadDependencies(
     int eventId, {
@@ -25,7 +24,7 @@ class EventSettingsController extends ChangeNotifier {
     void Function(String error)? onError,
   }) async {
     setState(() {
-      loading = true;
+      _loading = true;
     });
 
     final result = await _eventsRepository.findOne(eventId);
@@ -33,16 +32,16 @@ class EventSettingsController extends ChangeNotifier {
     return result.fold(
       (event) {
         return setState(() {
-          this.event = event;
+          _event = event;
 
-          loading = false;
+          _loading = false;
 
           return onSuccess?.call();
         });
       },
       (error) {
         return setState(() {
-          loading = false;
+          _loading = false;
 
           return onError?.call(error.toString());
         });
@@ -55,7 +54,7 @@ class EventSettingsController extends ChangeNotifier {
     void Function(String error)? onError,
   }) async {
     setState(() {
-      loading = true;
+      _loading = true;
     });
 
     final result = await _eventsRepository.updateOne(
@@ -86,7 +85,7 @@ class EventSettingsController extends ChangeNotifier {
       },
       (error) {
         return setState(() {
-          loading = false;
+          _loading = false;
 
           return onError?.call(error.toString());
         });
@@ -94,8 +93,14 @@ class EventSettingsController extends ChangeNotifier {
     );
   }
 
+  void updateEvent(EventEntity event) {
+    setState(() {
+      _event = event;
+    });
+  }
+
   void resetController() {
-    loading = true;
-    event = EventEntity.empty();
+    _loading = true;
+    _event = EventEntity.empty();
   }
 }
