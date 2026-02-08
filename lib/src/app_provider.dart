@@ -9,11 +9,8 @@ import 'package:matchmaker/src/data/repositories/scores/scores_local_repository.
 import 'package:matchmaker/src/data/repositories/scores/scores_repository.dart';
 import 'package:matchmaker/src/data/repositories/teams/teams_local_repository.dart';
 import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
-import 'package:matchmaker/src/data/services/database/database.dart';
-import 'package:matchmaker/src/presentation/controllers/create_event_controller.dart';
-import 'package:matchmaker/src/presentation/controllers/event_controller.dart';
+import 'package:matchmaker/src/data/services/database/app_database.dart';
 import 'package:matchmaker/src/presentation/controllers/event_settings_controller.dart';
-import 'package:matchmaker/src/presentation/controllers/events_controller.dart';
 import 'package:matchmaker/src/presentation/controllers/match_controller.dart';
 import 'package:matchmaker/src/presentation/controllers/match_history_controller.dart';
 import 'package:matchmaker/src/presentation/controllers/team_add_controller.dart';
@@ -21,8 +18,11 @@ import 'package:matchmaker/src/presentation/controllers/teams_controller.dart';
 import 'package:provider/provider.dart';
 
 class AppProvider extends StatelessWidget {
-  const AppProvider({super.key, required this.child});
+  const AppProvider({super.key, required this.child}) : _testing = false;
 
+  const AppProvider.testing({super.key, required this.child}) : _testing = true;
+
+  final bool _testing;
   final Widget child;
 
   @override
@@ -30,7 +30,7 @@ class AppProvider extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider<AppDatabase>(
-          create: (ctx) => AppDatabase(),
+          create: (ctx) => _testing ? AppDatabase.testing() : AppDatabase(),
         ),
         Provider<EventsRepository>(
           create: (ctx) => EventsLocalRepository(ctx.read()),
@@ -46,15 +46,6 @@ class AppProvider extends StatelessWidget {
         ),
         Provider<PlayersRepository>(
           create: (ctx) => PlayersLocalRepository(ctx.read()),
-        ),
-        ListenableProvider<EventsController>(
-          create: (ctx) => EventsController(ctx.read()),
-        ),
-        ListenableProvider<EventController>(
-          create: (ctx) => EventController(ctx.read(), ctx.read()),
-        ),
-        ListenableProvider<CreateEventController>(
-          create: (ctx) => CreateEventController(ctx.read(), ctx.read()),
         ),
         ListenableProvider<MatchController>(
           create: (ctx) => MatchController(ctx.read(), ctx.read()),

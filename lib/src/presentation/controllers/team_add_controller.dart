@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:matchmaker/src/common/shared/controller.dart';
+import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -8,18 +8,25 @@ import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/players/players_repository.dart';
 import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
 
-class TeamAddController extends Controller {
+class TeamAddController extends ChangeNotifier {
   TeamAddController(
     this._eventsRepository,
     this._teamsRepository,
     this._playersRepository,
   );
 
+  void setState([void Function()? func]) {
+    func?.call();
+    return notifyListeners();
+  }
+
   final EventsRepository _eventsRepository;
 
   final TeamsRepository _teamsRepository;
 
   final PlayersRepository _playersRepository;
+
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   bool loading = false;
 
@@ -107,48 +114,50 @@ class TeamAddController extends Controller {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
-    setState(() => loading = true);
+    if (formKey.currentState?.validate() ?? false) {
+      setState(() => loading = true);
 
-    final result0 = await _teamsRepository.insertOne(
-      InsertOneTeamParams(
-        eventId: event.id,
-        name: team.name,
-        players: team.players,
-      ),
-    );
+      final result0 = await _teamsRepository.insertOne(
+        InsertOneTeamParams(
+          eventId: event.id,
+          name: team.name,
+          players: team.players,
+        ),
+      );
 
-    if (result0.hasError) {
+      if (result0.hasError) {
+        return setState(() {
+          loading = false;
+
+          return onError?.call(result0.error.toString());
+        });
+      }
+
+      final insertedTeam = result0.value;
+
+      final result1 = await _eventsRepository.updateOne(
+        event.id,
+        UpdateOneEventParams(
+          queue: [...event.queue, insertedTeam.id],
+        ),
+      );
+
+      if (result1.hasError) {
+        return setState(() {
+          loading = false;
+
+          return onError?.call(result1.error.toString());
+        });
+      }
+
       return setState(() {
+        team = insertedTeam;
+
         loading = false;
 
-        return onError?.call(result0.error.toString());
+        return onSuccess?.call();
       });
     }
-
-    final insertedTeam = result0.value;
-
-    final result1 = await _eventsRepository.updateOne(
-      event.id,
-      UpdateOneEventParams(
-        queue: [...event.queue, insertedTeam.id],
-      ),
-    );
-
-    if (result1.hasError) {
-      return setState(() {
-        loading = false;
-
-        return onError?.call(result1.error.toString());
-      });
-    }
-
-    return setState(() {
-      team = insertedTeam;
-
-      loading = false;
-
-      return onSuccess?.call();
-    });
   }
 
   void resetController() {

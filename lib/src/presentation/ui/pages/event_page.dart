@@ -1,123 +1,89 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/others/dialogs.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/others/text_span_builder.dart';
-import 'package:matchmaker/src/common/shared/controller.dart';
 import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
-import 'package:matchmaker/src/data/entities/event_entity.dart';
-import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
-import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/event_controller.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/current_match_widget.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/players_dialog.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/team_card_widget.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:provider/provider.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:widgets_to_image/widgets_to_image.dart';
 
-class EventPage extends StatefulWidget {
-  const EventPage({super.key, required this.id, required this.controller});
-
-  final int id;
-  final EventController controller;
-
-  @override
-  State<EventPage> createState() => _EventPageState();
-}
-
-class _EventPageState extends State<EventPage> with ControllerMixin {
-  EventController get controller => widget.controller;
-
-  bool get loading => controller.loading;
-
-  EventEntity get event => controller.event;
-
-  MatchEntity? get currentMatch => event.currentMatch;
-
-  @override
-  Controller get bind => controller;
-
-  Future<void> whenMaxWinsInARow(
-    BuildContext context,
-    EventEntity event,
-    TeamEntity winner,
-    TeamEntity firstTeam,
-    TeamEntity secondTeam,
-  ) async {
-    return await showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(
-            'Máximo de vitórias atingida!',
-            style: context.textTheme.headlineMedium?.copyWith(fontWeight: .bold),
-          ),
-          content: Text.rich(
-            TextSpanBuilder.build(
-              'O time [b]${winner.name}[/b] alcançou o número máximo de vitórias em sequência [b](${event.maxWinsInARow})[/b].\n\nAgora dará lugar ao próximo time e voltará para a fila com prioridade para jogar a próxima partida!\n\nPróximo jogo:\n[b]${firstTeam.name}[/b] vs. [b]${secondTeam.name}[/b]!',
-              normalStyle: context.textTheme.bodyLarge,
-              boldStyle: context.textTheme.bodyLarge?.copyWith(fontWeight: .bold),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => context.pop(),
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> onNeedsJoker(
-    BuildContext context,
-    EventEntity event,
-    TeamEntity team,
-  ) async {
-    return await Dialogs.show(
-      context,
-      title: 'Jogador ausente!',
-      content:
-          'O time [b]${team.name}[/b] precisa de ${event.maxPlayerPerTeam - team.players.length} jogadores para completar a equipe!',
-      actions: [
-        TextButton(
-          onPressed: () => context.pop(),
-          child: const Text('OK'),
-        ),
-      ],
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      return await controller.loadDependencies(
-        widget.id,
-        onMaxWinsInARow: (event, winner, firstTeam, secondTeam) async {
-          return await whenMaxWinsInARow(
-            context,
-            event,
-            winner,
-            firstTeam,
-            secondTeam,
-          );
-        },
-        onNeedsJoker: (event, team) {
-          return onNeedsJoker(context, event, team);
-        },
-      );
-    });
-  }
+class EventPage extends StatelessWidget {
+  const EventPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<EventController>();
+
+    final loading = controller.loading;
+
+    final sharing = controller.sharing;
+
+    final event = controller.event;
+
+    final currentMatch = event.currentMatch;
+
+    Future<void> onNeedJokers(String message) async {
+      return await Dialogs.display(
+        context,
+        title: const Text('Jogador ausente!'),
+        content: Text.rich(
+          TextSpanBuilder.build(
+            message,
+            normalStyle: context.textTheme.bodyLarge,
+            boldStyle: context.textTheme.bodyLarge?.copyWith(fontWeight: .bold),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      );
+    }
+
+    Future<void> onMaxWinsInARow(String message) async {
+      return await Dialogs.display(
+        context,
+        title: Text(
+          'Máximo de vitórias atingida!',
+          style: context.textTheme.headlineMedium?.copyWith(fontWeight: .bold),
+        ),
+        content: Text.rich(
+          TextSpanBuilder.build(
+            message,
+            normalStyle: context.textTheme.bodyLarge,
+            boldStyle: context.textTheme.bodyLarge?.copyWith(fontWeight: .bold),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      );
+    }
+
+    Future<void> reloadDependencies() async {
+      return await controller.reloadDependencies(
+        onError: SnackBars.error,
+        onMaxWinsInARow: onMaxWinsInARow,
+        onNeedJokers: onNeedJokers,
+      );
+    }
+
     return FloatingActionButtonMenu(
-      menus: switch (controller.sharing) {
+      menus: switch (sharing) {
         true => [],
         false => [
           FloatingActionButtonMenuItem(
@@ -131,32 +97,22 @@ class _EventPageState extends State<EventPage> with ControllerMixin {
                 },
               );
 
-              return controller.loadDependencies(
-                widget.id,
-                onMaxWinsInARow: (event, winner, firstTeam, secondTeam) async {
-                  return await whenMaxWinsInARow(
-                    context,
-                    event,
-                    winner,
-                    firstTeam,
-                    secondTeam,
-                  );
-                },
-                onNeedsJoker: (event, team) {
-                  return onNeedsJoker(context, event, team);
-                },
-              );
+              return await reloadDependencies();
             },
           ),
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.list_rounded),
             label: const Text('Histórico de partidas'),
-            onPressed: () => context.pushNamed(
-              'match-history',
-              pathParameters: {
-                'eventId': event.id.toString(),
-              },
-            ),
+            onPressed: () async {
+              await context.pushNamed(
+                'match-history',
+                pathParameters: {
+                  'eventId': event.id.toString(),
+                },
+              );
+
+              return await reloadDependencies();
+            },
           ),
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.groups_rounded),
@@ -169,21 +125,7 @@ class _EventPageState extends State<EventPage> with ControllerMixin {
                 },
               );
 
-              return controller.loadDependencies(
-                widget.id,
-                onMaxWinsInARow: (event, winner, firstTeam, secondTeam) async {
-                  return await whenMaxWinsInARow(
-                    context,
-                    event,
-                    winner,
-                    firstTeam,
-                    secondTeam,
-                  );
-                },
-                onNeedsJoker: (event, team) {
-                  return onNeedsJoker(context, event, team);
-                },
-              );
+              return await reloadDependencies();
             },
           ),
           if (!event.ended) ...[
@@ -193,11 +135,12 @@ class _EventPageState extends State<EventPage> with ControllerMixin {
               onPressed: () async {
                 final hasEndedMatches = event.endedMatches.isNotEmpty;
 
-                final confirm = await Dialogs.show(
+                final confirm = await Dialogs.display(
                   context,
-                  title: 'Finalizar evento?',
-                  content:
-                      'Tem certeza que deseja finalizar este evento?\n\nTodas as partidas em andamento serão canceladas.${!hasEndedMatches ? '\n\nEsse evento não possui partidas finalizadas, então ele será excluído por completo!' : ''}\n\nEssa ação não poderá ser desfeita!\n\nDeseja prosseguir?',
+                  title: const Text('Finalizar evento?'),
+                  content: Text(
+                    'Tem certeza que deseja finalizar este evento?\n\nTodas as partidas em andamento serão canceladas.${!hasEndedMatches ? '\n\nEsse evento não possui partidas finalizadas, então ele será excluído por completo!' : ''}\n\nEssa ação não poderá ser desfeita!\n\nDeseja prosseguir?',
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => context.pop(false),
@@ -213,10 +156,10 @@ class _EventPageState extends State<EventPage> with ControllerMixin {
                 if (confirm ?? false) {
                   return await controller.endEvent(
                     onSuccess: () async {
-                      await Dialogs.show(
+                      await Dialogs.display(
                         context,
-                        title: 'Evento encerrado',
-                        content: 'O evento foi encerrado com sucesso!',
+                        title: const Text('Evento encerrado'),
+                        content: const Text('O evento foi encerrado com sucesso!'),
                         actions: [
                           TextButton(
                             onPressed: () => context.pop(),
@@ -240,7 +183,7 @@ class _EventPageState extends State<EventPage> with ControllerMixin {
         ],
       },
       child: Scaffold(
-        appBar: switch (controller.sharing) {
+        appBar: switch (sharing) {
           true => null,
           false => AppBar(
             leading: IconButton(
@@ -273,29 +216,38 @@ class _EventPageState extends State<EventPage> with ControllerMixin {
                     spacing: 16.0,
                     crossAxisAlignment: .stretch,
                     children: [
-                      if (controller.sharing) ...[
+                      if (sharing) ...[
                         Text(
                           event.name,
                           style: context.textTheme.titleMedium?.copyWith(fontWeight: .bold),
                         ),
                       ],
-                      if (currentMatch != null && currentMatch?.ended == false) ...[
+                      if (currentMatch != null && currentMatch.ended == false) ...[
                         Text(
                           'Partida Atual',
                           textAlign: .start,
                           style: context.textTheme.titleMedium,
                         ),
                         CurrentMatchWidget(
-                          match: currentMatch!,
+                          match: currentMatch,
                           onTap: () async {
                             if (!context.mounted) return;
 
                             await context.pushNamed(
                               'match',
                               pathParameters: {
-                                'matchId': currentMatch?.id.toString() ?? '',
+                                'matchId': currentMatch.id.toString(),
                               },
                             );
+
+                            await WakelockPlus.disable();
+
+                            await SystemChrome.setPreferredOrientations([
+                              DeviceOrientation.portraitUp,
+                              DeviceOrientation.portraitDown,
+                            ]);
+
+                            return await reloadDependencies();
                           },
                         ),
                       ],

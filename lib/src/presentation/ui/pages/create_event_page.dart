@@ -2,48 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
-import 'package:matchmaker/src/common/shared/controller.dart';
 import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
-import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/create_event_controller.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/event_settings_dialog.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/player_input_widget.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/team_card_widget.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:provider/provider.dart';
 
-class CreateEventPage extends StatefulWidget {
-  const CreateEventPage({super.key, required this.controller});
-
-  final CreateEventController controller;
-
-  @override
-  State<CreateEventPage> createState() => _CreateEventPageState();
-}
-
-class _CreateEventPageState extends State<CreateEventPage> with ControllerMixin {
-  CreateEventController get controller => widget.controller;
-
-  bool get loading => controller.loading;
-
-  EventEntity get event => controller.event;
-
-  List<TeamEntity> get teams => event.teams;
-
-  List<PlayerEntity> get players => controller.players;
-
-  @override
-  Controller get bind => controller;
-
-  @override
-  void dispose() {
-    controller.resetController();
-    super.dispose();
-  }
+class CreateEventPage extends StatelessWidget {
+  const CreateEventPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<CreateEventController>();
+
+    final loading = controller.loading;
+
+    final event = controller.event;
+
+    final teams = event.teams;
+
+    final players = controller.players;
+
     return FloatingActionButtonMenu(
       menus: [
         FloatingActionButtonMenuItem(
@@ -100,58 +83,55 @@ class _CreateEventPageState extends State<CreateEventPage> with ControllerMixin 
             icon: const Icon(Symbols.groups_rounded),
             label: const Text('Importar jogadores de lista'),
             onPressed: () async {
-              final importController = TextEditingController();
+              String? initialValue;
 
               final list = await showModalBottomSheet<String>(
                 context: context,
                 isScrollControlled: true,
                 builder: (context) {
-                  return Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      spacing: 16.0,
-                      crossAxisAlignment: .stretch,
-                      mainAxisSize: .min,
-                      children: [
-                        Text(
-                          'Importar Jogadores',
-                          style: context.textTheme.titleMedium,
-                        ),
-                        TextFormField(
-                          minLines: 5,
-                          maxLines: 7,
-                          controller: importController,
-                          decoration: const InputDecoration(
-                            alignLabelWithHint: true,
-                            hintText: '1 - Fulano de Tal - H\n2 - Sicrano de Tal\n3 - Elma Maria - M',
-                            labelText: 'Lista de Jogadores',
-                            floatingLabelBehavior: .always,
-                          ),
-                        ),
-                        ValueListenableBuilder(
-                          valueListenable: importController,
-                          builder: (context, value, child) {
-                            return FilledButton.icon(
-                              onPressed: value.text.isEmpty ? null : () => context.pop(value.text),
+                  return StatefulBuilder(
+                    builder: (context, setState) {
+                      return Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          spacing: 16.0,
+                          crossAxisAlignment: .stretch,
+                          mainAxisSize: .min,
+                          children: [
+                            Text(
+                              'Importar Jogadores',
+                              style: context.textTheme.titleMedium,
+                            ),
+                            TextFormField(
+                              minLines: 5,
+                              maxLines: 7,
+                              initialValue: initialValue,
+                              onChanged: (value) => setState(() => initialValue = value),
+                              decoration: const InputDecoration(
+                                alignLabelWithHint: true,
+                                hintText: '1 - Fulano de Tal - H\n2 - Sicrano de Tal\n3 - Elma Maria - M',
+                                labelText: 'Lista de Jogadores',
+                                floatingLabelBehavior: .always,
+                              ),
+                            ),
+                            FilledButton.icon(
+                              key: const ValueKey('CreateEventPage.importButton'),
+                              onPressed: initialValue == null ? null : () => context.pop(initialValue),
                               icon: const Icon(Symbols.upload_file_rounded),
                               label: const Text('Importar'),
-                            );
-                          },
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   );
                 },
               );
 
-              if (list == null) {
-                importController.dispose();
-                return;
-              }
+              if (list == null) return;
 
               return await controller.importFromRawList(
                 list,
-                onSuccess: importController.dispose,
                 onError: SnackBars.error,
               );
             },
@@ -178,6 +158,8 @@ class _CreateEventPageState extends State<CreateEventPage> with ControllerMixin 
               );
             },
           ),
+        ],
+        if (teams.isEmpty && players.isNotEmpty) ...[
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.groups_rounded),
             label: const Text('Gerar times'),
@@ -189,10 +171,7 @@ class _CreateEventPageState extends State<CreateEventPage> with ControllerMixin 
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Symbols.arrow_back_ios_rounded),
-            onPressed: () {
-              controller.resetController();
-              return context.pop();
-            },
+            onPressed: () => context.pop(),
           ),
           title: Text(controller.event.name),
         ),
@@ -202,7 +181,6 @@ class _CreateEventPageState extends State<CreateEventPage> with ControllerMixin 
             crossAxisAlignment: .stretch,
             mainAxisSize: .max,
             mainAxisAlignment: .center,
-
             children: [
               Icon(
                 Symbols.groups_rounded,
@@ -223,6 +201,7 @@ class _CreateEventPageState extends State<CreateEventPage> with ControllerMixin 
             ],
           ),
           false when teams.isEmpty && players.isNotEmpty => SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.all(24.0),
             child: Column(
               spacing: 16.0,
@@ -232,99 +211,92 @@ class _CreateEventPageState extends State<CreateEventPage> with ControllerMixin 
                   'Jogadores (${players.length})',
                   style: context.textTheme.titleMedium,
                 ),
-                ListView.separated(
-                  separatorBuilder: (_, _) => const SizedBox(height: 8.0),
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: players.length,
-                  itemBuilder: (context, index) {
-                    final player = players[index];
-
-                    return Material(
-                      clipBehavior: .antiAlias,
-                      color: context.colorScheme.onPrimary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-                        side: BorderSide(
-                          width: 0.5,
-                          color: context.colorScheme.primaryFixed,
-                        ),
+                for (final (index, player) in players.indexed) ...[
+                  Material(
+                    clipBehavior: .antiAlias,
+                    color: context.colorScheme.onPrimary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                      side: BorderSide(
+                        width: 0.5,
+                        color: context.colorScheme.primaryFixed,
                       ),
-                      child: InkWell(
-                        onTap: () async {
-                          final changedPlayed = await showModalBottomSheet<PlayerEntity>(
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (context) => PlayerInputWidget(
-                              player: player,
-                              onSave: context.pop,
-                            ),
-                          );
-
-                          if (changedPlayed == null) return;
-
-                          await controller.handlePlayerChanges(
-                            index,
-                            changedPlayed,
-                            onError: SnackBars.error,
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0).copyWith(
-                            right: 0.0,
+                    ),
+                    child: InkWell(
+                      onTap: () async {
+                        final changedPlayed = await showModalBottomSheet<PlayerEntity>(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (context) => PlayerInputWidget(
+                            player: player,
+                            onSave: context.pop,
                           ),
-                          child: Row(
-                            spacing: 16.0,
-                            children: [
-                              Material(
-                                shape: const CircleBorder(),
-                                color: switch (player.gender) {
-                                  PlayerGender.male => Colors.blue.withAlpha((255 * 0.1).toInt()),
-                                  PlayerGender.female => Colors.pink.withAlpha((255 * 0.1).toInt()),
-                                  _ => Colors.blueGrey.withAlpha((255 * 0.1).toInt()),
+                        );
+
+                        if (changedPlayed == null) return;
+
+                        await controller.handlePlayerChanges(
+                          index,
+                          changedPlayed,
+                          onError: SnackBars.error,
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0).copyWith(
+                          right: 0.0,
+                        ),
+                        child: Row(
+                          spacing: 16.0,
+                          children: [
+                            Material(
+                              shape: const CircleBorder(),
+                              color: switch (player.gender) {
+                                PlayerGender.male => Colors.blue.withAlpha((255 * 0.1).toInt()),
+                                PlayerGender.female => Colors.pink.withAlpha((255 * 0.1).toInt()),
+                                _ => Colors.blueGrey.withAlpha((255 * 0.1).toInt()),
+                              },
+                              child: Padding(
+                                padding: const .all(4.0),
+                                child: switch (player.gender) {
+                                  PlayerGender.male => const Icon(
+                                    Symbols.male_rounded,
+                                    color: Colors.blue,
+                                    size: 22.0,
+                                  ),
+                                  PlayerGender.female => const Icon(
+                                    Symbols.female_rounded,
+                                    color: Colors.pink,
+                                    size: 22.0,
+                                  ),
+                                  _ => const Icon(
+                                    Symbols.agender_rounded,
+                                    color: Colors.blueGrey,
+                                    size: 22.0,
+                                  ),
                                 },
-                                child: Padding(
-                                  padding: const .all(4.0),
-                                  child: switch (player.gender) {
-                                    PlayerGender.male => const Icon(
-                                      Symbols.male_rounded,
-                                      color: Colors.blue,
-                                      size: 22.0,
-                                    ),
-                                    PlayerGender.female => const Icon(
-                                      Symbols.female_rounded,
-                                      color: Colors.pink,
-                                      size: 22.0,
-                                    ),
-                                    _ => const Icon(
-                                      Symbols.agender_rounded,
-                                      color: Colors.blueGrey,
-                                      size: 22.0,
-                                    ),
-                                  },
-                                ),
                               ),
-                              Expanded(
-                                child: Text(
-                                  player.name,
-                                  style: context.textTheme.titleMedium,
-                                ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                player.name,
+                                style: context.textTheme.titleMedium,
                               ),
-                              IconButton(
-                                onPressed: () => controller.handleRemovePlayer(index),
-                                icon: const Icon(Symbols.delete_rounded),
-                              ),
-                            ],
-                          ),
+                            ),
+                            IconButton(
+                              onPressed: () => controller.handleRemovePlayer(index),
+                              icon: const Icon(Symbols.delete_rounded),
+                            ),
+                          ],
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
           false when teams.isNotEmpty => SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.all(24.0),
             child: Column(
               spacing: 16.0,
@@ -334,17 +306,9 @@ class _CreateEventPageState extends State<CreateEventPage> with ControllerMixin 
                   'Times (${teams.length})',
                   style: context.textTheme.titleMedium,
                 ),
-                ListView.separated(
-                  separatorBuilder: (_, _) => const SizedBox(height: 8.0),
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: teams.length,
-                  itemBuilder: (context, index) {
-                    final team = teams[index];
-
-                    return TeamCardWidget(team: team, initiallyExpanded: true);
-                  },
-                ),
+                for (final team in teams) ...[
+                  TeamCardWidget(team: team, initiallyExpanded: true),
+                ],
               ],
             ),
           ),

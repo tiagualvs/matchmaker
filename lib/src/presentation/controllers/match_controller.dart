@@ -1,14 +1,21 @@
 import 'dart:async';
 
-import 'package:matchmaker/src/common/shared/controller.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
 import 'package:matchmaker/src/data/repositories/scores/scores_repository.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
-class MatchController extends Controller {
+class MatchController extends ChangeNotifier {
   MatchController(this._matchesRepository, this._scoresRepository);
+
+  void setState([void Function()? func]) {
+    func?.call();
+    return notifyListeners();
+  }
 
   final MatchesRepository _matchesRepository;
 
@@ -33,6 +40,13 @@ class MatchController extends Controller {
     setState(() {
       _loading = true;
     });
+
+    await WakelockPlus.enable();
+
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
 
     if (matchId == -99) {
       return setState(() {
@@ -226,11 +240,5 @@ class MatchController extends Controller {
         scores: [],
       );
     });
-  }
-
-  void resetController() {
-    match = MatchEntity.empty();
-    _swapped = false;
-    _loading = true;
   }
 }

@@ -1,10 +1,15 @@
-import 'package:matchmaker/src/common/shared/controller.dart';
+import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
 
-class EventSettingsController extends Controller {
+class EventSettingsController extends ChangeNotifier {
   EventSettingsController(this._eventsRepository, this._matchesRepository);
+
+  void setState([void Function()? func]) {
+    func?.call();
+    return notifyListeners();
+  }
 
   final EventsRepository _eventsRepository;
 
@@ -97,10 +102,5 @@ class EventSettingsController extends Controller {
     setState(() {
       _event = event;
     });
-  }
-
-  void resetController() {
-    _loading = true;
-    _event = EventEntity.empty();
   }
 }

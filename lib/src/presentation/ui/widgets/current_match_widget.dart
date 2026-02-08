@@ -52,7 +52,7 @@ class CurrentMatchWidget extends StatelessWidget {
                       spacing: 4.0,
                       children: [
                         Text(
-                          match.name,
+                          'Partida ${match.name}',
                           style: context.textTheme.titleMedium?.copyWith(fontWeight: .bold),
                         ),
                         const PulseAnimationWidget(runningColor: Colors.green),

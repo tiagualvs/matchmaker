@@ -1,5 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:matchmaker/src/common/extensions/go_router_state_ext.dart';
+import 'package:matchmaker/src/common/others/snack_bars.dart';
+import 'package:matchmaker/src/presentation/controllers/create_event_controller.dart';
+import 'package:matchmaker/src/presentation/controllers/event_controller.dart';
+import 'package:matchmaker/src/presentation/controllers/event_settings_controller.dart';
+import 'package:matchmaker/src/presentation/controllers/events_controller.dart';
+import 'package:matchmaker/src/presentation/controllers/match_controller.dart';
+import 'package:matchmaker/src/presentation/controllers/match_history_controller.dart';
+import 'package:matchmaker/src/presentation/controllers/team_add_controller.dart';
+import 'package:matchmaker/src/presentation/controllers/teams_controller.dart';
 import 'package:matchmaker/src/presentation/ui/pages/create_event_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/event_page.dart';
 import 'package:matchmaker/src/presentation/ui/pages/event_settings_page.dart';
@@ -23,21 +33,22 @@ abstract class AppRouter {
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: EventsPage(
-              controller: context.read(),
+            page: ChangeNotifierProvider<EventsController>(
+              create: (context) => EventsController(context.read())..getEventsList(onError: SnackBars.error),
+              child: const EventsPage(),
             ),
           );
         },
       ),
       GoRoute(
-        path: '/events/:id',
+        path: '/events/:eventId',
         name: 'event',
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: EventPage(
-              id: int.parse(state.pathParameters['id'] ?? '-1'),
-              controller: context.read(),
+            page: ChangeNotifierProvider<EventController>(
+              create: (ctx) => EventController(ctx.read(), ctx.read())..loadDependencies(state.getPathParam('eventId')),
+              child: const EventPage(),
             ),
           );
         },
@@ -48,9 +59,10 @@ abstract class AppRouter {
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: EventSettingsPage(
-              eventId: int.parse(state.pathParameters['eventId'] ?? '-1'),
-              controller: context.read(),
+            page: ChangeNotifierProvider<EventSettingsController>(
+              create: (ctx) =>
+                  EventSettingsController(ctx.read(), ctx.read())..loadDependencies(state.getPathParam('eventId')),
+              child: const EventSettingsPage(),
             ),
           );
         },
@@ -61,9 +73,10 @@ abstract class AppRouter {
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: TeamsPage(
-              eventId: int.parse(state.pathParameters['eventId'] ?? '-1'),
-              controller: context.read(),
+            page: ChangeNotifierProvider<TeamsController>(
+              create: (ctx) =>
+                  TeamsController(ctx.read(), ctx.read(), ctx.read())..loadDependencies(state.getPathParam('eventId')),
+              child: const TeamsPage(),
             ),
           );
         },
@@ -74,9 +87,11 @@ abstract class AppRouter {
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: TeamAddPage(
-              eventId: int.parse(state.pathParameters['eventId'] ?? '-1'),
-              controller: context.read(),
+            page: ChangeNotifierProvider<TeamAddController>(
+              create: (ctx) =>
+                  TeamAddController(ctx.read(), ctx.read(), ctx.read())
+                    ..loadDependencies(state.getPathParam('eventId')),
+              child: const TeamAddPage(),
             ),
           );
         },
@@ -87,8 +102,9 @@ abstract class AppRouter {
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: CreateEventPage(
-              controller: context.read(),
+            page: ChangeNotifierProvider<CreateEventController>(
+              create: (context) => CreateEventController(context.read(), context.read()),
+              child: const CreateEventPage(),
             ),
           );
         },
@@ -99,9 +115,9 @@ abstract class AppRouter {
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: MatchPage(
-              matchId: int.parse(state.pathParameters['matchId'] ?? '-1'),
-              controller: context.read(),
+            page: ChangeNotifierProvider<MatchController>(
+              create: (ctx) => MatchController(ctx.read(), ctx.read())..loadDependencies(state.getPathParam('matchId')),
+              child: const MatchPage(),
             ),
           );
         },
@@ -112,9 +128,9 @@ abstract class AppRouter {
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: MatchHistoryPage(
-              eventId: int.parse(state.pathParameters['eventId'] ?? '-1'),
-              controller: context.read(),
+            page: ChangeNotifierProvider<MatchHistoryController>(
+              create: (ctx) => MatchHistoryController(ctx.read())..loadDependencies(state.getPathParam('eventId')),
+              child: const MatchHistoryPage(),
             ),
           );
         },

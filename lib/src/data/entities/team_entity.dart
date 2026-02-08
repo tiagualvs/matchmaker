@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
-import 'package:matchmaker/src/data/services/database/database.dart';
+import 'package:matchmaker/src/data/services/database/app_database.dart';
 
 part 'team_entity.freezed.dart';
 part 'team_entity.g.dart';

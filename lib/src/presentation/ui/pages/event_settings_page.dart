@@ -1,48 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
-import 'package:matchmaker/src/common/shared/controller.dart';
-import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/event_settings_controller.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/event_settings_dialog.dart';
+import 'package:provider/provider.dart';
 
-class EventSettingsPage extends StatefulWidget {
-  const EventSettingsPage({super.key, required this.eventId, required this.controller});
-
-  final int eventId;
-  final EventSettingsController controller;
-
-  @override
-  State<EventSettingsPage> createState() => _EventSettingsPageState();
-}
-
-class _EventSettingsPageState extends State<EventSettingsPage> with ControllerMixin {
-  EventSettingsController get controller => widget.controller;
-
-  bool get loading => controller.loading;
-
-  EventEntity get event => controller.event;
-
-  @override
-  Controller get bind => controller;
-
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await controller.loadDependencies(widget.eventId, onError: SnackBars.error);
-    });
-  }
-
-  @override
-  void dispose() {
-    controller.resetController();
-    super.dispose();
-  }
+class EventSettingsPage extends StatelessWidget {
+  const EventSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<EventSettingsController>();
+
+    final loading = controller.loading;
+
+    final event = controller.event;
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(

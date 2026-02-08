@@ -4,7 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
-import 'package:matchmaker/src/data/services/database/database.dart';
+import 'package:matchmaker/src/data/services/database/app_database.dart';
 
 part 'match_entity.freezed.dart';
 part 'match_entity.g.dart';

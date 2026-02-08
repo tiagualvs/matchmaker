@@ -5,7 +5,7 @@ import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
-import 'package:matchmaker/src/data/services/database/database.dart';
+import 'package:matchmaker/src/data/services/database/app_database.dart';
 
 part 'event_entity.freezed.dart';
 part 'event_entity.g.dart';
@@ -223,19 +223,73 @@ abstract class EventEntity with _$EventEntity {
     );
   }
 
-  bool teamHasMaxWinsInARow(int teamId) {
-    if (maxWinsInARow == 0) return false;
+  (TeamEntity first, TeamEntity second, List<TeamEntity> queue)? nextMatchData() {
+    if (ended) return null;
 
-    if (queue.length < 2) return false;
+    if (currentMatch != null) return null;
+
+    if (lastEndedMatch == null) return null;
+
+    final lastWinner = lastEndedMatch?.winner;
+
+    final lastLoser = lastEndedMatch?.loser;
+
+    if (lastWinner == null || lastLoser == null) return null;
+
+    if (teamWithMaxWinsInARow() != null) {
+      return (
+        queueTeams[0],
+        queueTeams[1],
+        [lastWinner, ...queueTeams.sublist(2), lastLoser],
+      );
+    } else {
+      return (
+        lastWinner == lastEndedMatch?.firstTeam ? lastWinner : queueTeams[0],
+        lastWinner == lastEndedMatch?.secondTeam ? lastWinner : queueTeams[0],
+        [...queueTeams.sublist(1), lastLoser],
+      );
+    }
+  }
+
+  bool needsToCreateAnotherMatch() {
+    if (ended) return false;
+
+    if (currentMatch != null) return false;
+
+    if (lastEndedMatch == null) return false;
+
+    return true;
+  }
+
+  TeamEntity lastWinner() {
+    if (lastEndedMatch == null) throw Exception('No last ended match');
+
+    if (lastEndedMatch?.winner == null) throw Exception('No winner in last ended match');
+
+    return lastEndedMatch!.winner!;
+  }
+
+  TeamEntity? teamWithMaxWinsInARow() {
+    if (maxWinsInARow == 0) return null;
+
+    if (queue.length < 2) return null;
+
+    final lastWinner = lastEndedMatch?.winner;
+
+    if (lastWinner == null) return null;
 
     final ids = endedMatches.map((match) => match.winner?.id ?? -1).where((id) => !id.isNegative);
 
-    if (ids.length < maxWinsInARow) return false;
+    if (ids.length < maxWinsInARow) return null;
 
     final range = ids.take(maxWinsInARow);
 
-    return range.every((id) => id == teamId);
+    if (!range.every((id) => id == lastWinner.id)) return null;
+
+    return lastWinner;
   }
+
+  List<TeamEntity> get queueTeams => queue.map((id) => teams.firstWhere((team) => team.id == id)).toList();
 
   List<MatchEntity> get endedMatches => matches.where((match) => match.ended).toList();
 

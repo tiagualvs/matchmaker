@@ -2,62 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
-import 'package:matchmaker/src/common/shared/controller.dart';
-import 'package:matchmaker/src/data/entities/event_entity.dart';
-import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/team_add_controller.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/player_input_widget.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/player_tile_widget.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:provider/provider.dart';
 
-class TeamAddPage extends StatefulWidget {
-  const TeamAddPage({super.key, required this.eventId, required this.controller});
-
-  final int eventId;
-  final TeamAddController controller;
-
-  @override
-  State<TeamAddPage> createState() => _TeamAddPageState();
-}
-
-class _TeamAddPageState extends State<TeamAddPage> with ControllerMixin {
-  TeamAddController get controller => widget.controller;
-
-  bool get loading => controller.loading;
-
-  EventEntity get event => controller.event;
-
-  TeamEntity get team => controller.team;
-
-  List<PlayerEntity> get players => team.players;
-
-  final formKey = GlobalKey<FormState>();
-
-  @override
-  Controller get bind => controller;
-
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await controller.loadDependencies(widget.eventId, onError: SnackBars.error);
-    });
-  }
-
-  @override
-  void dispose() {
-    controller.resetController();
-    super.dispose();
-  }
+class TeamAddPage extends StatelessWidget {
+  const TeamAddPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<TeamAddController>();
+
+    final event = controller.event;
+
+    final team = controller.team;
+
+    final players = team.players;
+
+    final loading = controller.loading;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Adicionar time'),
-        actions: switch (team.players.length != event.maxPlayerPerTeam) {
+        actions: switch (players.length != event.maxPlayerPerTeam) {
           true => [
             IconButton(
               onPressed: () => showModalBottomSheet(
@@ -87,7 +57,7 @@ class _TeamAddPageState extends State<TeamAddPage> with ControllerMixin {
         false => SingleChildScrollView(
           padding: const .all(24.0),
           child: Form(
-            key: formKey,
+            key: controller.formKey,
             child: Column(
               spacing: 16.0,
               mainAxisSize: .min,
@@ -143,21 +113,18 @@ class _TeamAddPageState extends State<TeamAddPage> with ControllerMixin {
       bottomNavigationBar: Padding(
         padding: const .all(24.0),
         child: FilledButton.icon(
+          key: const ValueKey('TeamAddPage.saveButton'),
           onPressed: switch (team.players.isEmpty) {
             true => null,
-            false => () async {
-              if (formKey.currentState?.validate() ?? false) {
-                return await controller.save(
-                  onSuccess: () {
-                    SnackBars.success('Time cadastrado com sucesso!');
-                    return context.pop();
-                  },
-                  onError: (err) {
-                    return SnackBars.error(err);
-                  },
-                );
-              }
-            },
+            false => () => controller.save(
+              onSuccess: () {
+                SnackBars.success('Time cadastrado com sucesso!');
+                return context.pop();
+              },
+              onError: (err) {
+                return SnackBars.error(err);
+              },
+            ),
           },
           icon: const Icon(Symbols.save_rounded),
           label: const Text('Salvar Time'),

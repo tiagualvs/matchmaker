@@ -1,54 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
-import 'package:matchmaker/src/common/others/snack_bars.dart';
-import 'package:matchmaker/src/common/shared/controller.dart';
-import 'package:matchmaker/src/data/entities/event_entity.dart';
-import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/match_history_controller.dart';
+import 'package:provider/provider.dart';
 
-class MatchHistoryPage extends StatefulWidget {
-  const MatchHistoryPage({super.key, required this.eventId, required this.controller});
-
-  final int eventId;
-  final MatchHistoryController controller;
-
-  @override
-  State<MatchHistoryPage> createState() => _MatchHistoryPageState();
-}
-
-class _MatchHistoryPageState extends State<MatchHistoryPage> with ControllerMixin {
-  MatchHistoryController get controller => widget.controller;
-
-  bool get loading => controller.loading;
-
-  EventEntity get event => controller.event;
-
-  List<MatchEntity> get matches => event.endedMatches;
-
-  @override
-  Controller get bind => controller;
-
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      return await controller.loadDependencies(widget.eventId, onError: SnackBars.error);
-    });
-  }
-
-  @override
-  void dispose() {
-    controller.resetController();
-    super.dispose();
-  }
+class MatchHistoryPage extends StatelessWidget {
+  const MatchHistoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<MatchHistoryController>();
+
+    final loading = controller.loading;
+
+    final event = controller.event;
+
+    final matches = event.endedMatches;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Histórico de Partidas'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_rounded),
+          onPressed: () => context.pop(),
+        ),
+        title: Text('Histórico de Partidas (${matches.length})'),
       ),
       body: switch (loading) {
         true => const Center(child: CircularProgressIndicator()),

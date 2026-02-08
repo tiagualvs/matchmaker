@@ -217,6 +217,7 @@ class _PlayerInputWidgetState extends State<PlayerInputWidget> {
               ),
             ],
             FilledButton.icon(
+              key: const ValueKey('PlayerInputWidget.saveButton'),
               onPressed: () {
                 if (formKey.currentState?.validate() ?? false) {
                   return widget.onSave(

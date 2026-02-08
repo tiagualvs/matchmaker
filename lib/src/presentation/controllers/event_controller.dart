@@ -1,13 +1,17 @@
-import 'package:matchmaker/src/common/shared/controller.dart';
+import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
-import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:widgets_to_image/widgets_to_image.dart';
 
-class EventController extends Controller {
+class EventController extends ChangeNotifier {
   EventController(this._eventsRepository, this._matchesRepository);
+
+  void setState([void Function()? func]) {
+    func?.call();
+    return notifyListeners();
+  }
 
   final EventsRepository _eventsRepository;
 
@@ -23,20 +27,32 @@ class EventController extends Controller {
 
   bool get sharing => _sharing;
 
+  final bool _hasTeamWithMaxWinsInARow = false;
+
+  bool get hasTeamWithMaxWinsInARow => _hasTeamWithMaxWinsInARow;
+
   EventEntity _event = EventEntity.empty();
 
   EventEntity get event => _event;
 
+  Future<void> reloadDependencies({
+    Future<void> Function(String message)? onMaxWinsInARow,
+    Future<void> Function(String message)? onNeedJokers,
+    void Function(String error)? onError,
+  }) async {
+    if (_event.id <= 0) return;
+    return loadDependencies(
+      _event.id,
+      onError: onError,
+      onMaxWinsInARow: onMaxWinsInARow,
+      onNeedJokers: onNeedJokers,
+    );
+  }
+
   Future<void> loadDependencies(
     int eventId, {
-    required Future<void> Function(
-      EventEntity event,
-      TeamEntity winner,
-      TeamEntity firstTeam,
-      TeamEntity secondTeam,
-    )
-    onMaxWinsInARow,
-    required Future<void> Function(EventEntity event, TeamEntity team) onNeedsJoker,
+    Future<void> Function(String message)? onMaxWinsInARow,
+    Future<void> Function(String message)? onNeedJokers,
     void Function(String error)? onError,
   }) async {
     setState(() {
@@ -48,122 +64,65 @@ class EventController extends Controller {
 
     return result0.fold(
       (event) async {
-        final currentMatch = event.currentMatch;
-        final lastEndedMatch = event.lastEndedMatch;
-        if (!event.ended && currentMatch == null && lastEndedMatch != null) {
-          final winner = lastEndedMatch.firstTeamWon ? lastEndedMatch.firstTeam : lastEndedMatch.secondTeam;
-          final loser = lastEndedMatch.firstTeamWon ? lastEndedMatch.secondTeam : lastEndedMatch.firstTeam;
-          if (event.teamHasMaxWinsInARow(winner.id)) {
-            final nextIds = event.queue.take(2).toList();
+        final nextMatchData = event.nextMatchData();
 
-            await onMaxWinsInARow(
-              event,
-              winner,
-              event.teams.firstWhere((team) => team.id == nextIds.first),
-              event.teams.firstWhere((team) => team.id == nextIds.last),
+        if (nextMatchData != null) {
+          final (first, second, queue) = nextMatchData;
+
+          final teamWithMaxWinsInARow = event.teamWithMaxWinsInARow();
+
+          if (teamWithMaxWinsInARow != null) {
+            await onMaxWinsInARow?.call(
+              'O time [b]${teamWithMaxWinsInARow.name}[/b] alcançou o número máximo de vitórias em sequência [b](${event.maxWinsInARow})[/b].\n\nAgora dará lugar ao próximo time e voltará para a fila com prioridade para jogar a próxima partida!\n\nPróximo jogo:\n[b]${first.name}[/b] vs. [b]${second.name}[/b]!',
             );
+          }
 
-            final queue = [winner.id, ...event.queue.skip(2), loser.id];
-
-            final result1 = await _matchesRepository.insertOne(
-              InsertOneMatchParams(
-                eventId: eventId,
-                name: 'Partida #${event.matches.length + 1}',
-                firstTeamId: nextIds.first,
-                secondTeamId: nextIds.last,
-                maxScore: event.maxScore,
-                halfScoreToEliminate: event.halfScoreToEliminate,
-                queue: queue,
-              ),
+          if (first.players.length < event.maxPlayerPerTeam) {
+            await onNeedJokers?.call(
+              'O time [b]${first.name}[/b] está incompleto e precisa de [b]${event.maxPlayerPerTeam - first.players.length}[/b] jogadores para jogar a próxima partida!',
             );
+          }
 
-            if (result1.hasError) {
-              return setState(() {
-                _loading = false;
+          if (second.players.length < event.maxPlayerPerTeam) {
+            await onNeedJokers?.call(
+              'O time [b]${second.name}[/b] está incompleto e precisa de [b]${event.maxPlayerPerTeam - second.players.length}[/b] jogadores para jogar a próxima partida!',
+            );
+          }
 
-                return onError?.call(result1.error.toString());
-              });
-            }
+          final result1 = await _matchesRepository.insertOne(
+            InsertOneMatchParams(
+              eventId: event.id,
+              name: '#${event.matches.length + 1}',
+              firstTeamId: first.id,
+              secondTeamId: second.id,
+              maxScore: event.maxScore,
+              halfScoreToEliminate: event.halfScoreToEliminate,
+              queue: queue.map((team) => team.id).toList(),
+            ),
+          );
 
+          if (result1.hasError) {
             return setState(() {
               _loading = false;
 
-              _event = event.copyWith(
-                matches: [
-                  ...event.matches,
-                  result1.value.copyWith(
-                    firstTeam: event.teams.firstWhere(
-                      (team) => team.id == nextIds.first,
-                    ),
-                    secondTeam: event.teams.firstWhere(
-                      (team) => team.id == nextIds.last,
-                    ),
-                  ),
-                ],
-                queue: queue,
-              );
-            });
-          } else {
-            final nextId = event.queue.first;
-
-            final queue = [...event.queue.skip(1), loser.id];
-
-            final firstTeam = lastEndedMatch.firstTeam.id == winner.id
-                ? winner
-                : event.teams.firstWhere((team) => team.id == nextId);
-            final secondTeam = lastEndedMatch.secondTeam.id == winner.id
-                ? winner
-                : event.teams.firstWhere((team) => team.id == nextId);
-
-            if (firstTeam.players.length != event.maxPlayerPerTeam) {
-              await onNeedsJoker(event, firstTeam);
-            }
-
-            if (secondTeam.players.length != event.maxPlayerPerTeam) {
-              await onNeedsJoker(event, secondTeam);
-            }
-
-            final result1 = await _matchesRepository.insertOne(
-              InsertOneMatchParams(
-                eventId: eventId,
-                name: 'Partida #${event.matches.length + 1}',
-                firstTeamId: firstTeam.id,
-                secondTeamId: secondTeam.id,
-                maxScore: event.maxScore,
-                halfScoreToEliminate: event.halfScoreToEliminate,
-                queue: queue,
-              ),
-            );
-
-            if (result1.hasError) {
-              return setState(() {
-                _loading = false;
-
-                return onError?.call(result1.error.toString());
-              });
-            }
-
-            return setState(() {
-              _loading = false;
-
-              _event = event.copyWith(
-                matches: [
-                  ...event.matches,
-                  result1.value.copyWith(
-                    firstTeam: firstTeam,
-                    secondTeam: secondTeam,
-                  ),
-                ],
-                queue: queue,
-              );
+              return onError?.call(result1.error.toString());
             });
           }
-        } else {
+
           return setState(() {
             _loading = false;
-            _event = event;
+
+            _event = event.copyWith(
+              matches: [result1.value, ...event.matches],
+              queue: queue.map((team) => team.id).toList(),
+            );
           });
         }
+
+        return setState(() {
+          _loading = false;
+          _event = event;
+        });
       },
       (error) {
         return setState(() {
@@ -264,11 +223,5 @@ class EventController extends Controller {
 
       return onSuccess?.call();
     });
-  }
-
-  void resetController() {
-    _event = EventEntity.empty();
-    _loading = true;
-    _sharing = false;
   }
 }

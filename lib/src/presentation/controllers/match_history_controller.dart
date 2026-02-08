@@ -1,9 +1,14 @@
-import 'package:matchmaker/src/common/shared/controller.dart';
+import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 
-class MatchHistoryController extends Controller {
+class MatchHistoryController extends ChangeNotifier {
   MatchHistoryController(this._eventRepository);
+
+  void setState([void Function()? func]) {
+    func?.call();
+    return notifyListeners();
+  }
 
   final EventsRepository _eventRepository;
 

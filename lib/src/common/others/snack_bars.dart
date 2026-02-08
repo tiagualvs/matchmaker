@@ -56,6 +56,7 @@ abstract class SnackBars {
         behavior: SnackBarBehavior.floating,
         showCloseIcon: true,
         closeIconColor: foregroundColor,
+        dismissDirection: DismissDirection.vertical,
       ),
     );
   }

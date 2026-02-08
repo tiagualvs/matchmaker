@@ -1,51 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/others/dialogs.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/others/text_span_builder.dart';
-import 'package:matchmaker/src/common/shared/controller.dart';
-import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/match_controller.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:provider/provider.dart';
 
-class MatchPage extends StatefulWidget {
-  const MatchPage({super.key, required this.matchId, required this.controller});
-
-  final int matchId;
-  final MatchController controller;
-
-  @override
-  State<MatchPage> createState() => _MatchPageState();
-}
-
-class _MatchPageState extends State<MatchPage> with ControllerMixin {
-  MatchController get controller => widget.controller;
-
-  bool get loading => controller.loading;
-
-  bool get swapped => controller.swapped;
-
-  MatchEntity get match => controller.match;
-
-  TeamEntity get firstTeam => match.firstTeam;
-
-  int get firstTeamScore => match.firstTeamScore;
-
-  bool get firstTeamByOneOrWon => match.firstTeamScoreByOne || match.firstTeamWon;
-
-  TeamEntity get secondTeam => match.secondTeam;
-
-  int get secondTeamScore => match.secondTeamScore;
-
-  bool get secondTeamByOneOrWon => match.secondTeamScoreByOne || match.secondTeamWon;
-
-  @override
-  Controller get bind => controller;
+class MatchPage extends StatelessWidget {
+  const MatchPage({super.key});
 
   Future<bool> confirmEndOfMatch(
     BuildContext context, {
@@ -85,38 +51,27 @@ class _MatchPageState extends State<MatchPage> with ControllerMixin {
   }
 
   @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await WakelockPlus.enable();
-
-      await SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeRight,
-        DeviceOrientation.landscapeLeft,
-      ]);
-
-      return controller.loadDependencies(widget.matchId, onError: SnackBars.error);
-    });
-  }
-
-  @override
-  void dispose() {
-    scheduleMicrotask(() async {
-      await WakelockPlus.disable();
-
-      await SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
-
-      controller.resetController();
-    });
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final controller = context.watch<MatchController>();
+
+    final loading = controller.loading;
+
+    final swapped = controller.swapped;
+
+    final match = controller.match;
+
+    final firstTeam = match.firstTeam;
+
+    final firstTeamScore = match.firstTeamScore;
+
+    final firstTeamByOneOrWon = match.firstTeamScoreByOne || match.firstTeamWon;
+
+    final secondTeam = match.secondTeam;
+
+    final secondTeamScore = match.secondTeamScore;
+
+    final secondTeamByOneOrWon = match.secondTeamScoreByOne || match.secondTeamWon;
+
     final firstTeamWidget = Expanded(
       child: GestureDetector(
         onTap: () => controller.incrementScore(

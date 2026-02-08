@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:matchmaker/src/common/shared/controller.dart';
+import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -8,8 +8,13 @@ import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/players/players_repository.dart';
 import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
 
-class TeamsController extends Controller {
+class TeamsController extends ChangeNotifier {
   TeamsController(this._eventsRepository, this._playersRepository, this._teamsRepository);
+
+  void setState([void Function()? func]) {
+    func?.call();
+    return notifyListeners();
+  }
 
   final EventsRepository _eventsRepository;
 
@@ -31,56 +36,50 @@ class TeamsController extends Controller {
     int eventId, {
     void Function(String error)? onError,
   }) async {
-    setState(() {
-      loading = true;
-    });
-
     final result = await _eventsRepository.findOne(eventId);
 
-    return result.fold(
-      (event) {
-        return setState(() {
-          _event = event;
-          _teams = [];
+    if (result.hasError) {
+      return setState(() {
+        loading = false;
 
-          if (event.hasIncompleteTeams) {
-            for (final team in event.teams) {
-              final diff = event.maxPlayerPerTeam - team.players.length;
+        return onError?.call(result.error.toString());
+      });
+    }
 
-              if (diff > 0) {
-                teams.add(
-                  team.copyWith(
-                    players: [
-                      ...team.players,
-                      ...List.generate(
-                        diff,
-                        (index) => PlayerEntity.joker(
-                          index,
-                          PlayerGender.unknown,
-                        ),
-                      ),
-                    ],
+    return setState(() {
+      _event = result.value;
+
+      _teams = [];
+
+      loading = false;
+
+      if (_event.hasIncompleteTeams) {
+        for (final team in _event.teams) {
+          final diff = _event.maxPlayerPerTeam - team.players.length;
+
+          if (diff > 0) {
+            _teams.add(
+              team.copyWith(
+                players: [
+                  ...team.players,
+                  ...List.generate(
+                    diff,
+                    (index) => PlayerEntity.joker(
+                      index,
+                      PlayerGender.unknown,
+                    ),
                   ),
-                );
-              } else {
-                teams.add(team);
-              }
-            }
+                ],
+              ),
+            );
           } else {
-            _teams = List.from(event.teams);
+            _teams.add(team);
           }
-
-          loading = false;
-        });
-      },
-      (error) {
-        return setState(() {
-          loading = false;
-
-          return onError?.call(error.toString());
-        });
-      },
-    );
+        }
+      } else {
+        _teams = List.from(event.teams);
+      }
+    });
   }
 
   Future<void> changePlayers(
@@ -91,27 +90,27 @@ class TeamsController extends Controller {
   }) async {
     if (firstPlayer.isJoker || secondPlayer.isJoker) return;
 
-    final sourceTeams = teams;
+    final sourceTeams = List<TeamEntity>.from(_teams);
 
-    final firstTeam = teams.firstWhere((team) => team.players.contains(firstPlayer));
+    final firstTeam = sourceTeams.firstWhere((team) => team.players.contains(firstPlayer));
 
-    final secondTeam = teams.firstWhere((team) => team.players.contains(secondPlayer));
+    final secondTeam = sourceTeams.firstWhere((team) => team.players.contains(secondPlayer));
 
     if (firstTeam.id == secondTeam.id) return;
 
-    final firstTeamIndex = teams.indexOf(firstTeam);
+    final firstTeamIndex = sourceTeams.indexOf(firstTeam);
 
     final firstPlayerIndex = firstTeam.players.indexOf(firstPlayer);
 
-    final secondTeamIndex = teams.indexOf(secondTeam);
+    final secondTeamIndex = sourceTeams.indexOf(secondTeam);
 
     final secondPlayerIndex = secondTeam.players.indexOf(secondPlayer);
 
-    teams[firstTeamIndex] = firstTeam.copyWith(
+    sourceTeams[firstTeamIndex] = firstTeam.copyWith(
       players: List.from(firstTeam.players)..[firstPlayerIndex] = secondPlayer,
     );
 
-    teams[secondTeamIndex] = secondTeam.copyWith(
+    sourceTeams[secondTeamIndex] = secondTeam.copyWith(
       players: List.from(secondTeam.players)..[secondPlayerIndex] = firstPlayer,
     );
 
@@ -124,17 +123,17 @@ class TeamsController extends Controller {
       ),
     );
 
-    return result.fold(
-      (_) {
-        setState();
-        return onSuccess?.call();
-      },
-      (err) {
-        _teams = sourceTeams;
+    if (result.hasError) {
+      return setState(() {
+        return onError?.call(result.error.toString());
+      });
+    }
 
-        return onError?.call(err.toString());
-      },
-    );
+    return setState(() {
+      _teams = sourceTeams;
+
+      return onSuccess?.call();
+    });
   }
 
   Future<void> deleteTeam(
@@ -228,11 +227,5 @@ class TeamsController extends Controller {
 
       onSuccess?.call();
     });
-  }
-
-  void resetController() {
-    _event = EventEntity.empty();
-    _teams = [];
-    loading = true;
   }
 }

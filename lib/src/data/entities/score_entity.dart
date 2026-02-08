@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:matchmaker/src/data/services/database/database.dart';
+import 'package:matchmaker/src/data/services/database/app_database.dart';
 
 part 'score_entity.freezed.dart';
 part 'score_entity.g.dart';

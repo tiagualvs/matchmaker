@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+const testing = bool.fromEnvironment('TESTING');
+
 class PulseAnimationWidget extends StatefulWidget {
   const PulseAnimationWidget({
     super.key,
@@ -34,7 +36,7 @@ class _PulseAnimationWidgetState extends State<PulseAnimationWidget> with Single
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (widget.running) {
+      if (widget.running && !testing) {
         await controller.repeat(reverse: true);
       }
     });

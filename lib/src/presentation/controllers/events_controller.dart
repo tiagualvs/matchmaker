@@ -1,11 +1,16 @@
-import 'package:matchmaker/src/common/shared/controller.dart';
+import 'package:flutter/material.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 
-class EventsController extends Controller {
+class EventsController extends ChangeNotifier {
   EventsController(this._eventsRepository);
 
   final EventsRepository _eventsRepository;
+
+  void setState([void Function()? func]) {
+    func?.call();
+    return notifyListeners();
+  }
 
   bool _loading = true;
 

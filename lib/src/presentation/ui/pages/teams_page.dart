@@ -4,121 +4,99 @@ import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/others/dialogs.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/others/text_span_builder.dart';
-import 'package:matchmaker/src/common/shared/controller.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/presentation/controllers/teams_controller.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/player_input_widget.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/player_tile_widget.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:provider/provider.dart';
 
-class TeamsPage extends StatefulWidget {
-  const TeamsPage({super.key, required this.eventId, required this.controller});
-
-  final int eventId;
-  final TeamsController controller;
-
-  @override
-  State<TeamsPage> createState() => _TeamsPageState();
-}
-
-class _TeamsPageState extends State<TeamsPage> with ControllerMixin {
-  TeamsController get controller => widget.controller;
-
-  List<TeamEntity> get teams => controller.teams;
-
-  @override
-  Controller get bind => controller;
-
-  void handleDeleteTeam(TeamEntity team) async {
-    final confirm = await Dialogs.display(
-      context,
-      title: const Text('Remover Time?'),
-      content: Text.rich(
-        TextSpanBuilder.build(
-          'Tem certeza que deseja remover o time [b]${team.name}[/b] deste evento?\n\nEssa ação não poderá ser desfeita!',
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => context.pop(false),
-          style: TextButton.styleFrom(
-            foregroundColor: context.colorScheme.error,
-          ),
-          child: const Text('Cancelar'),
-        ),
-        TextButton(
-          onPressed: () => context.pop(true),
-          child: const Text('Remover'),
-        ),
-      ],
-    );
-
-    if (confirm ?? false) {
-      return await controller.deleteTeam(
-        team.id,
-        onError: SnackBars.error,
-      );
-    }
-  }
-
-  Future<void> handleInsertPlayer(int index, int teamId) async {
-    final player = await showModalBottomSheet<PlayerEntity>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => PlayerInputWidget(
-        onSave: (value) => context.pop(value),
-        withLevelSelect: false,
-      ),
-    );
-
-    if (player == null) return;
-
-    return await controller.insertPlayer(
-      index,
-      teamId,
-      player,
-      onError: SnackBars.error,
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await controller.loadDependencies(widget.eventId);
-    });
-  }
-
-  @override
-  void dispose() {
-    controller.resetController();
-    super.dispose();
-  }
+class TeamsPage extends StatelessWidget {
+  const TeamsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<TeamsController>();
+
+    final loading = controller.loading;
+
+    final event = controller.event;
+
+    final teams = controller.teams;
+
+    void handleDeleteTeam(TeamEntity team) async {
+      final confirm = await Dialogs.display(
+        context,
+        title: const Text('Remover Time?'),
+        content: Text.rich(
+          TextSpanBuilder.build(
+            'Tem certeza que deseja remover o time [b]${team.name}[/b] deste evento?\n\nEssa ação não poderá ser desfeita!',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(false),
+            style: TextButton.styleFrom(
+              foregroundColor: context.colorScheme.error,
+            ),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => context.pop(true),
+            child: const Text('Remover'),
+          ),
+        ],
+      );
+
+      if (confirm ?? false) {
+        return await controller.deleteTeam(
+          team.id,
+          onError: SnackBars.error,
+        );
+      }
+    }
+
+    Future<void> handleInsertPlayer(int index, int teamId) async {
+      final player = await showModalBottomSheet<PlayerEntity>(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => PlayerInputWidget(
+          onSave: (value) => context.pop(value),
+          withLevelSelect: false,
+        ),
+      );
+
+      if (player == null) return;
+
+      return await controller.insertPlayer(
+        index,
+        teamId,
+        player,
+        onError: SnackBars.error,
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Times'),
         actions: [
           IconButton(
             onPressed: () async {
-              if (controller.loading) return;
+              if (loading) return;
 
               await context.pushNamed(
                 'teamAdd',
-                pathParameters: {'eventId': widget.eventId.toString()},
+                pathParameters: {'eventId': event.id.toString()},
               );
 
-              await controller.loadDependencies(widget.eventId, onError: SnackBars.error);
+              await controller.loadDependencies(event.id, onError: SnackBars.error);
             },
             icon: const Icon(Symbols.group_add_rounded),
           ),
         ],
       ),
-      body: switch (controller.loading) {
+      body: switch (loading) {
         true => const Center(
           child: CircularProgressIndicator(),
         ),
@@ -159,6 +137,7 @@ class _TeamsPageState extends State<TeamsPage> with ControllerMixin {
                     for (final (j, player) in team.players.indexed) ...[
                       if (player.isJoker) ...[
                         playerWidget(
+                          context,
                           player,
                           onTap: () => handleInsertPlayer(j, team.id),
                         ),
@@ -182,9 +161,15 @@ class _TeamsPageState extends State<TeamsPage> with ControllerMixin {
 
                             return Draggable<PlayerEntity>(
                               data: player,
-                              childWhenDragging: playerWidget(player, dragging: true, hasCandidate: hasCandidate()),
-                              feedback: playerWidget(player, feedback: true),
+                              childWhenDragging: playerWidget(
+                                context,
+                                player,
+                                dragging: true,
+                                hasCandidate: hasCandidate(),
+                              ),
+                              feedback: playerWidget(context, player, feedback: true),
                               child: playerWidget(
+                                context,
                                 player,
                                 hasCandidate: hasCandidate(),
                               ),
@@ -204,6 +189,7 @@ class _TeamsPageState extends State<TeamsPage> with ControllerMixin {
   }
 
   Widget playerWidget(
+    BuildContext context,
     PlayerEntity player, {
     void Function()? onTap,
     void Function()? onLongPress,

@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:matchmaker/src/common/shared/exceptions.dart';
 import 'package:matchmaker/src/common/shared/result.dart' hide Value;
 import 'package:matchmaker/src/data/entities/team_entity.dart';
-import 'package:matchmaker/src/data/services/database/database.dart';
+import 'package:matchmaker/src/data/services/database/app_database.dart';
 
 import 'teams_repository.dart';
 

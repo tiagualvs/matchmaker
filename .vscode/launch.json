@@ -23,6 +23,20 @@
                 "--flavor",
                 "pro"
             ]
-        }
+        },
+        {
+            "name": "Matchmaker TEST",
+            "type": "dart",
+            "request": "launch",
+            "program": "integration_test",
+            "toolArgs": [
+                "--dart-define",
+                "TESTING=true"
+            ],
+            "args": [
+                "--flavor",
+                "dev"
+            ]
+        },
     ]
 }
