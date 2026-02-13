@@ -1,6 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:matchmaker/main.dart';
+import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -8,31 +8,49 @@ import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/players/players_repository.dart';
 import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
 
-class TeamAddController extends ChangeNotifier {
-  TeamAddController(
-    this._eventsRepository,
-    this._teamsRepository,
-    this._playersRepository,
-  );
+import 'add_player.dart';
 
-  void setState([void Function()? func]) {
-    func?.call();
-    return notifyListeners();
+abstract class AddPlayerViewModel extends State<AddPlayer> {
+  late final EventsRepository _eventsRepository;
+
+  late final TeamsRepository _teamsRepository;
+
+  late final PlayersRepository _playersRepository;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _eventsRepository = Injector.instance.get<EventsRepository>();
+    _teamsRepository = Injector.instance.get<TeamsRepository>();
+    _playersRepository = Injector.instance.get<PlayersRepository>();
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => loadDependencies(widget.eventId, onError: SnackBars.error),
+    );
   }
-
-  final EventsRepository _eventsRepository;
-
-  final TeamsRepository _teamsRepository;
-
-  final PlayersRepository _playersRepository;
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   bool loading = false;
 
-  EventEntity event = EventEntity.empty();
+  EventEntity _event = EventEntity.empty();
 
-  TeamEntity team = TeamEntity.empty('');
+  EventEntity get event => _event;
+
+  set event(EventEntity event) => setState(() {
+    _event = event;
+  });
+
+  TeamEntity _team = TeamEntity.empty('');
+
+  TeamEntity get team => _team;
+
+  set team(TeamEntity team) => setState(() {
+    _team = team;
+  });
+
+  List<PlayerEntity> get players => _team.players;
 
   Future<void> loadDependencies(
     int eventId, {
@@ -44,7 +62,7 @@ class TeamAddController extends ChangeNotifier {
     return result.fold(
       (event) {
         return setState(() {
-          this.event = event;
+          _event = event;
 
           loading = false;
 
@@ -88,7 +106,7 @@ class TeamAddController extends ChangeNotifier {
 
     final insertedPlayer = result.value;
 
-    if (event.hasPlayer(insertedPlayer.id)) {
+    if (_event.hasPlayer(insertedPlayer.id)) {
       return setState(() {
         loading = false;
 
@@ -99,10 +117,10 @@ class TeamAddController extends ChangeNotifier {
     return setState(() {
       loading = false;
 
-      team = team.copyWith(
+      _team = _team.copyWith(
         players: [
           insertedPlayer,
-          ...team.players,
+          ..._team.players,
         ],
       );
 
@@ -119,9 +137,9 @@ class TeamAddController extends ChangeNotifier {
 
       final result0 = await _teamsRepository.insertOne(
         InsertOneTeamParams(
-          eventId: event.id,
-          name: team.name,
-          players: team.players,
+          eventId: _event.id,
+          name: _team.name,
+          players: _team.players,
         ),
       );
 
@@ -136,9 +154,9 @@ class TeamAddController extends ChangeNotifier {
       final insertedTeam = result0.value;
 
       final result1 = await _eventsRepository.updateOne(
-        event.id,
+        _event.id,
         UpdateOneEventParams(
-          queue: [...event.queue, insertedTeam.id],
+          queue: [..._event.queue, insertedTeam.id],
         ),
       );
 
@@ -151,18 +169,12 @@ class TeamAddController extends ChangeNotifier {
       }
 
       return setState(() {
-        team = insertedTeam;
+        _team = insertedTeam;
 
         loading = false;
 
         return onSuccess?.call();
       });
     }
-  }
-
-  void resetController() {
-    event = EventEntity.empty();
-    team = TeamEntity.empty('');
-    loading = true;
   }
 }

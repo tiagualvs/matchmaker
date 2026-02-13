@@ -1,6 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:matchmaker/main.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -8,19 +7,26 @@ import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/players/players_repository.dart';
 import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
 
-class TeamsController extends ChangeNotifier {
-  TeamsController(this._eventsRepository, this._playersRepository, this._teamsRepository);
+import 'teams.dart';
 
-  void setState([void Function()? func]) {
-    func?.call();
-    return notifyListeners();
+abstract class TeamsViewModel extends State<Teams> {
+  late final EventsRepository _eventsRepository;
+
+  late final PlayersRepository _playersRepository;
+
+  late final TeamsRepository _teamsRepository;
+
+  @override
+  void initState() {
+    super.initState();
+    _eventsRepository = Injector.instance.get<EventsRepository>();
+    _playersRepository = Injector.instance.get<PlayersRepository>();
+    _teamsRepository = Injector.instance.get<TeamsRepository>();
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => loadDependencies(widget.eventId),
+    );
   }
-
-  final EventsRepository _eventsRepository;
-
-  final PlayersRepository _playersRepository;
-
-  final TeamsRepository _teamsRepository;
 
   bool loading = true;
 
@@ -92,9 +98,13 @@ class TeamsController extends ChangeNotifier {
 
     final sourceTeams = List<TeamEntity>.from(_teams);
 
-    final firstTeam = sourceTeams.firstWhere((team) => team.players.contains(firstPlayer));
+    final firstTeam = sourceTeams.firstWhere(
+      (team) => team.players.contains(firstPlayer),
+    );
 
-    final secondTeam = sourceTeams.firstWhere((team) => team.players.contains(secondPlayer));
+    final secondTeam = sourceTeams.firstWhere(
+      (team) => team.players.contains(secondPlayer),
+    );
 
     if (firstTeam.id == secondTeam.id) return;
 
@@ -205,7 +215,10 @@ class TeamsController extends ChangeNotifier {
       return onError?.call('Jogador já cadastrado em outro time!');
     }
 
-    final result1 = await _teamsRepository.insertPlayer(teamId, insertedPlayer.id);
+    final result1 = await _teamsRepository.insertPlayer(
+      teamId,
+      insertedPlayer.id,
+    );
 
     if (result1.hasError) {
       setState(() => loading = false);

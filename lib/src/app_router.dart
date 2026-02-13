@@ -1,136 +1,104 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/go_router_state_ext.dart';
-import 'package:matchmaker/src/common/others/snack_bars.dart';
-import 'package:matchmaker/src/presentation/controllers/create_event_controller.dart';
-import 'package:matchmaker/src/presentation/controllers/event_controller.dart';
-import 'package:matchmaker/src/presentation/controllers/event_settings_controller.dart';
-import 'package:matchmaker/src/presentation/controllers/events_controller.dart';
-import 'package:matchmaker/src/presentation/controllers/match_controller.dart';
-import 'package:matchmaker/src/presentation/controllers/match_history_controller.dart';
-import 'package:matchmaker/src/presentation/controllers/team_add_controller.dart';
-import 'package:matchmaker/src/presentation/controllers/teams_controller.dart';
-import 'package:matchmaker/src/presentation/ui/pages/create_event_page.dart';
-import 'package:matchmaker/src/presentation/ui/pages/event_page.dart';
-import 'package:matchmaker/src/presentation/ui/pages/event_settings_page.dart';
-import 'package:matchmaker/src/presentation/ui/pages/events_page.dart';
-import 'package:matchmaker/src/presentation/ui/pages/match_history_page.dart';
-import 'package:matchmaker/src/presentation/ui/pages/match_page.dart';
-import 'package:matchmaker/src/presentation/ui/pages/team_add_page.dart';
-import 'package:matchmaker/src/presentation/ui/pages/teams_page.dart';
-import 'package:provider/provider.dart';
+import 'package:matchmaker/src/presentation/add_player/add_player.dart';
+import 'package:matchmaker/src/presentation/teams/teams.dart';
+
+import 'presentation/create_event/create_event.dart';
+import 'presentation/event/event.dart';
+import 'presentation/event_settings/event_settings.dart';
+import 'presentation/events/events.dart';
+import 'presentation/match/match.dart';
+import 'presentation/match_history/match_history.dart';
 
 abstract class AppRouter {
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
 
   static final GoRouter router = GoRouter(
     navigatorKey: navigatorKey,
-    initialLocation: '/',
+    initialLocation: Events.path,
     routes: [
       GoRoute(
-        path: '/',
-        name: 'events',
+        path: Events.path,
+        name: Events.name,
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: ChangeNotifierProvider<EventsController>(
-              create: (context) => EventsController(context.read())..getEventsList(onError: SnackBars.error),
-              child: const EventsPage(),
+            page: const Events(),
+          );
+        },
+      ),
+      GoRoute(
+        path: Event.path,
+        name: Event.name,
+        pageBuilder: (context, state) {
+          return defaultTransition(
+            key: state.pageKey,
+            page: Event(eventId: state.getPathParam('eventId')),
+          );
+        },
+      ),
+      GoRoute(
+        path: EventSettings.path,
+        name: EventSettings.name,
+        pageBuilder: (context, state) {
+          return defaultTransition(
+            key: state.pageKey,
+            page: EventSettings(eventId: state.getPathParam('eventId')),
+          );
+        },
+      ),
+      GoRoute(
+        path: Teams.path,
+        name: Teams.name,
+        pageBuilder: (context, state) {
+          return defaultTransition(
+            key: state.pageKey,
+            page: Teams(eventId: state.getPathParam('eventId')),
+          );
+        },
+      ),
+      GoRoute(
+        path: AddPlayer.path,
+        name: AddPlayer.name,
+        pageBuilder: (context, state) {
+          return defaultTransition(
+            key: state.pageKey,
+            page: AddPlayer(eventId: state.getPathParam('eventId')),
+          );
+        },
+      ),
+      GoRoute(
+        path: CreateEvent.path,
+        name: CreateEvent.name,
+        pageBuilder: (context, state) {
+          return defaultTransition(
+            key: state.pageKey,
+            page: const CreateEvent(),
+          );
+        },
+      ),
+      GoRoute(
+        path: Match.path,
+        name: Match.name,
+        pageBuilder: (context, state) {
+          return defaultTransition(
+            key: state.pageKey,
+            page: Match(
+              matchId: state.getPathParam('matchId'),
             ),
           );
         },
       ),
       GoRoute(
-        path: '/events/:eventId',
-        name: 'event',
+        path: MatchHistory.path,
+        name: MatchHistory.name,
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: ChangeNotifierProvider<EventController>(
-              create: (ctx) => EventController(ctx.read(), ctx.read())..loadDependencies(state.getPathParam('eventId')),
-              child: const EventPage(),
-            ),
-          );
-        },
-      ),
-      GoRoute(
-        path: '/event-settings/:eventId',
-        name: 'event-settings',
-        pageBuilder: (context, state) {
-          return defaultTransition(
-            key: state.pageKey,
-            page: ChangeNotifierProvider<EventSettingsController>(
-              create: (ctx) =>
-                  EventSettingsController(ctx.read(), ctx.read())..loadDependencies(state.getPathParam('eventId')),
-              child: const EventSettingsPage(),
-            ),
-          );
-        },
-      ),
-      GoRoute(
-        path: '/teams/:eventId',
-        name: 'teams',
-        pageBuilder: (context, state) {
-          return defaultTransition(
-            key: state.pageKey,
-            page: ChangeNotifierProvider<TeamsController>(
-              create: (ctx) =>
-                  TeamsController(ctx.read(), ctx.read(), ctx.read())..loadDependencies(state.getPathParam('eventId')),
-              child: const TeamsPage(),
-            ),
-          );
-        },
-      ),
-      GoRoute(
-        path: '/teams/:eventId/add',
-        name: 'teamAdd',
-        pageBuilder: (context, state) {
-          return defaultTransition(
-            key: state.pageKey,
-            page: ChangeNotifierProvider<TeamAddController>(
-              create: (ctx) =>
-                  TeamAddController(ctx.read(), ctx.read(), ctx.read())
-                    ..loadDependencies(state.getPathParam('eventId')),
-              child: const TeamAddPage(),
-            ),
-          );
-        },
-      ),
-      GoRoute(
-        path: '/create-event',
-        name: 'createEvent',
-        pageBuilder: (context, state) {
-          return defaultTransition(
-            key: state.pageKey,
-            page: ChangeNotifierProvider<CreateEventController>(
-              create: (context) => CreateEventController(context.read(), context.read()),
-              child: const CreateEventPage(),
-            ),
-          );
-        },
-      ),
-      GoRoute(
-        path: '/matches/:matchId',
-        name: 'match',
-        pageBuilder: (context, state) {
-          return defaultTransition(
-            key: state.pageKey,
-            page: ChangeNotifierProvider<MatchController>(
-              create: (ctx) => MatchController(ctx.read(), ctx.read())..loadDependencies(state.getPathParam('matchId')),
-              child: const MatchPage(),
-            ),
-          );
-        },
-      ),
-      GoRoute(
-        path: '/matche-history/:eventId',
-        name: 'match-history',
-        pageBuilder: (context, state) {
-          return defaultTransition(
-            key: state.pageKey,
-            page: ChangeNotifierProvider<MatchHistoryController>(
-              create: (ctx) => MatchHistoryController(ctx.read())..loadDependencies(state.getPathParam('eventId')),
-              child: const MatchHistoryPage(),
+            page: MatchHistory(
+              eventId: state.getPathParam('eventId'),
             ),
           );
         },

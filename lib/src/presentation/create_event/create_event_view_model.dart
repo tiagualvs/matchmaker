@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:matchmaker/main.dart';
 import 'package:matchmaker/src/common/extensions/string_ext.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
@@ -9,17 +10,17 @@ import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/players/players_repository.dart';
 
-class CreateEventController extends ChangeNotifier {
-  CreateEventController(this._eventsRepository, this._playersRepository);
+import 'create_event.dart';
 
-  void setState([void Function()? func]) {
-    func?.call();
-    return notifyListeners();
+abstract class CreateEventViewModel extends State<CreateEvent> {
+  CreateEventViewModel() {
+    _eventsRepository = Injector.instance.get();
+    _playersRepository = Injector.instance.get();
   }
 
-  final EventsRepository _eventsRepository;
+  late final EventsRepository _eventsRepository;
 
-  final PlayersRepository _playersRepository;
+  late final PlayersRepository _playersRepository;
 
   bool _loading = false;
 
@@ -30,6 +31,8 @@ class CreateEventController extends ChangeNotifier {
   );
 
   EventEntity get event => _event;
+
+  List<TeamEntity> get teams => _event.teams;
 
   List<PlayerEntity> _players = [];
 
@@ -57,7 +60,9 @@ class CreateEventController extends ChangeNotifier {
     }
 
     if (numTeams < 2) {
-      return onError?.call('Não é possível gerar eventos com menos de 2 times!');
+      return onError?.call(
+        'Não é possível gerar eventos com menos de 2 times!',
+      );
     }
 
     final randomTeamNames = List<String>.from(TeamEntity.names)..shuffle();
@@ -211,7 +216,8 @@ class CreateEventController extends ChangeNotifier {
         final womenCount = teams[i].players.where((p) => p.isWoman).length;
         final menCount = teams[i].players.where((p) => p.isMan).length;
         final jokerGender = switch (_event.balancedByGender) {
-          true => womenCount <= menCount ? PlayerGender.female : PlayerGender.male,
+          true =>
+            womenCount <= menCount ? PlayerGender.female : PlayerGender.male,
           false => PlayerGender.unknown,
         };
 
@@ -238,7 +244,9 @@ class CreateEventController extends ChangeNotifier {
     void Function(String error)? onError,
   }) async {
     if (_event.teams.length <= 2) {
-      return onError?.call('O evento precisa de pelo menos 3 times para ser gerado!');
+      return onError?.call(
+        'O evento precisa de pelo menos 3 times para ser gerado!',
+      );
     }
 
     setState(() => _loading = true);
@@ -288,7 +296,8 @@ class CreateEventController extends ChangeNotifier {
     final insertedPlayer = result.value;
 
     return setState(() {
-      _players = [insertedPlayer, ..._players]..sort((a, b) => a.name.compareTo(b.name));
+      _players = [insertedPlayer, ..._players]
+        ..sort((a, b) => a.name.compareTo(b.name));
     });
   }
 
@@ -318,10 +327,8 @@ class CreateEventController extends ChangeNotifier {
     });
   }
 
-  void handleRemovePlayer(int index) {
-    _players.removeAt(index);
-    notifyListeners();
-  }
+  void handleRemovePlayer(int index) =>
+      setState(() => _players.removeAt(index));
 
   Future<void> importFromRawList(
     String list, {
@@ -335,7 +342,14 @@ class CreateEventController extends ChangeNotifier {
             .split('\n')
             .where((line) => line.isNotEmpty)
             .where(regex.hasMatch)
-            .map((line) => line.split('-').skip(1).map((part) => part.trim()).join('-').trim())
+            .map(
+              (line) => line
+                  .split('-')
+                  .skip(1)
+                  .map((part) => part.trim())
+                  .join('-')
+                  .trim(),
+            )
             .where((line) => line.isNotEmpty)
             .map(removeEmojis)
             .toList()
@@ -351,7 +365,9 @@ class CreateEventController extends ChangeNotifier {
       final match = RegExp(r'(.+)-(h|H|m|M)').firstMatch(name);
 
       if (match == null) {
-        final result = await _playersRepository.findOneByName(name.toCapitalCase());
+        final result = await _playersRepository.findOneByName(
+          name.toCapitalCase(),
+        );
 
         if (result.hasValue) {
           _players.add(result.value);

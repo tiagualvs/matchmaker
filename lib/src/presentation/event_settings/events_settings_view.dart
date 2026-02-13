@@ -1,21 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
-import 'package:matchmaker/src/presentation/controllers/event_settings_controller.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/event_settings_dialog.dart';
-import 'package:provider/provider.dart';
 
-class EventSettingsPage extends StatelessWidget {
-  const EventSettingsPage({super.key});
+import 'events_settings_view_model.dart';
 
+class EventsSettingsView extends EventsSettingsViewModel {
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<EventSettingsController>();
-
-    final loading = controller.loading;
-
-    final event = controller.event;
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -29,8 +21,8 @@ class EventSettingsPage extends StatelessWidget {
         false => EventSettingsDialog(
           event: event,
           hideAppBar: true,
-          onChange: controller.updateEvent,
-          onSave: (_) => controller.save(
+          onChange: (event) => this.event = event,
+          onSave: (_) => save(
             onSuccess: () => context.pop(),
             onError: SnackBars.error,
           ),

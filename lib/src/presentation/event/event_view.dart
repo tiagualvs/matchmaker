@@ -1,87 +1,68 @@
+import 'dart:core' hide Match;
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/others/dialogs.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/others/text_span_builder.dart';
 import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
-import 'package:matchmaker/src/data/entities/player_entity.dart';
-import 'package:matchmaker/src/presentation/controllers/event_controller.dart';
+import 'package:matchmaker/src/presentation/event_settings/event_settings.dart';
+import 'package:matchmaker/src/presentation/match/match.dart';
+import 'package:matchmaker/src/presentation/match_history/match_history.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/current_match_widget.dart';
-import 'package:matchmaker/src/presentation/ui/widgets/players_dialog.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/team_card_widget.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:provider/provider.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:widgets_to_image/widgets_to_image.dart';
 
-class EventPage extends StatelessWidget {
-  const EventPage({super.key});
+import 'event_view_model.dart';
+
+class EventView extends EventViewModel {
+  Future<void> onNeedJokers(String message) async {
+    return await Dialogs.display(
+      context,
+      title: const Text('Jogador ausente!'),
+      content: Text.rich(
+        TextSpanBuilder.build(
+          message,
+          normalStyle: context.textTheme.bodyLarge,
+          boldStyle: context.textTheme.bodyLarge?.copyWith(fontWeight: .bold),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(),
+          child: const Text('OK'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> onMaxWinsInARow(String message) async {
+    return await Dialogs.display(
+      context,
+      title: Text(
+        'Máximo de vitórias atingida!',
+        style: context.textTheme.headlineMedium?.copyWith(fontWeight: .bold),
+      ),
+      content: Text.rich(
+        TextSpanBuilder.build(
+          message,
+          normalStyle: context.textTheme.bodyLarge,
+          boldStyle: context.textTheme.bodyLarge?.copyWith(fontWeight: .bold),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(),
+          child: const Text('OK'),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<EventController>();
-
-    final loading = controller.loading;
-
-    final sharing = controller.sharing;
-
-    final event = controller.event;
-
-    final currentMatch = event.currentMatch;
-
-    Future<void> onNeedJokers(String message) async {
-      return await Dialogs.display(
-        context,
-        title: const Text('Jogador ausente!'),
-        content: Text.rich(
-          TextSpanBuilder.build(
-            message,
-            normalStyle: context.textTheme.bodyLarge,
-            boldStyle: context.textTheme.bodyLarge?.copyWith(fontWeight: .bold),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => context.pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      );
-    }
-
-    Future<void> onMaxWinsInARow(String message) async {
-      return await Dialogs.display(
-        context,
-        title: Text(
-          'Máximo de vitórias atingida!',
-          style: context.textTheme.headlineMedium?.copyWith(fontWeight: .bold),
-        ),
-        content: Text.rich(
-          TextSpanBuilder.build(
-            message,
-            normalStyle: context.textTheme.bodyLarge,
-            boldStyle: context.textTheme.bodyLarge?.copyWith(fontWeight: .bold),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => context.pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      );
-    }
-
-    Future<void> reloadDependencies() async {
-      return await controller.reloadDependencies(
-        onError: SnackBars.error,
-        onMaxWinsInARow: onMaxWinsInARow,
-        onNeedJokers: onNeedJokers,
-      );
-    }
-
     return FloatingActionButtonMenu(
       menus: switch (sharing) {
         true => [],
@@ -90,28 +71,26 @@ class EventPage extends StatelessWidget {
             icon: const Icon(Symbols.settings_rounded),
             label: const Text('Configurações'),
             onPressed: () async {
-              await context.pushNamed(
-                'event-settings',
-                pathParameters: {
-                  'eventId': event.id.toString(),
-                },
-              );
+              await EventSettings.push(context, event.id);
 
-              return await reloadDependencies();
+              return await reloadDependencies(
+                onError: SnackBars.error,
+                onMaxWinsInARow: onMaxWinsInARow,
+                onNeedJokers: onNeedJokers,
+              );
             },
           ),
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.list_rounded),
             label: const Text('Histórico de partidas'),
             onPressed: () async {
-              await context.pushNamed(
-                'match-history',
-                pathParameters: {
-                  'eventId': event.id.toString(),
-                },
-              );
+              await MatchHistory.push(context, event.id);
 
-              return await reloadDependencies();
+              return await reloadDependencies(
+                onError: SnackBars.error,
+                onMaxWinsInARow: onMaxWinsInARow,
+                onNeedJokers: onNeedJokers,
+              );
             },
           ),
           FloatingActionButtonMenuItem(
@@ -125,7 +104,11 @@ class EventPage extends StatelessWidget {
                 },
               );
 
-              return await reloadDependencies();
+              return await reloadDependencies(
+                onError: SnackBars.error,
+                onMaxWinsInARow: onMaxWinsInARow,
+                onNeedJokers: onNeedJokers,
+              );
             },
           ),
           if (!event.ended) ...[
@@ -154,12 +137,14 @@ class EventPage extends StatelessWidget {
                 );
 
                 if (confirm ?? false) {
-                  return await controller.endEvent(
+                  return await endEvent(
                     onSuccess: () async {
                       await Dialogs.display(
                         context,
                         title: const Text('Evento encerrado'),
-                        content: const Text('O evento foi encerrado com sucesso!'),
+                        content: const Text(
+                          'O evento foi encerrado com sucesso!',
+                        ),
                         actions: [
                           TextButton(
                             onPressed: () => context.pop(),
@@ -194,7 +179,7 @@ class EventPage extends StatelessWidget {
             actions: switch (event.ended) {
               true => [
                 IconButton(
-                  onPressed: () => controller.shareEvent(onError: SnackBars.error),
+                  onPressed: () => shareEvent(onError: SnackBars.error),
                   icon: const Icon(Icons.share_rounded),
                 ),
               ],
@@ -207,7 +192,7 @@ class EventPage extends StatelessWidget {
           false => SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: WidgetsToImage(
-              controller: controller.widgetsToImageController,
+              controller: widgetsToImageController,
               child: Material(
                 color: context.colorScheme.surface,
                 child: Padding(
@@ -219,35 +204,28 @@ class EventPage extends StatelessWidget {
                       if (sharing) ...[
                         Text(
                           event.name,
-                          style: context.textTheme.titleMedium?.copyWith(fontWeight: .bold),
+                          style: context.textTheme.titleMedium?.copyWith(
+                            fontWeight: .bold,
+                          ),
                         ),
                       ],
-                      if (currentMatch != null && currentMatch.ended == false) ...[
+                      if (currentMatch != null &&
+                          currentMatch?.ended == false) ...[
                         Text(
                           'Partida Atual',
                           textAlign: .start,
                           style: context.textTheme.titleMedium,
                         ),
                         CurrentMatchWidget(
-                          match: currentMatch,
+                          match: currentMatch!,
                           onTap: () async {
-                            if (!context.mounted) return;
+                            await Match.push(context, currentMatch?.id ?? -99);
 
-                            await context.pushNamed(
-                              'match',
-                              pathParameters: {
-                                'matchId': currentMatch.id.toString(),
-                              },
+                            return await reloadDependencies(
+                              onError: SnackBars.error,
+                              onMaxWinsInARow: onMaxWinsInARow,
+                              onNeedJokers: onNeedJokers,
                             );
-
-                            await WakelockPlus.disable();
-
-                            await SystemChrome.setPreferredOrientations([
-                              DeviceOrientation.portraitUp,
-                              DeviceOrientation.portraitDown,
-                            ]);
-
-                            return await reloadDependencies();
                           },
                         ),
                       ],
@@ -271,7 +249,9 @@ class EventPage extends StatelessWidget {
                           },
                           children: [
                             TableRow(
-                              decoration: BoxDecoration(color: context.colorScheme.onPrimary),
+                              decoration: BoxDecoration(
+                                color: context.colorScheme.onPrimary,
+                              ),
                               children: List.from(
                                 <String>['', 'Time', 'V', 'D'].indexed.map(
                                   (item) => TableCell(
@@ -290,9 +270,12 @@ class EventPage extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            for (final (index, team) in event.sortedTeams.indexed) ...[
+                            for (final (index, team)
+                                in event.sortedTeams.indexed) ...[
                               TableRow(
-                                decoration: BoxDecoration(color: context.colorScheme.onPrimary),
+                                decoration: BoxDecoration(
+                                  color: context.colorScheme.onPrimary,
+                                ),
                                 children: List.from(
                                   <String>[
                                     (index + 1).toString(),
@@ -348,7 +331,8 @@ class EventPage extends StatelessWidget {
                         style: context.textTheme.titleMedium,
                       ),
                       ListView.separated(
-                        separatorBuilder: (_, _) => const SizedBox(height: 16.0),
+                        separatorBuilder: (_, _) =>
+                            const SizedBox(height: 16.0),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: event.teams.length,
@@ -356,7 +340,7 @@ class EventPage extends StatelessWidget {
                           final team = event.teams[index];
 
                           return TeamCardWidget(
-                            initiallyExpanded: controller.sharing,
+                            initiallyExpanded: sharing,
                             team: team,
                           );
                         },
@@ -369,18 +353,6 @@ class EventPage extends StatelessWidget {
           ),
         },
       ),
-    );
-  }
-
-  Future<List<PlayerEntity>?> showPlayersDialog(BuildContext context, List<PlayerEntity> players) async {
-    return showDialog<List<PlayerEntity>>(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          insetPadding: .zero,
-          child: PlayersDialog(players: players),
-        );
-      },
     );
   }
 }

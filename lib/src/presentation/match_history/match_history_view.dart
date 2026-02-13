@@ -2,22 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
-import 'package:matchmaker/src/presentation/controllers/match_history_controller.dart';
-import 'package:provider/provider.dart';
 
-class MatchHistoryPage extends StatelessWidget {
-  const MatchHistoryPage({super.key});
+import 'match_history_view_model.dart';
 
+class MatchHistoryView extends MatchHistoryViewModel {
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<MatchHistoryController>();
-
-    final loading = controller.loading;
-
-    final event = controller.event;
-
-    final matches = event.endedMatches;
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -52,7 +42,9 @@ class MatchHistoryPage extends StatelessWidget {
 
             return ExpansionTile(
               tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
-              childrenPadding: const EdgeInsets.symmetric(horizontal: 16.0).copyWith(bottom: 16.0),
+              childrenPadding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+              ).copyWith(bottom: 16.0),
               expandedCrossAxisAlignment: .stretch,
               backgroundColor: context.colorScheme.onPrimary,
               collapsedBackgroundColor: context.colorScheme.onPrimary,
@@ -70,27 +62,37 @@ class MatchHistoryPage extends StatelessWidget {
               ),
               title: Text(
                 '${match.firstTeam.name} ${match.firstTeamScore} x ${match.secondTeamScore} ${match.secondTeam.name}',
-                style: context.textTheme.titleMedium?.copyWith(fontWeight: .normal),
+                style: context.textTheme.titleMedium?.copyWith(
+                  fontWeight: .normal,
+                ),
               ),
               children: List.from(
                 match.scores.map(
                   (score) {
                     String currentScore() {
-                      final scores = match.scores.where((s) => s.id <= score.id && !s.reversed).toList();
+                      final scores = match.scores
+                          .where((s) => s.id <= score.id && !s.reversed)
+                          .toList();
 
-                      final firstTeamScore = scores.where((s) => s.teamId == match.firstTeam.id).length;
+                      final firstTeamScore = scores
+                          .where((s) => s.teamId == match.firstTeam.id)
+                          .length;
 
-                      final secondTeamScore = scores.where((s) => s.teamId == match.secondTeam.id).length;
+                      final secondTeamScore = scores
+                          .where((s) => s.teamId == match.secondTeam.id)
+                          .length;
 
                       return '$firstTeamScore x $secondTeamScore';
                     }
 
                     Color currentColor() {
-                      if (score.teamId == match.firstTeam.id && !score.reversed) {
+                      if (score.teamId == match.firstTeam.id &&
+                          !score.reversed) {
                         return Colors.blue.shade100;
                       }
 
-                      if (score.teamId == match.secondTeam.id && !score.reversed) {
+                      if (score.teamId == match.secondTeam.id &&
+                          !score.reversed) {
                         return Colors.red.shade100;
                       }
 
@@ -106,10 +108,14 @@ class MatchHistoryPage extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              score.teamId == match.firstTeam.id ? match.firstTeam.name : match.secondTeam.name,
+                              score.teamId == match.firstTeam.id
+                                  ? match.firstTeam.name
+                                  : match.secondTeam.name,
                               maxLines: 1,
                               overflow: .ellipsis,
-                              style: context.textTheme.bodyMedium?.copyWith(fontWeight: .bold),
+                              style: context.textTheme.bodyMedium?.copyWith(
+                                fontWeight: .bold,
+                              ),
                             ),
                           ),
                           Text(
@@ -117,7 +123,9 @@ class MatchHistoryPage extends StatelessWidget {
                               true => 'Ponto revertido',
                               false => currentScore(),
                             },
-                            style: context.textTheme.bodyMedium?.copyWith(fontWeight: .bold),
+                            style: context.textTheme.bodyMedium?.copyWith(
+                              fontWeight: .bold,
+                            ),
                           ),
                           Text(DateFormat('HH:mm').format(score.createdAt)),
                         ],

@@ -1,23 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:matchmaker/main.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
+import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:widgets_to_image/widgets_to_image.dart';
 
-class EventController extends ChangeNotifier {
-  EventController(this._eventsRepository, this._matchesRepository);
+import 'event.dart';
 
-  void setState([void Function()? func]) {
-    func?.call();
-    return notifyListeners();
+abstract class EventViewModel extends State<Event> {
+  EventViewModel() {
+    _eventsRepository = Injector.instance.get();
+    _matchesRepository = Injector.instance.get();
   }
 
-  final EventsRepository _eventsRepository;
+  @override
+  void initState() {
+    super.initState();
 
-  final MatchesRepository _matchesRepository;
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => loadDependencies(widget.eventId),
+    );
+  }
 
-  final WidgetsToImageController widgetsToImageController = WidgetsToImageController();
+  late final EventsRepository _eventsRepository;
+
+  late final MatchesRepository _matchesRepository;
+
+  final WidgetsToImageController widgetsToImageController =
+      WidgetsToImageController();
 
   bool _loading = true;
 
@@ -34,6 +46,8 @@ class EventController extends ChangeNotifier {
   EventEntity _event = EventEntity.empty();
 
   EventEntity get event => _event;
+
+  MatchEntity? get currentMatch => _event.currentMatch;
 
   Future<void> reloadDependencies({
     Future<void> Function(String message)? onMaxWinsInARow,

@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:matchmaker/main.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
 
-class EventSettingsController extends ChangeNotifier {
-  EventSettingsController(this._eventsRepository, this._matchesRepository);
+import 'event_settings.dart';
 
-  void setState([void Function()? func]) {
-    func?.call();
-    return notifyListeners();
+abstract class EventsSettingsViewModel extends State<EventSettings> {
+  late final EventsRepository _eventsRepository;
+
+  late final MatchesRepository _matchesRepository;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _eventsRepository = Injector.instance.get<EventsRepository>();
+
+    _matchesRepository = Injector.instance.get<MatchesRepository>();
   }
-
-  final EventsRepository _eventsRepository;
-
-  final MatchesRepository _matchesRepository;
 
   bool _loading = false;
 
@@ -22,6 +27,10 @@ class EventSettingsController extends ChangeNotifier {
   EventEntity _event = EventEntity.empty();
 
   EventEntity get event => _event;
+
+  set event(EventEntity event) => setState(() {
+    _event = event;
+  });
 
   Future<void> loadDependencies(
     int eventId, {
@@ -80,7 +89,9 @@ class EventSettingsController extends ChangeNotifier {
         if (event.halfScoreToEliminate != event.halfScoreToEliminate) {
           final result1 = await _matchesRepository.updateManyByEventId(
             event.id,
-            UpdateOneMatchParams(halfScoreToEliminate: event.halfScoreToEliminate),
+            UpdateOneMatchParams(
+              halfScoreToEliminate: event.halfScoreToEliminate,
+            ),
           );
 
           if (result1.hasError) return onError?.call(result1.error.toString());
@@ -96,11 +107,5 @@ class EventSettingsController extends ChangeNotifier {
         });
       },
     );
-  }
-
-  void updateEvent(EventEntity event) {
-    setState(() {
-      _event = event;
-    });
   }
 }

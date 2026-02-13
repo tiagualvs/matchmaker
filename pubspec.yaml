@@ -4,7 +4,8 @@ publish_to: 'none'
 version: 0.0.1
 
 environment:
-  sdk: ^3.10.8
+  sdk: ^3.11.0
+  flutter: ^3.41.0
 
 dependencies:
   flutter:
@@ -24,6 +25,7 @@ dependencies:
   widgets_to_image: ^2.0.1
   wakelock_plus: ^1.4.0
   material_symbols_icons: ^4.2892.0
+  get_it: ^9.2.0
 
 dev_dependencies:
   flutter_test:

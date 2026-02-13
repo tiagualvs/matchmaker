@@ -1,55 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:matchmaker/main.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 
-class MatchHistoryController extends ChangeNotifier {
-  MatchHistoryController(this._eventRepository);
+import 'events.dart';
 
-  void setState([void Function()? func]) {
-    func?.call();
-    return notifyListeners();
+abstract class EventsViewModel extends State<Events> {
+  EventsViewModel() {
+    _eventsRepository = Injector.instance.get<EventsRepository>();
   }
 
-  final EventsRepository _eventRepository;
+  late final EventsRepository _eventsRepository;
 
   bool _loading = true;
 
   bool get loading => _loading;
 
-  EventEntity _event = EventEntity.empty();
+  List<EventEntity> _events = [];
 
-  EventEntity get event => _event;
+  List<EventEntity> get events => _events;
 
-  Future<void> loadDependencies(
-    int eventId, {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => getEventsList());
+  }
+
+  Future<void> getEventsList({
     void Function(String error)? onError,
   }) async {
     setState(() {
       _loading = true;
     });
 
-    final result = await _eventRepository.findOne(eventId);
+    final result = await _eventsRepository.findMany();
 
     return result.fold(
-      (event) {
+      (events) {
         return setState(() {
-          _event = event;
-
           _loading = false;
+          _events = events;
         });
       },
       (error) {
         return setState(() {
           _loading = false;
-
           return onError?.call(error.toString());
         });
       },
     );
-  }
-
-  void resetController() {
-    _loading = true;
-    _event = EventEntity.empty();
   }
 }

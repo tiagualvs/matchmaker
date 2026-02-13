@@ -1,54 +1,33 @@
+import 'dart:core' hide Match;
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
-import 'package:matchmaker/src/presentation/controllers/events_controller.dart';
+import 'package:matchmaker/src/presentation/create_event/create_event.dart';
+import 'package:matchmaker/src/presentation/event/event.dart';
+import 'package:matchmaker/src/presentation/events/events_view_model.dart';
+import 'package:matchmaker/src/presentation/match/match.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/pulse_animation_widget.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:provider/provider.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
 
-class EventsPage extends StatelessWidget {
-  const EventsPage({super.key});
-
+class EventsView extends EventsViewModel {
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<EventsController>();
-
-    final loading = controller.loading;
-
-    final events = controller.events;
-
     return FloatingActionButtonMenu(
       menus: [
         FloatingActionButtonMenuItem(
           icon: const Icon(Symbols.add_rounded),
           label: const Text('Partida avulsa'),
-          onPressed: () async {
-            await context.pushNamed(
-              'match',
-              pathParameters: {
-                'matchId': '-99',
-              },
-            );
-
-            await WakelockPlus.disable();
-
-            await SystemChrome.setPreferredOrientations([
-              DeviceOrientation.portraitUp,
-              DeviceOrientation.portraitDown,
-            ]);
-          },
+          onPressed: () => Match.push(context, -99),
         ),
         FloatingActionButtonMenuItem(
           icon: const Icon(Symbols.event_rounded),
           label: const Text('Criar novo evento'),
           onPressed: () async {
-            await context.pushNamed<bool>('createEvent');
+            await CreateEvent.push(context);
 
-            await controller.getEventsList();
+            await getEventsList();
           },
         ),
       ],
@@ -93,12 +72,9 @@ class EventsPage extends StatelessWidget {
                 ),
                 tileColor: context.colorScheme.onPrimary,
                 onTap: () async {
-                  await context.pushNamed(
-                    'event',
-                    pathParameters: {'eventId': event.id.toString()},
-                  );
+                  await Event.push(context, event.id);
 
-                  await controller.getEventsList();
+                  await getEventsList();
                 },
                 title: Text(event.name),
                 subtitle: switch (event.ended && event.endedAt != null) {
@@ -110,7 +86,9 @@ class EventsPage extends StatelessWidget {
                     false => const Text('Nenhum jogo em andamento'),
                   },
                 },
-                trailing: event.ended ? null : const PulseAnimationWidget(runningColor: Colors.green),
+                trailing: event.ended
+                    ? null
+                    : const PulseAnimationWidget(runningColor: Colors.green),
               );
             },
           ),

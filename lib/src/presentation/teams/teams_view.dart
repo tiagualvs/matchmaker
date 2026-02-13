@@ -6,77 +6,68 @@ import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/others/text_span_builder.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
-import 'package:matchmaker/src/presentation/controllers/teams_controller.dart';
+import 'package:matchmaker/src/presentation/add_player/add_player.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/player_input_widget.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/player_tile_widget.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:provider/provider.dart';
 
-class TeamsPage extends StatelessWidget {
-  const TeamsPage({super.key});
+import 'teams_view_model.dart';
 
-  @override
-  Widget build(BuildContext context) {
-    final controller = context.watch<TeamsController>();
-
-    final loading = controller.loading;
-
-    final event = controller.event;
-
-    final teams = controller.teams;
-
-    void handleDeleteTeam(TeamEntity team) async {
-      final confirm = await Dialogs.display(
-        context,
-        title: const Text('Remover Time?'),
-        content: Text.rich(
-          TextSpanBuilder.build(
-            'Tem certeza que deseja remover o time [b]${team.name}[/b] deste evento?\n\nEssa ação não poderá ser desfeita!',
-          ),
+class TeamsView extends TeamsViewModel {
+  void handleDeleteTeam(TeamEntity team) async {
+    final confirm = await Dialogs.display(
+      context,
+      title: const Text('Remover Time?'),
+      content: Text.rich(
+        TextSpanBuilder.build(
+          'Tem certeza que deseja remover o time [b]${team.name}[/b] deste evento?\n\nEssa ação não poderá ser desfeita!',
         ),
-        actions: [
-          TextButton(
-            onPressed: () => context.pop(false),
-            style: TextButton.styleFrom(
-              foregroundColor: context.colorScheme.error,
-            ),
-            child: const Text('Cancelar'),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(false),
+          style: TextButton.styleFrom(
+            foregroundColor: context.colorScheme.error,
           ),
-          TextButton(
-            onPressed: () => context.pop(true),
-            child: const Text('Remover'),
-          ),
-        ],
-      );
-
-      if (confirm ?? false) {
-        return await controller.deleteTeam(
-          team.id,
-          onError: SnackBars.error,
-        );
-      }
-    }
-
-    Future<void> handleInsertPlayer(int index, int teamId) async {
-      final player = await showModalBottomSheet<PlayerEntity>(
-        context: context,
-        isScrollControlled: true,
-        builder: (context) => PlayerInputWidget(
-          onSave: (value) => context.pop(value),
-          withLevelSelect: false,
+          child: const Text('Cancelar'),
         ),
-      );
+        TextButton(
+          onPressed: () => context.pop(true),
+          child: const Text('Remover'),
+        ),
+      ],
+    );
 
-      if (player == null) return;
-
-      return await controller.insertPlayer(
-        index,
-        teamId,
-        player,
+    if (confirm ?? false) {
+      return await deleteTeam(
+        team.id,
         onError: SnackBars.error,
       );
     }
+  }
 
+  Future<void> handleInsertPlayer(int index, int teamId) async {
+    final player = await showModalBottomSheet<PlayerEntity>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => PlayerInputWidget(
+        onSave: (value) => context.pop(value),
+        withLevelSelect: false,
+      ),
+    );
+
+    if (player == null) return;
+
+    return await insertPlayer(
+      index,
+      teamId,
+      player,
+      onError: SnackBars.error,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Times'),
@@ -85,12 +76,12 @@ class TeamsPage extends StatelessWidget {
             onPressed: () async {
               if (loading) return;
 
-              await context.pushNamed(
-                'teamAdd',
-                pathParameters: {'eventId': event.id.toString()},
-              );
+              await AddPlayer.push(context, event.id);
 
-              await controller.loadDependencies(event.id, onError: SnackBars.error);
+              await loadDependencies(
+                event.id,
+                onError: SnackBars.error,
+              );
             },
             icon: const Icon(Symbols.group_add_rounded),
           ),
@@ -110,7 +101,9 @@ class TeamsPage extends StatelessWidget {
             return Material(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.0),
-                side: BorderSide(color: context.colorScheme.surfaceContainerHighest),
+                side: BorderSide(
+                  color: context.colorScheme.surfaceContainerHighest,
+                ),
               ),
               child: Padding(
                 padding: const .symmetric(vertical: 16.0),
@@ -145,10 +138,12 @@ class TeamsPage extends StatelessWidget {
                       if (!player.isJoker) ...[
                         DragTarget<PlayerEntity>(
                           onAcceptWithDetails: (details) async {
-                            await controller.changePlayers(
+                            await changePlayers(
                               player,
                               details.data,
-                              onSuccess: () => SnackBars.success('Jogadores trocados com sucesso!'),
+                              onSuccess: () => SnackBars.success(
+                                'Jogadores trocados com sucesso!',
+                              ),
                               onError: (err) => SnackBars.error(err),
                             );
                           },
@@ -167,7 +162,11 @@ class TeamsPage extends StatelessWidget {
                                 dragging: true,
                                 hasCandidate: hasCandidate(),
                               ),
-                              feedback: playerWidget(context, player, feedback: true),
+                              feedback: playerWidget(
+                                context,
+                                player,
+                                feedback: true,
+                              ),
                               child: playerWidget(
                                 context,
                                 player,

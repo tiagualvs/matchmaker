@@ -5,28 +5,16 @@ import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
-import 'package:matchmaker/src/presentation/controllers/create_event_controller.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/event_settings_dialog.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/player_input_widget.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/team_card_widget.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:provider/provider.dart';
 
-class CreateEventPage extends StatelessWidget {
-  const CreateEventPage({super.key});
+import 'create_event_view_model.dart';
 
+class CreateEventView extends CreateEventViewModel {
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<CreateEventController>();
-
-    final loading = controller.loading;
-
-    final event = controller.event;
-
-    final teams = event.teams;
-
-    final players = controller.players;
-
     return FloatingActionButtonMenu(
       menus: [
         FloatingActionButtonMenuItem(
@@ -44,7 +32,7 @@ class CreateEventPage extends StatelessWidget {
             );
 
             if (changedEvent != null) {
-              controller.handleEventChanges(changedEvent);
+              handleEventChanges(changedEvent);
             }
           },
         ),
@@ -52,21 +40,21 @@ class CreateEventPage extends StatelessWidget {
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.refresh_rounded),
             label: const Text('Desfazer times'),
-            onPressed: () => controller.handleEventChanges(
+            onPressed: () => handleEventChanges(
               event.copyWith(teams: []),
             ),
           ),
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.shuffle_rounded),
             label: const Text('Regerar times'),
-            onPressed: () => controller.handleGenerateTeams(
+            onPressed: () => handleGenerateTeams(
               onError: SnackBars.error,
             ),
           ),
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.save_rounded),
             label: const Text('Salvar evento'),
-            onPressed: () => controller.handleSaveEvent(
+            onPressed: () => handleSaveEvent(
               onSuccess: () {
                 context.pop(true);
 
@@ -106,17 +94,23 @@ class CreateEventPage extends StatelessWidget {
                               minLines: 5,
                               maxLines: 7,
                               initialValue: initialValue,
-                              onChanged: (value) => setState(() => initialValue = value),
+                              onChanged: (value) =>
+                                  setState(() => initialValue = value),
                               decoration: const InputDecoration(
                                 alignLabelWithHint: true,
-                                hintText: '1 - Fulano de Tal - H\n2 - Sicrano de Tal\n3 - Elma Maria - M',
+                                hintText:
+                                    '1 - Fulano de Tal - H\n2 - Sicrano de Tal\n3 - Elma Maria - M',
                                 labelText: 'Lista de Jogadores',
                                 floatingLabelBehavior: .always,
                               ),
                             ),
                             FilledButton.icon(
-                              key: const ValueKey('CreateEventPage.importButton'),
-                              onPressed: initialValue == null ? null : () => context.pop(initialValue),
+                              key: const ValueKey(
+                                'CreateEventPage.importButton',
+                              ),
+                              onPressed: initialValue == null
+                                  ? null
+                                  : () => context.pop(initialValue),
                               icon: const Icon(Symbols.upload_file_rounded),
                               label: const Text('Importar'),
                             ),
@@ -130,7 +124,7 @@ class CreateEventPage extends StatelessWidget {
 
               if (list == null) return;
 
-              return await controller.importFromRawList(
+              return await importFromRawList(
                 list,
                 onError: SnackBars.error,
               );
@@ -152,7 +146,7 @@ class CreateEventPage extends StatelessWidget {
 
               if (player == null) return;
 
-              return await controller.handleAddPlayer(
+              return await handleAddPlayer(
                 player,
                 onError: SnackBars.error,
               );
@@ -163,7 +157,7 @@ class CreateEventPage extends StatelessWidget {
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.groups_rounded),
             label: const Text('Gerar times'),
-            onPressed: () => controller.handleGenerateTeams(onError: SnackBars.error),
+            onPressed: () => handleGenerateTeams(onError: SnackBars.error),
           ),
         ],
       ],
@@ -173,7 +167,7 @@ class CreateEventPage extends StatelessWidget {
             icon: const Icon(Symbols.arrow_back_ios_rounded),
             onPressed: () => context.pop(),
           ),
-          title: Text(controller.event.name),
+          title: Text(event.name),
         ),
         body: switch (loading) {
           true => const Center(child: CircularProgressIndicator()),
@@ -200,101 +194,115 @@ class CreateEventPage extends StatelessWidget {
               ),
             ],
           ),
-          false when teams.isEmpty && players.isNotEmpty => SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              spacing: 16.0,
-              crossAxisAlignment: .stretch,
-              children: [
-                Text(
-                  'Jogadores (${players.length})',
-                  style: context.textTheme.titleMedium,
-                ),
-                for (final (index, player) in players.indexed) ...[
-                  Material(
-                    clipBehavior: .antiAlias,
-                    color: context.colorScheme.onPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-                      side: BorderSide(
-                        width: 0.5,
-                        color: context.colorScheme.primaryFixed,
-                      ),
-                    ),
-                    child: InkWell(
-                      onTap: () async {
-                        final changedPlayed = await showModalBottomSheet<PlayerEntity>(
-                          context: context,
-                          isScrollControlled: true,
-                          builder: (context) => PlayerInputWidget(
-                            player: player,
-                            onSave: context.pop,
-                          ),
-                        );
-
-                        if (changedPlayed == null) return;
-
-                        await controller.handlePlayerChanges(
-                          index,
-                          changedPlayed,
-                          onError: SnackBars.error,
-                        );
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0).copyWith(
-                          right: 0.0,
+          false when teams.isEmpty && players.isNotEmpty =>
+            SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                spacing: 16.0,
+                crossAxisAlignment: .stretch,
+                children: [
+                  Text(
+                    'Jogadores (${players.length})',
+                    style: context.textTheme.titleMedium,
+                  ),
+                  for (final (index, player) in players.indexed) ...[
+                    Material(
+                      clipBehavior: .antiAlias,
+                      color: context.colorScheme.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(8.0),
                         ),
-                        child: Row(
-                          spacing: 16.0,
-                          children: [
-                            Material(
-                              shape: const CircleBorder(),
-                              color: switch (player.gender) {
-                                PlayerGender.male => Colors.blue.withAlpha((255 * 0.1).toInt()),
-                                PlayerGender.female => Colors.pink.withAlpha((255 * 0.1).toInt()),
-                                _ => Colors.blueGrey.withAlpha((255 * 0.1).toInt()),
-                              },
-                              child: Padding(
-                                padding: const .all(4.0),
-                                child: switch (player.gender) {
-                                  PlayerGender.male => const Icon(
-                                    Symbols.male_rounded,
-                                    color: Colors.blue,
-                                    size: 22.0,
+                        side: BorderSide(
+                          width: 0.5,
+                          color: context.colorScheme.primaryFixed,
+                        ),
+                      ),
+                      child: InkWell(
+                        onTap: () async {
+                          final changedPlayed =
+                              await showModalBottomSheet<PlayerEntity>(
+                                context: context,
+                                isScrollControlled: true,
+                                builder: (context) => PlayerInputWidget(
+                                  player: player,
+                                  onSave: context.pop,
+                                ),
+                              );
+
+                          if (changedPlayed == null) return;
+
+                          await handlePlayerChanges(
+                            index,
+                            changedPlayed,
+                            onError: SnackBars.error,
+                          );
+                        },
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.symmetric(
+                                vertical: 4.0,
+                                horizontal: 16.0,
+                              ).copyWith(
+                                right: 0.0,
+                              ),
+                          child: Row(
+                            spacing: 16.0,
+                            children: [
+                              Material(
+                                shape: const CircleBorder(),
+                                color: switch (player.gender) {
+                                  PlayerGender.male => Colors.blue.withAlpha(
+                                    (255 * 0.1).toInt(),
                                   ),
-                                  PlayerGender.female => const Icon(
-                                    Symbols.female_rounded,
-                                    color: Colors.pink,
-                                    size: 22.0,
+                                  PlayerGender.female => Colors.pink.withAlpha(
+                                    (255 * 0.1).toInt(),
                                   ),
-                                  _ => const Icon(
-                                    Symbols.agender_rounded,
-                                    color: Colors.blueGrey,
-                                    size: 22.0,
+                                  _ => Colors.blueGrey.withAlpha(
+                                    (255 * 0.1).toInt(),
                                   ),
                                 },
+                                child: Padding(
+                                  padding: const .all(4.0),
+                                  child: switch (player.gender) {
+                                    PlayerGender.male => const Icon(
+                                      Symbols.male_rounded,
+                                      color: Colors.blue,
+                                      size: 22.0,
+                                    ),
+                                    PlayerGender.female => const Icon(
+                                      Symbols.female_rounded,
+                                      color: Colors.pink,
+                                      size: 22.0,
+                                    ),
+                                    _ => const Icon(
+                                      Symbols.agender_rounded,
+                                      color: Colors.blueGrey,
+                                      size: 22.0,
+                                    ),
+                                  },
+                                ),
                               ),
-                            ),
-                            Expanded(
-                              child: Text(
-                                player.name,
-                                style: context.textTheme.titleMedium,
+                              Expanded(
+                                child: Text(
+                                  player.name,
+                                  style: context.textTheme.titleMedium,
+                                ),
                               ),
-                            ),
-                            IconButton(
-                              onPressed: () => controller.handleRemovePlayer(index),
-                              icon: const Icon(Symbols.delete_rounded),
-                            ),
-                          ],
+                              IconButton(
+                                onPressed: () => handleRemovePlayer(index),
+                                icon: const Icon(Symbols.delete_rounded),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
           false when teams.isNotEmpty => SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.all(24.0),

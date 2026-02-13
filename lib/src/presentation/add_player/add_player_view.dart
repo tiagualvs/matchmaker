@@ -3,27 +3,15 @@ import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
-import 'package:matchmaker/src/presentation/controllers/team_add_controller.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/player_input_widget.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/player_tile_widget.dart';
-import 'package:material_symbols_icons/material_symbols_icons.dart';
-import 'package:provider/provider.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
-class TeamAddPage extends StatelessWidget {
-  const TeamAddPage({super.key});
+import 'add_player_view_model.dart';
 
+class AddPlayerView extends AddPlayerViewModel {
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<TeamAddController>();
-
-    final event = controller.event;
-
-    final team = controller.team;
-
-    final players = team.players;
-
-    final loading = controller.loading;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Adicionar time'),
@@ -38,7 +26,7 @@ class TeamAddPage extends StatelessWidget {
                     onSave: (player) async {
                       context.pop();
 
-                      return await controller.handleInsertPlayer(
+                      return await handleInsertPlayer(
                         player,
                         onError: SnackBars.error,
                       );
@@ -57,7 +45,7 @@ class TeamAddPage extends StatelessWidget {
         false => SingleChildScrollView(
           padding: const .all(24.0),
           child: Form(
-            key: controller.formKey,
+            key: formKey,
             child: Column(
               spacing: 16.0,
               mainAxisSize: .min,
@@ -80,21 +68,26 @@ class TeamAddPage extends StatelessWidget {
                   width: MediaQuery.sizeOf(context).width - 48.0,
                   dropdownMenuEntries: List.from(
                     TeamEntity.names
-                        .where((name) => !event.teams.map((team) => team.name).contains(name))
-                        .map((name) => DropdownMenuEntry(value: name, label: name)),
+                        .where(
+                          (name) => !event.teams
+                              .map((team) => team.name)
+                              .contains(name),
+                        )
+                        .map(
+                          (name) => DropdownMenuEntry(value: name, label: name),
+                        ),
                   ),
                   onSelected: (value) {
                     if (value == null) return;
 
-                    controller.setState(() {
-                      controller.team = team.copyWith(name: value);
-                    });
+                    team = team.copyWith(name: value);
                   },
                   hintText: 'Selecione',
                   label: const Text('Nome do Time'),
-                  inputDecorationTheme: context.theme.inputDecorationTheme.copyWith(
-                    floatingLabelBehavior: .always,
-                  ),
+                  inputDecorationTheme: context.theme.inputDecorationTheme
+                      .copyWith(
+                        floatingLabelBehavior: .always,
+                      ),
                 ),
                 if (players.isNotEmpty) ...[
                   Text(
@@ -116,7 +109,7 @@ class TeamAddPage extends StatelessWidget {
           key: const ValueKey('TeamAddPage.saveButton'),
           onPressed: switch (team.players.isEmpty) {
             true => null,
-            false => () => controller.save(
+            false => () => save(
               onSuccess: () {
                 SnackBars.success('Time cadastrado com sucesso!');
                 return context.pop();
