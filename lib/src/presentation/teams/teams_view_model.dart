@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:matchmaker/main.dart';
+import 'package:get_it/get_it.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -10,27 +10,13 @@ import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
 import 'teams.dart';
 
 abstract class TeamsViewModel extends State<Teams> {
-  late final EventsRepository _eventsRepository;
+  final EventsRepository _eventsRepository = GetIt.instance.get();
+  final PlayersRepository _playersRepository = GetIt.instance.get();
+  final TeamsRepository _teamsRepository = GetIt.instance.get();
 
-  late final PlayersRepository _playersRepository;
+  bool loading = false;
 
-  late final TeamsRepository _teamsRepository;
-
-  @override
-  void initState() {
-    super.initState();
-    _eventsRepository = Injector.instance.get<EventsRepository>();
-    _playersRepository = Injector.instance.get<PlayersRepository>();
-    _teamsRepository = Injector.instance.get<TeamsRepository>();
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => loadDependencies(widget.eventId),
-    );
-  }
-
-  bool loading = true;
-
-  EventEntity _event = EventEntity.empty();
+  late EventEntity _event = widget.event;
 
   EventEntity get event => _event;
 
@@ -38,11 +24,10 @@ abstract class TeamsViewModel extends State<Teams> {
 
   List<TeamEntity> get teams => _teams;
 
-  Future<void> loadDependencies(
-    int eventId, {
+  Future<void> loadDependencies({
     void Function(String error)? onError,
   }) async {
-    final result = await _eventsRepository.findOne(eventId);
+    final result = await _eventsRepository.findOne(widget.event.id);
 
     if (result.hasError) {
       return setState(() {

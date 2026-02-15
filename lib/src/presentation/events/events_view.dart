@@ -19,7 +19,7 @@ class EventsView extends EventsViewModel {
         FloatingActionButtonMenuItem(
           icon: const Icon(Symbols.add_rounded),
           label: const Text('Partida avulsa'),
-          onPressed: () => Match.push(context, -99),
+          onPressed: () => Match.push(context),
         ),
         FloatingActionButtonMenuItem(
           icon: const Icon(Symbols.event_rounded),
@@ -72,7 +72,7 @@ class EventsView extends EventsViewModel {
                 ),
                 tileColor: context.colorScheme.onPrimary,
                 onTap: () async {
-                  await Event.push(context, event.id);
+                  await Event.push(context, event);
 
                   await getEventsList();
                 },

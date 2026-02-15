@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:matchmaker/main.dart';
+import 'package:get_it/get_it.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
@@ -7,38 +7,26 @@ import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'match_history.dart';
 
 abstract class MatchHistoryViewModel extends State<MatchHistory> {
-  late final EventsRepository _eventRepository;
+  final EventsRepository _eventRepository = GetIt.instance.get();
 
-  @override
-  void initState() {
-    super.initState();
-
-    _eventRepository = Injector.instance.get<EventsRepository>();
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => loadDependencies(widget.eventId),
-    );
-  }
-
-  bool _loading = true;
+  bool _loading = false;
 
   bool get loading => _loading;
 
-  EventEntity _event = EventEntity.empty();
+  late EventEntity _event = widget.event;
 
   EventEntity get event => _event;
 
   List<MatchEntity> get matches => _event.endedMatches;
 
-  Future<void> loadDependencies(
-    int eventId, {
+  Future<void> loadDependencies({
     void Function(String error)? onError,
   }) async {
     setState(() {
       _loading = true;
     });
 
-    final result = await _eventRepository.findOne(eventId);
+    final result = await _eventRepository.findOne(_event.id);
 
     return result.fold(
       (event) {

@@ -1,30 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:matchmaker/src/data/entities/event_entity.dart';
 
-import 'events_settings_view.dart';
+import 'event_settings_view.dart';
 
 class EventSettings extends StatefulWidget {
-  const EventSettings({super.key, required this.eventId});
+  const EventSettings({super.key, required this.event});
 
-  final int eventId;
+  final EventEntity event;
 
-  static const String path = '/event-settings/:eventId';
+  static const String path = '/event-settings';
 
   static const String name = 'event-settings';
 
   static Future<T?> push<T>(
     BuildContext context,
-    int eventId, {
+    EventEntity event, {
     Object? arguments,
   }) {
-    return context.pushNamed(
-      name,
-      pathParameters: {
-        'eventId': eventId.toString(),
-      },
-    );
+    return context.pushNamed(name, extra: event);
   }
 
   @override
-  State<EventSettings> createState() => EventsSettingsView();
+  State<EventSettings> createState() => EventSettingsView();
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:matchmaker/src/common/extensions/go_router_state_ext.dart';
+import 'package:matchmaker/src/data/entities/event_entity.dart';
+import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/presentation/add_player/add_player.dart';
 import 'package:matchmaker/src/presentation/teams/teams.dart';
 
@@ -35,7 +36,7 @@ abstract class AppRouter {
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: Event(eventId: state.getPathParam('eventId')),
+            page: Event(event: state.extra as EventEntity),
           );
         },
       ),
@@ -45,7 +46,7 @@ abstract class AppRouter {
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: EventSettings(eventId: state.getPathParam('eventId')),
+            page: EventSettings(event: state.extra as EventEntity),
           );
         },
       ),
@@ -55,7 +56,7 @@ abstract class AppRouter {
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: Teams(eventId: state.getPathParam('eventId')),
+            page: Teams(event: state.extra as EventEntity),
           );
         },
       ),
@@ -65,7 +66,7 @@ abstract class AppRouter {
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: AddPlayer(eventId: state.getPathParam('eventId')),
+            page: AddPlayer(event: state.extra as EventEntity),
           );
         },
       ),
@@ -85,9 +86,7 @@ abstract class AppRouter {
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: Match(
-              matchId: state.getPathParam('matchId'),
-            ),
+            page: Match(match: state.extra as MatchEntity?),
           );
         },
       ),
@@ -97,9 +96,7 @@ abstract class AppRouter {
         pageBuilder: (context, state) {
           return defaultTransition(
             key: state.pageKey,
-            page: MatchHistory(
-              eventId: state.getPathParam('eventId'),
-            ),
+            page: MatchHistory(event: state.extra as EventEntity),
           );
         },
       ),

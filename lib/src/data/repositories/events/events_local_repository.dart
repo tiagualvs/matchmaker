@@ -14,7 +14,7 @@ class EventsLocalRepository implements EventsRepository {
   @override
   AsyncResult<List<EventEntity>> findMany() async {
     try {
-      return await _db.getEventsWithLastMatch();
+      return await _db.getEventsWithAllData();
     } on DriftWrappedException catch (e) {
       return Result.error(AppException(e.message, e));
     } on Exception catch (e) {
@@ -111,7 +111,8 @@ class EventsLocalRepository implements EventsRepository {
 
           final queue = teamIds.skip(2).join(',');
 
-          final updateQuery = _db.update(_db.event)..where((tb) => tb.id.equals(event.id));
+          final updateQuery = _db.update(_db.event)
+            ..where((tb) => tb.id.equals(event.id));
 
           await updateQuery.write(EventCompanion(queue: Value(queue)));
 
@@ -134,24 +135,44 @@ class EventsLocalRepository implements EventsRepository {
   }
 
   @override
-  AsyncResult<EventEntity> updateOne(int id, UpdateOneEventParams params) async {
+  AsyncResult<EventEntity> updateOne(
+    int id,
+    UpdateOneEventParams params,
+  ) async {
     try {
       return await _db.transaction(() async {
-        final updateQuery = _db.update(_db.event)..where((tb) => tb.id.equals(id));
+        final updateQuery = _db.update(_db.event)
+          ..where((tb) => tb.id.equals(id));
 
         await updateQuery.write(
           EventCompanion(
-            name: params.name != null ? Value(params.name!) : const Value.absent(),
-            maxScore: params.maxScore != null ? Value(params.maxScore!) : const Value.absent(),
+            name: params.name != null
+                ? Value(params.name!)
+                : const Value.absent(),
+            maxScore: params.maxScore != null
+                ? Value(params.maxScore!)
+                : const Value.absent(),
             halfScoreToEliminate: params.halfScoreToEliminate != null
                 ? Value(params.halfScoreToEliminate!)
                 : const Value.absent(),
-            maxPlayerPerTeam: params.maxPlayerPerTeam != null ? Value(params.maxPlayerPerTeam!) : const Value.absent(),
-            balancedByGender: params.balancedByGender != null ? Value(params.balancedByGender!) : const Value.absent(),
-            balancedByLevel: params.balancedByLevel != null ? Value(params.balancedByLevel!) : const Value.absent(),
-            maxWinsInARow: params.maxWinsInARow != null ? Value(params.maxWinsInARow!) : const Value.absent(),
-            queue: params.queue != null ? Value(params.queue!.join(',')) : const Value.absent(),
-            ended: params.ended != null ? Value(params.ended!) : const Value.absent(),
+            maxPlayerPerTeam: params.maxPlayerPerTeam != null
+                ? Value(params.maxPlayerPerTeam!)
+                : const Value.absent(),
+            balancedByGender: params.balancedByGender != null
+                ? Value(params.balancedByGender!)
+                : const Value.absent(),
+            balancedByLevel: params.balancedByLevel != null
+                ? Value(params.balancedByLevel!)
+                : const Value.absent(),
+            maxWinsInARow: params.maxWinsInARow != null
+                ? Value(params.maxWinsInARow!)
+                : const Value.absent(),
+            queue: params.queue != null
+                ? Value(params.queue!.join(','))
+                : const Value.absent(),
+            ended: params.ended != null
+                ? Value(params.ended!)
+                : const Value.absent(),
             endedAt: params.ended != null && params.ended == true
                 ? Value(DateTime.now().toUtc())
                 : const Value.absent(),

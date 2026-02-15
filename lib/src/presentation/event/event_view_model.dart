@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:matchmaker/main.dart';
+import 'package:get_it/get_it.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
@@ -10,28 +10,13 @@ import 'package:widgets_to_image/widgets_to_image.dart';
 import 'event.dart';
 
 abstract class EventViewModel extends State<Event> {
-  EventViewModel() {
-    _eventsRepository = Injector.instance.get();
-    _matchesRepository = Injector.instance.get();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => loadDependencies(widget.eventId),
-    );
-  }
-
-  late final EventsRepository _eventsRepository;
-
-  late final MatchesRepository _matchesRepository;
+  final EventsRepository _eventsRepository = GetIt.instance.get();
+  final MatchesRepository _matchesRepository = GetIt.instance.get();
 
   final WidgetsToImageController widgetsToImageController =
       WidgetsToImageController();
 
-  bool _loading = true;
+  bool _loading = false;
 
   bool get loading => _loading;
 
@@ -43,28 +28,13 @@ abstract class EventViewModel extends State<Event> {
 
   bool get hasTeamWithMaxWinsInARow => _hasTeamWithMaxWinsInARow;
 
-  EventEntity _event = EventEntity.empty();
+  late EventEntity _event = widget.event;
 
   EventEntity get event => _event;
 
   MatchEntity? get currentMatch => _event.currentMatch;
 
-  Future<void> reloadDependencies({
-    Future<void> Function(String message)? onMaxWinsInARow,
-    Future<void> Function(String message)? onNeedJokers,
-    void Function(String error)? onError,
-  }) async {
-    if (_event.id <= 0) return;
-    return loadDependencies(
-      _event.id,
-      onError: onError,
-      onMaxWinsInARow: onMaxWinsInARow,
-      onNeedJokers: onNeedJokers,
-    );
-  }
-
-  Future<void> loadDependencies(
-    int eventId, {
+  Future<void> reloadEvent({
     Future<void> Function(String message)? onMaxWinsInARow,
     Future<void> Function(String message)? onNeedJokers,
     void Function(String error)? onError,
@@ -74,7 +44,7 @@ abstract class EventViewModel extends State<Event> {
       _sharing = false;
     });
 
-    final result0 = await _eventsRepository.findOne(eventId);
+    final result0 = await _eventsRepository.findOne(_event.id);
 
     return result0.fold(
       (event) async {

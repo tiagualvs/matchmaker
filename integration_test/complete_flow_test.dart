@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:intl/intl.dart';
-import 'package:matchmaker/src/app_provider.dart';
 import 'package:matchmaker/src/app_widget.dart';
+import 'package:matchmaker/src/common/shared/injector.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/current_match_widget.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/team_card_widget.dart';
 
@@ -32,12 +32,19 @@ final List<String> players = [
   'Renata:m',
 ];
 
-String get playersAsRawList => players.indexed.map((e) => '${e.$1 + 1} - ${e.$2.split(':').first}').join('\n');
+String get playersAsRawList => players.indexed
+    .map((e) => '${e.$1 + 1} - ${e.$2.split(':').first}')
+    .join('\n');
 
-final eventName = 'Evento do dia ${DateFormat('dd/MM/yyyy').format(DateTime.now())}';
+final eventName =
+    'Evento do dia ${DateFormat('dd/MM/yyyy').format(DateTime.now())}';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() {
+    Injector.test();
+  });
 
   Future<void> enterOnEventsPageWithEmptyState(WidgetTester tester) async {
     final eventsPageAppBar = find.appBarWithTextTitle('Matchmaker');
@@ -50,7 +57,9 @@ void main() {
 
     expect(eventsPageEmptyState, findsOneWidget);
 
-    final eventsPageFabMenu = find.fabWithAnimatedIconData(AnimatedIcons.menu_close);
+    final eventsPageFabMenu = find.fabWithAnimatedIconData(
+      AnimatedIcons.menu_close,
+    );
 
     expect(eventsPageFabMenu, findsOneWidget);
 
@@ -76,7 +85,9 @@ void main() {
 
     expect(createEventEmptyState, findsOneWidget);
 
-    final createEventFabMenu = find.fabWithAnimatedIconData(AnimatedIcons.menu_close);
+    final createEventFabMenu = find.fabWithAnimatedIconData(
+      AnimatedIcons.menu_close,
+    );
 
     expect(createEventFabMenu, findsOneWidget);
 
@@ -102,7 +113,9 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    final createEventImportButton = find.byKey(const ValueKey('CreateEventPage.importButton'));
+    final createEventImportButton = find.byKey(
+      const ValueKey('CreateEventPage.importButton'),
+    );
 
     expect(createEventImportButton, findsOneWidget);
 
@@ -154,7 +167,9 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      final playerInputSaveButton = find.byKey(const ValueKey('PlayerInputWidget.saveButton'));
+      final playerInputSaveButton = find.byKey(
+        const ValueKey('PlayerInputWidget.saveButton'),
+      );
 
       expect(playerInputSaveButton, findsOneWidget);
 
@@ -319,7 +334,8 @@ void main() {
 
       if (title is! Text) return false;
 
-      return title.data == 'Evento do dia ${DateFormat('dd/MM/yyyy').format(DateTime.now())}';
+      return title.data ==
+          'Evento do dia ${DateFormat('dd/MM/yyyy').format(DateTime.now())}';
     });
 
     expect(eventTile, findsOneWidget);
@@ -349,7 +365,10 @@ void main() {
     Finder teamButtonScore(Color color, int value) {
       return find.ancestor(
         of: find.ancestor(
-          of: find.ancestor(of: find.text(value.toString()), matching: find.byType(FittedBox)),
+          of: find.ancestor(
+            of: find.text(value.toString()),
+            matching: find.byType(FittedBox),
+          ),
           matching: find.byWidgetPredicate((w) {
             if (w is! Material) return false;
 
@@ -383,19 +402,22 @@ void main() {
     }
   }
 
-  testWidgets('Complete flow: create an event, add 12 players, create teams and start the match!', (tester) async {
-    await tester.pumpWidget(const AppProvider.testing(child: AppWidget()));
+  testWidgets(
+    'Complete flow: create an event, add 12 players, create teams and start the match!',
+    (tester) async {
+      await tester.pumpWidget(const AppWidget());
 
-    await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-    await enterOnEventsPageWithEmptyState(tester);
+      await enterOnEventsPageWithEmptyState(tester);
 
-    await enterOnCreateEventPageToCreate(tester);
+      await enterOnCreateEventPageToCreate(tester);
 
-    await enterOnEventsPageWithLoadedState(tester);
+      await enterOnEventsPageWithLoadedState(tester);
 
-    await enterOnEventPageWithLoadedState(tester);
+      await enterOnEventPageWithLoadedState(tester);
 
-    await enterOnMatchPageWithLoadedState(tester);
-  });
+      await enterOnMatchPageWithLoadedState(tester);
+    },
+  );
 }

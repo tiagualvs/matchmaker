@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/event_settings_dialog.dart';
 
-import 'events_settings_view_model.dart';
+import 'event_settings_view_model.dart';
 
-class EventsSettingsView extends EventsSettingsViewModel {
+class EventSettingsView extends EventSettingsViewModel {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

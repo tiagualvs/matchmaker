@@ -71,9 +71,9 @@ class EventView extends EventViewModel {
             icon: const Icon(Symbols.settings_rounded),
             label: const Text('Configurações'),
             onPressed: () async {
-              await EventSettings.push(context, event.id);
+              await EventSettings.push(context, event);
 
-              return await reloadDependencies(
+              return await reloadEvent(
                 onError: SnackBars.error,
                 onMaxWinsInARow: onMaxWinsInARow,
                 onNeedJokers: onNeedJokers,
@@ -84,9 +84,9 @@ class EventView extends EventViewModel {
             icon: const Icon(Symbols.list_rounded),
             label: const Text('Histórico de partidas'),
             onPressed: () async {
-              await MatchHistory.push(context, event.id);
+              await MatchHistory.push(context, event);
 
-              return await reloadDependencies(
+              return await reloadEvent(
                 onError: SnackBars.error,
                 onMaxWinsInARow: onMaxWinsInARow,
                 onNeedJokers: onNeedJokers,
@@ -104,7 +104,7 @@ class EventView extends EventViewModel {
                 },
               );
 
-              return await reloadDependencies(
+              return await reloadEvent(
                 onError: SnackBars.error,
                 onMaxWinsInARow: onMaxWinsInARow,
                 onNeedJokers: onNeedJokers,
@@ -219,9 +219,9 @@ class EventView extends EventViewModel {
                         CurrentMatchWidget(
                           match: currentMatch!,
                           onTap: () async {
-                            await Match.push(context, currentMatch?.id ?? -99);
+                            await Match.push(context, currentMatch);
 
-                            return await reloadDependencies(
+                            return await reloadEvent(
                               onError: SnackBars.error,
                               onMaxWinsInARow: onMaxWinsInARow,
                               onNeedJokers: onNeedJokers,

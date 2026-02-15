@@ -2,8 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:matchmaker/main.dart';
-import 'package:matchmaker/src/common/others/snack_bars.dart';
+import 'package:get_it/get_it.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -13,34 +12,38 @@ import 'package:matchmaker/src/presentation/match/match.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 abstract class MatchViewModel extends State<Match> {
-  MatchViewModel() {
-    _matchesRepository = Injector.instance.get();
-    _scoresRepository = Injector.instance.get();
+  final MatchesRepository _matchesRepository = GetIt.instance.get();
+  final ScoresRepository _scoresRepository = GetIt.instance.get();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    scheduleMicrotask(() async {
+      await WakelockPlus.enable();
+
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+      ]);
+    });
   }
 
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    scheduleMicrotask(() async {
+      await WakelockPlus.disable();
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) async {
-        await WakelockPlus.enable();
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    });
 
-        await SystemChrome.setPreferredOrientations([
-          DeviceOrientation.landscapeRight,
-          DeviceOrientation.landscapeLeft,
-        ]);
-
-        return loadDependencies(widget.matchId, onError: SnackBars.error);
-      },
-    );
+    super.dispose();
   }
 
-  late final MatchesRepository _matchesRepository;
-
-  late final ScoresRepository _scoresRepository;
-
-  bool _loading = true;
+  bool _loading = false;
 
   bool get loading => _loading;
 
@@ -52,7 +55,7 @@ abstract class MatchViewModel extends State<Match> {
 
   void toggleSwap() => setState(() => _swapped = !_swapped);
 
-  MatchEntity _match = MatchEntity.empty();
+  late MatchEntity _match = widget.match ?? MatchEntity.detached();
 
   MatchEntity get match => _match;
 

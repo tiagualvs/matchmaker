@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:matchmaker/main.dart';
-import 'package:matchmaker/src/common/others/snack_bars.dart';
+import 'package:get_it/get_it.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -11,24 +10,9 @@ import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
 import 'add_player.dart';
 
 abstract class AddPlayerViewModel extends State<AddPlayer> {
-  late final EventsRepository _eventsRepository;
-
-  late final TeamsRepository _teamsRepository;
-
-  late final PlayersRepository _playersRepository;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _eventsRepository = Injector.instance.get<EventsRepository>();
-    _teamsRepository = Injector.instance.get<TeamsRepository>();
-    _playersRepository = Injector.instance.get<PlayersRepository>();
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => loadDependencies(widget.eventId, onError: SnackBars.error),
-    );
-  }
+  final EventsRepository _eventsRepository = GetIt.instance.get();
+  final TeamsRepository _teamsRepository = GetIt.instance.get();
+  final PlayersRepository _playersRepository = GetIt.instance.get();
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
@@ -52,12 +36,11 @@ abstract class AddPlayerViewModel extends State<AddPlayer> {
 
   List<PlayerEntity> get players => _team.players;
 
-  Future<void> loadDependencies(
-    int eventId, {
+  Future<void> loadDependencies({
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
-    final result = await _eventsRepository.findOne(eventId);
+    final result = await _eventsRepository.findOne(event.id);
 
     return result.fold(
       (event) {

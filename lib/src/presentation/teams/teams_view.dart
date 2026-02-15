@@ -76,12 +76,9 @@ class TeamsView extends TeamsViewModel {
             onPressed: () async {
               if (loading) return;
 
-              await AddPlayer.push(context, event.id);
+              await AddPlayer.push(context, event);
 
-              await loadDependencies(
-                event.id,
-                onError: SnackBars.error,
-              );
+              await loadDependencies(onError: SnackBars.error);
             },
             icon: const Icon(Symbols.group_add_rounded),
           ),

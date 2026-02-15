@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:matchmaker/main.dart';
+import 'package:get_it/get_it.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 
 import 'events.dart';
 
 abstract class EventsViewModel extends State<Events> {
-  EventsViewModel() {
-    _eventsRepository = Injector.instance.get<EventsRepository>();
-  }
-
   late final EventsRepository _eventsRepository;
 
   bool _loading = true;
@@ -23,6 +19,8 @@ abstract class EventsViewModel extends State<Events> {
   @override
   void initState() {
     super.initState();
+
+    _eventsRepository = GetIt.instance.get();
 
     WidgetsBinding.instance.addPostFrameCallback((_) => getEventsList());
   }
