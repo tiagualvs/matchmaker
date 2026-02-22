@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/others/dialogs.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
@@ -35,14 +34,14 @@ class MatchView extends MatchViewModel {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => context.pop(false),
+                  onPressed: () => Navigator.of(context).pop(false),
                   style: TextButton.styleFrom(
                     foregroundColor: context.colorScheme.error,
                   ),
                   child: const Text('Não, reverter!'),
                 ),
                 TextButton(
-                  onPressed: () => context.pop(true),
+                  onPressed: () => Navigator.of(context).pop(true),
                   child: const Text('Sim, confirmar!'),
                 ),
               ],
@@ -147,14 +146,14 @@ class MatchView extends MatchViewModel {
           content: 'Deseja iniciar uma nova partida?',
           actions: [
             TextButton(
-              onPressed: () => context.pop(false),
+              onPressed: () => Navigator.of(context).pop(false),
               style: TextButton.styleFrom(
                 foregroundColor: context.colorScheme.error,
               ),
               child: const Text('Não'),
             ),
             TextButton(
-              onPressed: () => context.pop(true),
+              onPressed: () => Navigator.of(context).pop(true),
               child: const Text('Sim'),
             ),
           ],
@@ -164,10 +163,10 @@ class MatchView extends MatchViewModel {
 
         if (confirm ?? false) return restartDetachedMatch();
 
-        return context.pop();
+        return Navigator.of(context).pop();
       }
 
-      if (match.ended) return context.pop();
+      if (match.ended) return Navigator.of(context).pop();
     });
 
     return SafeArea(
@@ -243,7 +242,7 @@ class MatchView extends MatchViewModel {
                             ),
                             actions: [
                               TextButton(
-                                onPressed: () => context.pop(),
+                                onPressed: Navigator.of(context).pop,
                                 child: const Text('Ok'),
                               ),
                             ],

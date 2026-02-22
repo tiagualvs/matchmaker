@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:matchmaker/src/common/shared/injector.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
@@ -7,8 +7,8 @@ import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart
 import 'event_settings.dart';
 
 abstract class EventSettingsViewModel extends State<EventSettings> {
-  final EventsRepository _eventsRepository = GetIt.instance.get();
-  final MatchesRepository _matchesRepository = GetIt.instance.get();
+  final EventsRepository _eventsRepository = Injector.instance.get();
+  final MatchesRepository _matchesRepository = Injector.instance.get();
 
   bool _loading = false;
 

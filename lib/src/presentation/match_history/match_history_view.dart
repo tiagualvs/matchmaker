@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 
@@ -12,7 +11,7 @@ class MatchHistoryView extends MatchHistoryViewModel {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_rounded),
-          onPressed: () => context.pop(),
+          onPressed: Navigator.of(context).pop,
         ),
         title: Text('Histórico de Partidas (${matches.length})'),
       ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:matchmaker/src/common/shared/injector.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 
@@ -20,7 +20,7 @@ abstract class EventsViewModel extends State<Events> {
   void initState() {
     super.initState();
 
-    _eventsRepository = GetIt.instance.get();
+    _eventsRepository = Injector.instance.get();
 
     WidgetsBinding.instance.addPostFrameCallback((_) => getEventsList());
   }

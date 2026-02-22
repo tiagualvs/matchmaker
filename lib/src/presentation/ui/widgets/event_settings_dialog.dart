@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 
@@ -51,7 +50,7 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
         false => AppBar(
           leading: IconButton(
             icon: const Icon(Icons.close_rounded),
-            onPressed: () => context.pop(),
+            onPressed: () => Navigator.of(context).pop(),
           ),
           title: const Text('Configurações'),
         ),
@@ -137,7 +136,9 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
               contentPadding: .zero,
               materialTapTargetSize: .shrinkWrap,
               title: const Text('Eliminar na metade?'),
-              subtitle: Text('Elimina o time que estiver perdendo por ${(event.maxScore / 2).round()} x 0.'),
+              subtitle: Text(
+                'Elimina o time que estiver perdendo por ${(event.maxScore / 2).round()} x 0.',
+              ),
               onChanged: event.ended
                   ? null
                   : (value) {
@@ -151,7 +152,9 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
               contentPadding: .zero,
               materialTapTargetSize: .shrinkWrap,
               title: const Text('Balancear por gênero?'),
-              subtitle: const Text('Mesma quantidade de homens e mulheres por time.'),
+              subtitle: const Text(
+                'Mesma quantidade de homens e mulheres por time.',
+              ),
               onChanged: event.teams.isEmpty && !event.ended
                   ? (value) {
                       return handleEventChanges(
@@ -165,7 +168,9 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
               contentPadding: .zero,
               materialTapTargetSize: .shrinkWrap,
               title: const Text('Balancear por nível?'),
-              subtitle: const Text('Mesma quantidade de jogadores por nível por time.'),
+              subtitle: const Text(
+                'Mesma quantidade de jogadores por nível por time.',
+              ),
               onChanged: event.teams.isEmpty && !event.ended
                   ? (value) {
                       return handleEventChanges(
@@ -185,7 +190,7 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
                   return widget.onSave?.call(event);
                 }
 
-                return context.pop(event);
+                return Navigator.of(context).pop(event);
               },
         label: const Text('Salvar configurações'),
         icon: const Icon(Icons.save_rounded),

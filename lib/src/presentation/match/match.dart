@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 
 import 'match_view.dart';
@@ -11,10 +10,8 @@ class Match extends StatefulWidget {
 
   static const String path = '/match';
 
-  static const String name = 'match';
-
   static Future<T?> push<T>(BuildContext context, [MatchEntity? match]) {
-    return context.pushNamed(name, extra: match);
+    return Navigator.of(context).pushNamed(path, arguments: match);
   }
 
   @override

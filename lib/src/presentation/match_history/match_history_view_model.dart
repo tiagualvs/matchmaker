@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:matchmaker/src/common/shared/injector.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
@@ -7,7 +7,7 @@ import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'match_history.dart';
 
 abstract class MatchHistoryViewModel extends State<MatchHistory> {
-  final EventsRepository _eventRepository = GetIt.instance.get();
+  final EventsRepository _eventRepository = Injector.instance.get();
 
   bool _loading = false;
 

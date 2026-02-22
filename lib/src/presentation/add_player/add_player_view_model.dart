@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:matchmaker/src/common/shared/injector.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -10,15 +10,15 @@ import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
 import 'add_player.dart';
 
 abstract class AddPlayerViewModel extends State<AddPlayer> {
-  final EventsRepository _eventsRepository = GetIt.instance.get();
-  final TeamsRepository _teamsRepository = GetIt.instance.get();
-  final PlayersRepository _playersRepository = GetIt.instance.get();
+  final EventsRepository _eventsRepository = Injector.instance.get();
+  final TeamsRepository _teamsRepository = Injector.instance.get();
+  final PlayersRepository _playersRepository = Injector.instance.get();
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   bool loading = false;
 
-  EventEntity _event = EventEntity.empty();
+  late EventEntity _event = widget.event;
 
   EventEntity get event => _event;
 

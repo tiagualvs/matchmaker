@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:matchmaker/src/common/shared/injector.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
@@ -10,8 +10,8 @@ import 'package:widgets_to_image/widgets_to_image.dart';
 import 'event.dart';
 
 abstract class EventViewModel extends State<Event> {
-  final EventsRepository _eventsRepository = GetIt.instance.get();
-  final MatchesRepository _matchesRepository = GetIt.instance.get();
+  final EventsRepository _eventsRepository = Injector.instance.get();
+  final MatchesRepository _matchesRepository = Injector.instance.get();
 
   final WidgetsToImageController widgetsToImageController =
       WidgetsToImageController();

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 
 import 'add_player_view.dart';
@@ -11,13 +10,8 @@ class AddPlayer extends StatefulWidget {
 
   static const String path = '/teams/add-player';
 
-  static const String name = 'add-player';
-
-  static Future<T?> push<T>(
-    BuildContext context,
-    EventEntity event,
-  ) async {
-    return context.pushNamed(name, extra: event);
+  static Future<T?> push<T>(BuildContext context, EventEntity event) async {
+    return Navigator.of(context).pushNamed<T>(path, arguments: event);
   }
 
   @override

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
+import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/presentation/add_player/add_player.dart';
 import 'package:matchmaker/src/presentation/teams/teams.dart';
 
@@ -16,105 +16,54 @@ abstract class AppRouter {
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
 
-  static final GoRouter router = GoRouter(
-    navigatorKey: navigatorKey,
-    initialLocation: Events.path,
-    routes: [
-      GoRoute(
-        path: Events.path,
-        name: Events.name,
-        pageBuilder: (context, state) {
-          return defaultTransition(
-            key: state.pageKey,
-            page: const Events(),
-          );
-        },
+  static Route onGenerateRoute(RouteSettings settings) {
+    return switch (settings.name) {
+      Events.path => pageBuilder(
+        settings,
+        const Events(),
       ),
-      GoRoute(
-        path: Event.path,
-        name: Event.name,
-        pageBuilder: (context, state) {
-          return defaultTransition(
-            key: state.pageKey,
-            page: Event(event: state.extra as EventEntity),
-          );
-        },
+      Event.path => pageBuilder(
+        settings,
+        Event(event: settings.arguments as EventEntity),
       ),
-      GoRoute(
-        path: EventSettings.path,
-        name: EventSettings.name,
-        pageBuilder: (context, state) {
-          return defaultTransition(
-            key: state.pageKey,
-            page: EventSettings(event: state.extra as EventEntity),
-          );
-        },
+      EventSettings.path => pageBuilder(
+        settings,
+        EventSettings(event: settings.arguments as EventEntity),
       ),
-      GoRoute(
-        path: Teams.path,
-        name: Teams.name,
-        pageBuilder: (context, state) {
-          return defaultTransition(
-            key: state.pageKey,
-            page: Teams(event: state.extra as EventEntity),
-          );
-        },
+      Teams.path => pageBuilder(
+        settings,
+        Teams(event: settings.arguments as EventEntity),
       ),
-      GoRoute(
-        path: AddPlayer.path,
-        name: AddPlayer.name,
-        pageBuilder: (context, state) {
-          return defaultTransition(
-            key: state.pageKey,
-            page: AddPlayer(event: state.extra as EventEntity),
-          );
-        },
+      AddPlayer.path => pageBuilder<TeamEntity>(
+        settings,
+        AddPlayer(event: settings.arguments as EventEntity),
       ),
-      GoRoute(
-        path: CreateEvent.path,
-        name: CreateEvent.name,
-        pageBuilder: (context, state) {
-          return defaultTransition(
-            key: state.pageKey,
-            page: const CreateEvent(),
-          );
-        },
+      CreateEvent.path => pageBuilder(
+        settings,
+        const CreateEvent(),
       ),
-      GoRoute(
-        path: Match.path,
-        name: Match.name,
-        pageBuilder: (context, state) {
-          return defaultTransition(
-            key: state.pageKey,
-            page: Match(match: state.extra as MatchEntity?),
-          );
-        },
+      Match.path => pageBuilder(
+        settings,
+        Match(match: settings.arguments as MatchEntity?),
       ),
-      GoRoute(
-        path: MatchHistory.path,
-        name: MatchHistory.name,
-        pageBuilder: (context, state) {
-          return defaultTransition(
-            key: state.pageKey,
-            page: MatchHistory(event: state.extra as EventEntity),
-          );
-        },
+      MatchHistory.path => pageBuilder(
+        settings,
+        MatchHistory(event: settings.arguments as EventEntity),
       ),
-    ],
-  );
+      _ => pageBuilder(settings, const Scaffold()),
+    };
+  }
 
-  static Page defaultTransition({
-    required LocalKey key,
-    required Widget page,
-  }) {
-    return CustomTransitionPage(
-      key: key,
-      child: page,
+  static PageRoute pageBuilder<T>(RouteSettings settings, Widget page) {
+    return PageRouteBuilder<T>(
+      settings: settings,
+      transitionDuration: const Duration(milliseconds: 250),
+      reverseTransitionDuration: const Duration(milliseconds: 250),
       transitionsBuilder: (context, animation, _, child) {
-        return FadeTransition(
-          opacity: animation,
-          child: child,
-        );
+        return FadeTransition(opacity: animation, child: child);
+      },
+      pageBuilder: (context, _, _) {
+        return page;
       },
     );
   }

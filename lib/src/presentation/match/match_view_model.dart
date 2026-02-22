@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get_it/get_it.dart';
+import 'package:matchmaker/src/common/shared/injector.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -12,8 +12,8 @@ import 'package:matchmaker/src/presentation/match/match.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 abstract class MatchViewModel extends State<Match> {
-  final MatchesRepository _matchesRepository = GetIt.instance.get();
-  final ScoresRepository _scoresRepository = GetIt.instance.get();
+  final MatchesRepository _matchesRepository = Injector.instance.get();
+  final ScoresRepository _scoresRepository = Injector.instance.get();
 
   @override
   void didChangeDependencies() {

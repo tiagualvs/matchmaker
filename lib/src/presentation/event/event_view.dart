@@ -1,7 +1,6 @@
 import 'dart:core' hide Match;
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/others/dialogs.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
@@ -10,6 +9,7 @@ import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
 import 'package:matchmaker/src/presentation/event_settings/event_settings.dart';
 import 'package:matchmaker/src/presentation/match/match.dart';
 import 'package:matchmaker/src/presentation/match_history/match_history.dart';
+import 'package:matchmaker/src/presentation/teams/teams.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/current_match_widget.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/team_card_widget.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -31,7 +31,7 @@ class EventView extends EventViewModel {
       ),
       actions: [
         TextButton(
-          onPressed: () => context.pop(),
+          onPressed: Navigator.of(context).pop,
           child: const Text('OK'),
         ),
       ],
@@ -54,7 +54,7 @@ class EventView extends EventViewModel {
       ),
       actions: [
         TextButton(
-          onPressed: () => context.pop(),
+          onPressed: Navigator.of(context).pop,
           child: const Text('OK'),
         ),
       ],
@@ -97,12 +97,7 @@ class EventView extends EventViewModel {
             icon: const Icon(Symbols.groups_rounded),
             label: const Text('Ajustar times'),
             onPressed: () async {
-              await context.pushNamed(
-                'teams',
-                pathParameters: {
-                  'eventId': event.id.toString(),
-                },
-              );
+              await Teams.push(context, event);
 
               return await reloadEvent(
                 onError: SnackBars.error,
@@ -126,11 +121,11 @@ class EventView extends EventViewModel {
                   ),
                   actions: [
                     TextButton(
-                      onPressed: () => context.pop(false),
+                      onPressed: () => Navigator.of(context).pop(false),
                       child: const Text('Não'),
                     ),
                     TextButton(
-                      onPressed: () => context.pop(true),
+                      onPressed: () => Navigator.of(context).pop(true),
                       child: const Text('Sim'),
                     ),
                   ],
@@ -147,7 +142,7 @@ class EventView extends EventViewModel {
                         ),
                         actions: [
                           TextButton(
-                            onPressed: () => context.pop(),
+                            onPressed: Navigator.of(context).pop,
                             child: const Text('OK'),
                           ),
                         ],
@@ -155,7 +150,7 @@ class EventView extends EventViewModel {
 
                       if (!context.mounted) return;
 
-                      return context.pop();
+                      return Navigator.of(context).pop();
                     },
                     onError: (error) {
                       return SnackBars.error(error);
@@ -173,7 +168,7 @@ class EventView extends EventViewModel {
           false => AppBar(
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_rounded),
-              onPressed: () => context.pop(),
+              onPressed: Navigator.of(context).pop,
             ),
             title: Text(event.name),
             actions: switch (event.ended) {

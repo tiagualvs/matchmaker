@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/string_ext.dart';
+import 'package:matchmaker/src/common/shared/injector.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -20,8 +20,8 @@ abstract class CreateEventViewModel extends State<CreateEvent> {
   void initState() {
     super.initState();
 
-    _eventsRepository = GetIt.instance.get();
-    _playersRepository = GetIt.instance.get();
+    _eventsRepository = Injector.instance.get();
+    _playersRepository = Injector.instance.get();
   }
 
   bool _loading = false;

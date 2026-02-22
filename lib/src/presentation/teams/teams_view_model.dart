@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:matchmaker/src/common/shared/injector.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -10,9 +10,16 @@ import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
 import 'teams.dart';
 
 abstract class TeamsViewModel extends State<Teams> {
-  final EventsRepository _eventsRepository = GetIt.instance.get();
-  final PlayersRepository _playersRepository = GetIt.instance.get();
-  final TeamsRepository _teamsRepository = GetIt.instance.get();
+  final EventsRepository _eventsRepository = Injector.instance.get();
+  final PlayersRepository _playersRepository = Injector.instance.get();
+  final TeamsRepository _teamsRepository = Injector.instance.get();
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => teamsNormalizer());
+  }
 
   bool loading = false;
 
@@ -24,25 +31,13 @@ abstract class TeamsViewModel extends State<Teams> {
 
   List<TeamEntity> get teams => _teams;
 
-  Future<void> loadDependencies({
-    void Function(String error)? onError,
-  }) async {
-    final result = await _eventsRepository.findOne(widget.event.id);
-
-    if (result.hasError) {
-      return setState(() {
-        loading = false;
-
-        return onError?.call(result.error.toString());
-      });
-    }
-
-    return setState(() {
-      _event = result.value;
+  void teamsNormalizer([TeamEntity? team]) {
+    setState(() {
+      if (team != null) {
+        _event = _event.copyWith(teams: [..._event.teams, team]);
+      }
 
       _teams = [];
-
-      loading = false;
 
       if (_event.hasIncompleteTeams) {
         for (final team in _event.teams) {

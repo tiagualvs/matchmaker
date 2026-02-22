@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 
@@ -64,7 +63,7 @@ class _PlayersDialogState extends State<PlayersDialog> {
       return SnackBars.error('Todos os jogadores devem ter um gênero definido');
     }
 
-    return context.pop<List<PlayerEntity>>(players);
+    return Navigator.of(context).pop<List<PlayerEntity>>(players);
   }
 
   @override

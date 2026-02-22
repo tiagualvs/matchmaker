@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
@@ -56,7 +55,7 @@ class CreateEventView extends CreateEventViewModel {
             label: const Text('Salvar evento'),
             onPressed: () => handleSaveEvent(
               onSuccess: () {
-                context.pop(true);
+                Navigator.of(context).pop(true);
 
                 return SnackBars.success('Evento salvo com sucesso!');
               },
@@ -110,7 +109,8 @@ class CreateEventView extends CreateEventViewModel {
                               ),
                               onPressed: initialValue == null
                                   ? null
-                                  : () => context.pop(initialValue),
+                                  : () =>
+                                        Navigator.of(context).pop(initialValue),
                               icon: const Icon(Symbols.upload_file_rounded),
                               label: const Text('Importar'),
                             ),
@@ -138,7 +138,7 @@ class CreateEventView extends CreateEventViewModel {
                 context: context,
                 builder: (context) {
                   return PlayerInputWidget(
-                    onSave: context.pop,
+                    onSave: Navigator.of(context).pop,
                     withLevelSelect: false,
                   );
                 },
@@ -165,7 +165,7 @@ class CreateEventView extends CreateEventViewModel {
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Symbols.arrow_back_ios_rounded),
-            onPressed: () => context.pop(),
+            onPressed: () => Navigator.of(context).pop(),
           ),
           title: Text(event.name),
         ),
@@ -227,7 +227,7 @@ class CreateEventView extends CreateEventViewModel {
                                 isScrollControlled: true,
                                 builder: (context) => PlayerInputWidget(
                                   player: player,
-                                  onSave: context.pop,
+                                  onSave: Navigator.of(context).pop,
                                 ),
                               );
 

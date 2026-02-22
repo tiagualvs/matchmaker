@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/others/dialogs.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
@@ -25,14 +24,14 @@ class TeamsView extends TeamsViewModel {
       ),
       actions: [
         TextButton(
-          onPressed: () => context.pop(false),
+          onPressed: () => Navigator.of(context).pop(false),
           style: TextButton.styleFrom(
             foregroundColor: context.colorScheme.error,
           ),
           child: const Text('Cancelar'),
         ),
         TextButton(
-          onPressed: () => context.pop(true),
+          onPressed: () => Navigator.of(context).pop(true),
           child: const Text('Remover'),
         ),
       ],
@@ -51,7 +50,7 @@ class TeamsView extends TeamsViewModel {
       context: context,
       isScrollControlled: true,
       builder: (context) => PlayerInputWidget(
-        onSave: (value) => context.pop(value),
+        onSave: (value) => Navigator.of(context).pop(value),
         withLevelSelect: false,
       ),
     );
@@ -76,9 +75,9 @@ class TeamsView extends TeamsViewModel {
             onPressed: () async {
               if (loading) return;
 
-              await AddPlayer.push(context, event);
+              final team = await AddPlayer.push<TeamEntity>(context, event);
 
-              await loadDependencies(onError: SnackBars.error);
+              return teamsNormalizer(team);
             },
             icon: const Icon(Symbols.group_add_rounded),
           ),

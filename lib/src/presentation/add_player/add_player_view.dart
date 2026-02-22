@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -24,7 +23,7 @@ class AddPlayerView extends AddPlayerViewModel {
                   return PlayerInputWidget(
                     withLevelSelect: false,
                     onSave: (player) async {
-                      context.pop();
+                      Navigator.of(context).pop();
 
                       return await handleInsertPlayer(
                         player,
@@ -112,7 +111,7 @@ class AddPlayerView extends AddPlayerViewModel {
             false => () => save(
               onSuccess: () {
                 SnackBars.success('Time cadastrado com sucesso!');
-                return context.pop();
+                return Navigator.of(context).pop(team);
               },
               onError: (err) {
                 return SnackBars.error(err);

@@ -1,66 +1,37 @@
-import 'package:get_it/get_it.dart';
-import 'package:matchmaker/src/data/repositories/events/events_local_repository.dart';
-import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
-import 'package:matchmaker/src/data/repositories/matches/matches_local_repository.dart';
-import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
-import 'package:matchmaker/src/data/repositories/players/players_local_repository.dart';
-import 'package:matchmaker/src/data/repositories/players/players_repository.dart';
-import 'package:matchmaker/src/data/repositories/scores/scores_local_repository.dart';
-import 'package:matchmaker/src/data/repositories/scores/scores_repository.dart';
-import 'package:matchmaker/src/data/repositories/teams/teams_local_repository.dart';
-import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
-import 'package:matchmaker/src/data/services/database/app_database.dart';
+typedef Injectable<T> = (Type type, T value);
 
-abstract class Injector {
-  static void init() {
-    final getIt = GetIt.instance;
+class Injector {
+  final Set<Injectable> _instances = {};
+  final Map<Type, Function> _builders = {};
+  static final _isntance = Injector._();
 
-    getIt.registerSingleton<AppDatabase>(AppDatabase());
+  Injector._();
 
-    getIt.registerFactory<EventsRepository>(
-      () => EventsLocalRepository(getIt()),
-    );
+  static Injector get instance => _isntance;
 
-    getIt.registerFactory<PlayersRepository>(
-      () => PlayersLocalRepository(getIt()),
-    );
-
-    getIt.registerFactory<MatchesRepository>(
-      () => MatchesLocalRepository(getIt()),
-    );
-
-    getIt.registerFactory<ScoresRepository>(
-      () => ScoresLocalRepository(getIt()),
-    );
-
-    getIt.registerFactory<TeamsRepository>(
-      () => TeamsLocalRepository(getIt()),
-    );
+  T get<T>() {
+    if (!_contains<T>()) throw Exception('Instance $T not found!');
+    if (_builders.containsKey(T)) {
+      final instance = _builders[T]?.call();
+      _instances.add((T, instance));
+      _builders.remove(T);
+      return instance as T;
+    }
+    return _instances.where((e) => e.$1 == T).first.$2 as T;
   }
 
-  static void test() {
-    final getIt = GetIt.instance;
-
-    getIt.registerSingleton<AppDatabase>(AppDatabase.testing());
-
-    getIt.registerFactory<EventsRepository>(
-      () => EventsLocalRepository(getIt()),
-    );
-
-    getIt.registerFactory<PlayersRepository>(
-      () => PlayersLocalRepository(getIt()),
-    );
-
-    getIt.registerFactory<MatchesRepository>(
-      () => MatchesLocalRepository(getIt()),
-    );
-
-    getIt.registerFactory<ScoresRepository>(
-      () => ScoresLocalRepository(getIt()),
-    );
-
-    getIt.registerFactory<TeamsRepository>(
-      () => TeamsLocalRepository(getIt()),
-    );
+  void set<T>(T value) {
+    if (_contains<T>()) throw Exception('Instance $T already exists!');
+    _instances.add((T, value));
   }
+
+  void lazySet<T>(T Function() builder) {
+    if (_contains<T>()) throw Exception('Instance $T already exists!');
+    _builders[T] = builder;
+  }
+
+  void batch(void Function(Injector injector) builder) => builder(this);
+
+  bool _contains<T>() =>
+      _instances.where((e) => e.$1 == T).isNotEmpty || _builders.containsKey(T);
 }
