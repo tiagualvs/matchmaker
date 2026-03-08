@@ -16,15 +16,15 @@ import 'package:matchmaker/src/data/services/database/app_database.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  Injector.instance.batch(
-    (i) => i
-      ..set<AppDatabase>(AppDatabase())
-      ..set<EventsRepository>(EventsLocalRepository(i.get()))
-      ..set<MatchesRepository>(MatchesLocalRepository(i.get()))
-      ..set<PlayersRepository>(PlayersLocalRepository(i.get()))
-      ..set<ScoresRepository>(ScoresLocalRepository(i.get()))
-      ..set<TeamsRepository>(TeamsLocalRepository(i.get())),
-  );
+  Injector.instance.batch(injectorInit);
 
   runApp(const AppWidget());
 }
+
+void injectorInit(Injector i) => i
+  ..set<AppDatabase>(AppDatabase())
+  ..set<EventsRepository>(EventsLocalRepository(i.get()))
+  ..set<MatchesRepository>(MatchesLocalRepository(i.get()))
+  ..set<PlayersRepository>(PlayersLocalRepository(i.get()))
+  ..set<ScoresRepository>(ScoresLocalRepository(i.get()))
+  ..set<TeamsRepository>(TeamsLocalRepository(i.get()));

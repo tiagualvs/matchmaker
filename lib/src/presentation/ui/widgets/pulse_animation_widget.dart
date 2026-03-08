@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
-const testing = bool.fromEnvironment('TESTING');
+final testing =
+    const bool.fromEnvironment('dart.vm.product') == false &&
+    Platform.environment['FLUTTER_TEST'] == 'true';
 
 class PulseAnimationWidget extends StatefulWidget {
   const PulseAnimationWidget({
@@ -20,7 +24,8 @@ class PulseAnimationWidget extends StatefulWidget {
   State<PulseAnimationWidget> createState() => _PulseAnimationWidgetState();
 }
 
-class _PulseAnimationWidgetState extends State<PulseAnimationWidget> with SingleTickerProviderStateMixin {
+class _PulseAnimationWidgetState extends State<PulseAnimationWidget>
+    with SingleTickerProviderStateMixin {
   late final controller = AnimationController(
     vsync: this,
     duration: widget.duration,
