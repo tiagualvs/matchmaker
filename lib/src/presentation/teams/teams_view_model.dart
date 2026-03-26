@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/shared/injector.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
@@ -10,6 +11,8 @@ import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
 import 'teams.dart';
 
 abstract class TeamsViewModel extends State<Teams> {
+  late final L10n l10n = L10n.of(context);
+
   final EventsRepository _eventsRepository = Injector.instance.get();
   final PlayersRepository _playersRepository = Injector.instance.get();
   final TeamsRepository _teamsRepository = Injector.instance.get();
@@ -135,7 +138,7 @@ abstract class TeamsViewModel extends State<Teams> {
 
     if (event.teams.length == 3) {
       setState(() => loading = false);
-      return onError?.call('O evento chegou a quantidade mínima de times!');
+      return onError?.call(l10n.minTeamsWarning);
     }
 
     final result0 = await _teamsRepository.deleteOne(teamId);
@@ -192,7 +195,7 @@ abstract class TeamsViewModel extends State<Teams> {
 
     if (event.hasPlayer(insertedPlayer.id)) {
       setState(() => loading = false);
-      return onError?.call('Jogador já cadastrado em outro time!');
+      return onError?.call(l10n.playerAlreadyInTeamError);
     }
 
     final result1 = await _teamsRepository.insertPlayer(

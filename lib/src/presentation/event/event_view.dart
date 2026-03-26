@@ -2,6 +2,7 @@ import 'dart:core' hide Match;
 
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/others/dialogs.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/others/text_span_builder.dart';
@@ -21,7 +22,7 @@ class EventView extends EventViewModel {
   Future<void> onNeedJokers(String message) async {
     return await Dialogs.display(
       context,
-      title: const Text('Jogador ausente!'),
+      title: Text(L10n.of(context).playerMissing),
       content: Text.rich(
         TextSpanBuilder.build(
           message,
@@ -32,7 +33,7 @@ class EventView extends EventViewModel {
       actions: [
         TextButton(
           onPressed: Navigator.of(context).pop,
-          child: const Text('OK'),
+            child: Text(L10n.of(context).ok),
         ),
       ],
     );
@@ -42,7 +43,7 @@ class EventView extends EventViewModel {
     return await Dialogs.display(
       context,
       title: Text(
-        'Máximo de vitórias atingida!',
+        L10n.of(context).maxWinsReached,
         style: context.textTheme.headlineMedium?.copyWith(fontWeight: .bold),
       ),
       content: Text.rich(
@@ -55,7 +56,7 @@ class EventView extends EventViewModel {
       actions: [
         TextButton(
           onPressed: Navigator.of(context).pop,
-          child: const Text('OK'),
+            child: Text(L10n.of(context).ok),
         ),
       ],
     );
@@ -69,7 +70,7 @@ class EventView extends EventViewModel {
         false => [
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.settings_rounded),
-            label: const Text('Configurações'),
+            label: Text(L10n.of(context).settings),
             onPressed: () async {
               await EventSettings.push(context, event);
 
@@ -82,7 +83,7 @@ class EventView extends EventViewModel {
           ),
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.list_rounded),
-            label: const Text('Histórico de partidas'),
+            label: Text(L10n.of(context).matchHistory),
             onPressed: () async {
               await MatchHistory.push(context, event);
 
@@ -95,7 +96,7 @@ class EventView extends EventViewModel {
           ),
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.groups_rounded),
-            label: const Text('Ajustar times'),
+            label: Text(L10n.of(context).adjustTeams),
             onPressed: () async {
               await Teams.push(context, event);
 
@@ -109,41 +110,43 @@ class EventView extends EventViewModel {
           if (!event.ended) ...[
             FloatingActionButtonMenuItem(
               icon: const Icon(Icons.flag_rounded),
-              label: const Text('Finalizar evento'),
+              label: Text(L10n.of(context).endEvent),
               onPressed: () async {
                 final hasEndedMatches = event.endedMatches.isNotEmpty;
 
-                final confirm = await Dialogs.display(
-                  context,
-                  title: const Text('Finalizar evento?'),
-                  content: Text(
-                    'Tem certeza que deseja finalizar este evento?\n\nTodas as partidas em andamento serão canceladas.${!hasEndedMatches ? '\n\nEsse evento não possui partidas finalizadas, então ele será excluído por completo!' : ''}\n\nEssa ação não poderá ser desfeita!\n\nDeseja prosseguir?',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text('Não'),
+                  final confirm = await Dialogs.display(
+                    context,
+                    title: Text(L10n.of(context).endEventQuestion),
+                    content: Text(
+                      L10n.of(context).endEventConfirmation(
+                        hasEndedMatches.toString(),
+                      ),
                     ),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(true),
-                      child: const Text('Sim'),
-                    ),
-                  ],
-                );
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: Text(L10n.of(context).no),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: Text(L10n.of(context).yes),
+                      ),
+                    ],
+                  );
 
                 if (confirm ?? false) {
                   return await endEvent(
                     onSuccess: () async {
                       await Dialogs.display(
                         context,
-                        title: const Text('Evento encerrado'),
-                        content: const Text(
-                          'O evento foi encerrado com sucesso!',
+                        title: Text(L10n.of(context).eventClosed),
+                        content: Text(
+                          L10n.of(context).eventClosedSuccess,
                         ),
                         actions: [
                           TextButton(
                             onPressed: Navigator.of(context).pop,
-                            child: const Text('OK'),
+                            child: Text(L10n.of(context).ok),
                           ),
                         ],
                       );
@@ -207,7 +210,7 @@ class EventView extends EventViewModel {
                       if (currentMatch != null &&
                           currentMatch?.ended == false) ...[
                         Text(
-                          'Partida Atual',
+                          L10n.of(context).currentMatch,
                           textAlign: .start,
                           style: context.textTheme.titleMedium,
                         ),
@@ -226,7 +229,7 @@ class EventView extends EventViewModel {
                       ],
                       if (event.ended) ...[
                         Text(
-                          'Placar final',
+                          L10n.of(context).finalScore,
                           textAlign: .start,
                           style: context.textTheme.titleMedium,
                         ),
@@ -248,7 +251,12 @@ class EventView extends EventViewModel {
                                 color: context.colorScheme.onPrimary,
                               ),
                               children: List.from(
-                                <String>['', 'Time', 'V', 'D'].indexed.map(
+                                <String>[
+                                  '',
+                                  L10n.of(context).team,
+                                  L10n.of(context).winsAbbreviation,
+                                  L10n.of(context).lossesAbbreviation,
+                                ].indexed.map(
                                   (item) => TableCell(
                                     child: Padding(
                                       padding: const .all(8.0),
@@ -300,16 +308,23 @@ class EventView extends EventViewModel {
                       ],
                       if (!event.ended) ...[
                         Text(
-                          'Próximo Jogo',
+                          L10n.of(context).nextGame,
                           textAlign: .start,
                           style: context.textTheme.titleMedium,
                         ),
                         Text(
-                          'Vencedor da ${currentMatch?.name} vs. ${event.teams.firstWhere((team) => team.id == event.queue.first).name}',
+                          L10n.of(context).nextGameDescription(
+                            currentMatch?.name ?? '',
+                            event.teams
+                                .firstWhere(
+                                  (team) => team.id == event.queue.first,
+                                )
+                                .name,
+                          ),
                           style: context.textTheme.bodyMedium,
                         ),
                         Text(
-                          'Próximos Times (${event.queue.length})',
+                          L10n.of(context).nextTeamsCount(event.queue.length),
                           textAlign: .start,
                           style: context.textTheme.titleMedium,
                         ),
@@ -321,7 +336,7 @@ class EventView extends EventViewModel {
                         ],
                       ],
                       Text(
-                        'Times (${event.teams.length})',
+                        L10n.of(context).teamsCount(event.teams.length),
                         textAlign: .start,
                         style: context.textTheme.titleMedium,
                       ),

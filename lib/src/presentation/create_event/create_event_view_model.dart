@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/string_ext.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/shared/injector.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
@@ -13,23 +14,19 @@ import 'package:matchmaker/src/data/repositories/players/players_repository.dart
 import 'create_event.dart';
 
 abstract class CreateEventViewModel extends State<CreateEvent> {
-  late final EventsRepository _eventsRepository;
-  late final PlayersRepository _playersRepository;
+  late final L10n l10n = L10n.of(context);
 
-  @override
-  void initState() {
-    super.initState();
-
-    _eventsRepository = Injector.instance.get();
-    _playersRepository = Injector.instance.get();
-  }
+  final EventsRepository _eventsRepository = Injector.instance.get();
+  final PlayersRepository _playersRepository = Injector.instance.get();
 
   bool _loading = false;
 
   bool get loading => _loading;
 
-  EventEntity _event = EventEntity.empty().copyWith(
-    name: 'Evento do dia ${DateFormat('dd/MM/yyyy').format(DateTime.now())}',
+  late EventEntity _event = EventEntity.empty().copyWith(
+    name: l10n.defaultEventName(
+      DateFormat('dd/MM/yyyy').format(DateTime.now()),
+    ),
   );
 
   EventEntity get event => _event;
@@ -56,15 +53,11 @@ abstract class CreateEventViewModel extends State<CreateEvent> {
     void Function(String error)? onError,
   }) {
     if (_event.balancedByGender && _players.any((player) => player.isUnknown)) {
-      return onError?.call(
-        'Para gerar o evento balanceado por gênero, todos os jogadores devem ter um gênero definido!',
-      );
+      return onError?.call(l10n.balanceByGenderError);
     }
 
     if (numTeams < 2) {
-      return onError?.call(
-        'Não é possível gerar eventos com menos de 2 times!',
-      );
+      return onError?.call(l10n.minTeamsError);
     }
 
     final randomTeamNames = List<String>.from(TeamEntity.names)..shuffle();
@@ -246,9 +239,7 @@ abstract class CreateEventViewModel extends State<CreateEvent> {
     void Function(String error)? onError,
   }) async {
     if (_event.teams.length <= 2) {
-      return onError?.call(
-        'O evento precisa de pelo menos 3 times para ser gerado!',
-      );
+      return onError?.call(l10n.minTeamsSaveError);
     }
 
     setState(() => _loading = true);
@@ -310,7 +301,7 @@ abstract class CreateEventViewModel extends State<CreateEvent> {
     void Function(String error)? onError,
   }) async {
     if (player.id.isNegative) {
-      return onError?.call('Jogador inválido!');
+      return onError?.call(l10n.invalidPlayerError);
     }
 
     final result = await _playersRepository.updateOne(
@@ -359,7 +350,7 @@ abstract class CreateEventViewModel extends State<CreateEvent> {
 
     if (names.isEmpty) {
       setState(() {
-        return onError?.call('Nenhum jogador encontrado na lista colada!');
+        return onError?.call(l10n.noPlayersInListError);
       });
     }
 

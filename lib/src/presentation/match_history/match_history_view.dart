@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 
 import 'match_history_view_model.dart';
 
@@ -13,7 +14,7 @@ class MatchHistoryView extends MatchHistoryViewModel {
           icon: const Icon(Icons.arrow_back_ios_rounded),
           onPressed: Navigator.of(context).pop,
         ),
-        title: Text('Histórico de Partidas (${matches.length})'),
+        title: Text(L10n.of(context).matchHistoryCount(matches.length)),
       ),
       body: switch (loading) {
         true => const Center(child: CircularProgressIndicator()),
@@ -26,7 +27,7 @@ class MatchHistoryView extends MatchHistoryViewModel {
               size: 92.0,
             ),
             Text(
-              'Nenhuma partida encontrada',
+              L10n.of(context).noMatchesFound,
               textAlign: .center,
               style: context.textTheme.titleMedium,
             ),
@@ -119,7 +120,7 @@ class MatchHistoryView extends MatchHistoryViewModel {
                           ),
                           Text(
                             switch (score.reversed) {
-                              true => 'Ponto revertido',
+                              true => L10n.of(context).pointReversed,
                               false => currentScore(),
                             },
                             style: context.textTheme.bodyMedium?.copyWith(

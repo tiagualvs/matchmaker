@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/shared/injector.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
@@ -10,6 +11,8 @@ import 'package:widgets_to_image/widgets_to_image.dart';
 import 'event.dart';
 
 abstract class EventViewModel extends State<Event> {
+  late final L10n l10n = L10n.of(context);
+
   final EventsRepository _eventsRepository = Injector.instance.get();
   final MatchesRepository _matchesRepository = Injector.instance.get();
 
@@ -57,19 +60,30 @@ abstract class EventViewModel extends State<Event> {
 
           if (teamWithMaxWinsInARow != null) {
             await onMaxWinsInARow?.call(
-              'O time [b]${teamWithMaxWinsInARow.name}[/b] alcançou o número máximo de vitórias em sequência [b](${event.maxWinsInARow})[/b].\n\nAgora dará lugar ao próximo time e voltará para a fila com prioridade para jogar a próxima partida!\n\nPróximo jogo:\n[b]${first.name}[/b] vs. [b]${second.name}[/b]!',
+              l10n.maxWinsInARowMessage(
+                teamWithMaxWinsInARow.name,
+                event.maxWinsInARow,
+                first.name,
+                second.name,
+              ),
             );
           }
 
           if (first.players.length < event.maxPlayerPerTeam) {
             await onNeedJokers?.call(
-              'O time [b]${first.name}[/b] está incompleto e precisa de [b]${event.maxPlayerPerTeam - first.players.length}[/b] jogadores para jogar a próxima partida!',
+              l10n.teamIncompleteError(
+                first.name,
+                event.maxPlayerPerTeam - first.players.length,
+              ),
             );
           }
 
           if (second.players.length < event.maxPlayerPerTeam) {
             await onNeedJokers?.call(
-              'O time [b]${second.name}[/b] está incompleto e precisa de [b]${event.maxPlayerPerTeam - second.players.length}[/b] jogadores para jogar a próxima partida!',
+              l10n.teamIncompleteError(
+                second.name,
+                event.maxPlayerPerTeam - second.players.length,
+              ),
             );
           }
 
@@ -187,7 +201,7 @@ abstract class EventViewModel extends State<Event> {
     );
 
     if (bytes == null) {
-      return onError?.call('Erro ao compartilhar evento!');
+      return onError?.call(l10n.shareEventError);
     }
 
     await SharePlus.instance.share(

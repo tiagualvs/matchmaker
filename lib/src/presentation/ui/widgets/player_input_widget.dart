@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -60,21 +61,23 @@ class _PlayerInputWidgetState extends State<PlayerInputWidget> {
           mainAxisSize: .min,
           children: [
             Text(
-              player == null ? 'Cadastrar Jogador' : 'Editar Jogador',
+              player == null
+                  ? L10n.of(context).registerPlayer
+                  : L10n.of(context).editPlayer,
               style: context.textTheme.titleMedium,
             ),
             TextFormField(
               controller: controller,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'O nome do jogaror é obrigatório!';
+                  return L10n.of(context).playerNameRequired;
                 }
 
                 return null;
               },
-              decoration: const InputDecoration(
-                labelText: 'Nome do jogador',
-                hintText: 'Digite o nome do jogador',
+              decoration: InputDecoration(
+                labelText: L10n.of(context).playerNameLabel,
+                hintText: L10n.of(context).playerNameHint,
                 floatingLabelBehavior: .always,
               ),
             ),
@@ -84,7 +87,7 @@ class _PlayerInputWidgetState extends State<PlayerInputWidget> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
                   if (value == null) {
-                    return 'O gênero do jogador é obrigatório!';
+                    return L10n.of(context).playerGenderRequired;
                   }
 
                   return null;
@@ -106,13 +109,13 @@ class _PlayerInputWidgetState extends State<PlayerInputWidget> {
                       SegmentedButton<PlayerGender>(
                         emptySelectionAllowed: true,
                         segments: [
-                          const ButtonSegment(
+                          ButtonSegment(
                             value: PlayerGender.male,
-                            label: Text('Masculino'),
+                            label: Text(L10n.of(context).male),
                           ),
-                          const ButtonSegment(
+                          ButtonSegment(
                             value: PlayerGender.female,
-                            label: Text('Feminino'),
+                            label: Text(L10n.of(context).female),
                           ),
                         ],
                         multiSelectionEnabled: false,
@@ -139,7 +142,7 @@ class _PlayerInputWidgetState extends State<PlayerInputWidget> {
                       if (field.hasError) ...[
                         field.widget.errorBuilder?.call(
                               context,
-                              field.errorText ?? 'Falha ao validar gênero do jogador!',
+                              field.errorText ?? L10n.of(context).validateGenderError,
                             ) ??
                             const SizedBox(),
                       ],
@@ -154,7 +157,7 @@ class _PlayerInputWidgetState extends State<PlayerInputWidget> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
                   if (value == null) {
-                    return 'O nível do jogador é obrigatório!';
+                    return L10n.of(context).playerLevelRequired;
                   }
 
                   return null;
@@ -207,7 +210,7 @@ class _PlayerInputWidgetState extends State<PlayerInputWidget> {
                       if (field.hasError) ...[
                         field.widget.errorBuilder?.call(
                               context,
-                              field.errorText ?? 'Falha ao validar nível do jogador!',
+                              field.errorText ?? L10n.of(context).validateLevelError,
                             ) ??
                             const SizedBox(),
                       ],
@@ -238,7 +241,7 @@ class _PlayerInputWidgetState extends State<PlayerInputWidget> {
                 }
               },
               icon: const Icon(Symbols.save_rounded),
-              label: const Text('Salvar'),
+              label: Text(L10n.of(context).saveLabel),
             ),
           ],
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/pulse_animation_widget.dart';
 
@@ -52,7 +53,7 @@ class CurrentMatchWidget extends StatelessWidget {
                       spacing: 4.0,
                       children: [
                         Text(
-                          'Partida ${match.name}',
+                          L10n.of(context).matchNameTitle(match.name),
                           style: context.textTheme.titleMedium?.copyWith(fontWeight: .bold),
                         ),
                         const PulseAnimationWidget(runningColor: Colors.green),

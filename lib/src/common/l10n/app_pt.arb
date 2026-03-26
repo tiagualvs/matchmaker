@@ -1,0 +1,544 @@
+{
+  "@@locale": "pt",
+  "appTitle": "Matchmaker",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "singleMatch": "Partida avulsa",
+  "@singleMatch": {
+    "description": "Label for the single match mode"
+  },
+  "createNewEvent": "Criar novo evento",
+  "@createNewEvent": {
+    "description": "Button label to create a new event"
+  },
+  "noEventsFound": "Nenhum evento encontrado",
+  "@noEventsFound": {
+    "description": "Message displayed when no events are found in the list"
+  },
+  "eventFinishedOn": "Evento finalizado em {date}",
+  "@eventFinishedOn": {
+    "description": "Summary of an event's completion date",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "2024-03-25"
+      }
+    }
+  },
+  "noGameInProgress": "Nenhum jogo em andamento",
+  "@noGameInProgress": {
+    "description": "Information message when no game is active"
+  },
+  "eventSettings": "Configurações do evento",
+  "@eventSettings": {
+    "description": "Label for event settings menu or screen"
+  },
+  "undoTeams": "Desfazer times",
+  "@undoTeams": {
+    "description": "Action to revert the team generation"
+  },
+  "regenerateTeams": "Regerar times",
+  "@regenerateTeams": {
+    "description": "Action to regenerate teams for the event"
+  },
+  "saveEvent": "Salvar evento",
+  "@saveEvent": {
+    "description": "Action to save the event details"
+  },
+  "eventSavedSuccess": "Evento salvo com sucesso!",
+  "@eventSavedSuccess": {
+    "description": "Success message when an event is saved"
+  },
+  "importPlayersFromList": "Importar jogadores de lista",
+  "@importPlayersFromList": {
+    "description": "Action to import players from a raw text list"
+  },
+  "importPlayers": "Importar Jogadores",
+  "@importPlayers": {
+    "description": "Title for the import players dialog"
+  },
+  "playerList": "Lista de Jogadores",
+  "@playerList": {
+    "description": "Label for the text area where player names are pasted"
+  },
+  "importLabel": "Importar",
+  "@importLabel": {
+    "description": "Button label to confirm import"
+  },
+  "addPlayer": "Adicionar jogador",
+  "@addPlayer": {
+    "description": "Action to add a single player manually"
+  },
+  "generateTeams": "Gerar times",
+  "@generateTeams": {
+    "description": "Action to start the team distribution process"
+  },
+  "noTeamsRegistered": "Nenhum time cadastrado no evento",
+  "@noTeamsRegistered": {
+    "description": "Message shown when an event has no teams yet"
+  },
+  "addPlayersToCreateTeams": "Adicione jogadores para criar times",
+  "@addPlayersToCreateTeams": {
+    "description": "Instructional message for the user to add players"
+  },
+  "playersCount": "Jogadores ({count})",
+  "@playersCount": {
+    "description": "Label showing the number of players",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "teamsCount": "Times ({count})",
+  "@teamsCount": {
+    "description": "Label showing the number of teams",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "playerMissing": "Jogador ausente!",
+  "@playerMissing": {
+    "description": "Title for a dialog when there are not enough players"
+  },
+  "maxWinsReached": "Máximo de vitórias atingida!",
+  "@maxWinsReached": {
+    "description": "Title for a dialog when a team reaches the win limit"
+  },
+  "settings": "Configurações",
+  "@settings": {
+    "description": "General settings label"
+  },
+  "matchHistory": "Histórico de partidas",
+  "@matchHistory": {
+    "description": "Label for exploring past matches"
+  },
+  "adjustTeams": "Ajustar times",
+  "@adjustTeams": {
+    "description": "Label for the screen to manually adjust team members"
+  },
+  "endEvent": "Finalizar evento",
+  "@endEvent": {
+    "description": "Action to finalize and close the current event"
+  },
+  "endEventQuestion": "Finalizar evento?",
+  "@endEventQuestion": {
+    "description": "Confirmation question title for ending an event"
+  },
+  "endEventConfirmation": "Tem certeza que deseja finalizar este evento?\n\nTodas as partidas em andamento serão canceladas.{hasNoEndedMatches, select, true{\n\nEsse evento não possui partidas finalizadas, então ele será excluído por completo!} other{}}\n\nEssa ação não poderá ser desfeita!\n\nDeseja prosseguir?",
+  "@endEventConfirmation": {
+    "description": "Warning message before ending an event",
+    "placeholders": {
+      "hasNoEndedMatches": {
+        "type": "String",
+        "example": "true"
+      }
+    }
+  },
+  "no": "Não",
+  "@no": {
+    "description": "Generic negative response label"
+  },
+  "yes": "Sim",
+  "@yes": {
+    "description": "Generic positive response label"
+  },
+  "eventClosed": "Evento encerrado",
+  "@eventClosed": {
+    "description": "Status or title indicating the event has ended"
+  },
+  "eventClosedSuccess": "O evento foi encerrado com sucesso!",
+  "@eventClosedSuccess": {
+    "description": "Success message after closing an event"
+  },
+  "currentMatch": "Partida Atual",
+  "@currentMatch": {
+    "description": "Section header for the active game"
+  },
+  "finalScore": "Placar final",
+  "@finalScore": {
+    "description": "Header for the end-of-event leaderboard"
+  },
+  "team": "Time",
+  "@team": {
+    "description": "Label for a team"
+  },
+  "winsAbbreviation": "V",
+  "@winsAbbreviation": {
+    "description": "Abbreviation for Wins in a score table"
+  },
+  "lossesAbbreviation": "D",
+  "@lossesAbbreviation": {
+    "description": "Abbreviation for Defeats/Losses in a score table"
+  },
+  "nextGame": "Próximo Jogo",
+  "@nextGame": {
+    "description": "Label for the upcoming match"
+  },
+  "nextGameDescription": "Vencedor da {matchName} vs. {teamName}",
+  "@nextGameDescription": {
+    "description": "Description of the next match prerequisites",
+    "placeholders": {
+      "matchName": {
+        "type": "String",
+        "example": "Match 1"
+      },
+      "teamName": {
+        "type": "String",
+        "example": "Team Alpha"
+      }
+    }
+  },
+  "nextTeamsCount": "Próximos Times ({count})",
+  "@nextTeamsCount": {
+    "description": "Label showing the size of the waitlist queue",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "addTeam": "Adicionar time",
+  "@addTeam": {
+    "description": "Action to manually register a new team"
+  },
+  "registerTeam": "Cadastrar Time",
+  "@registerTeam": {
+    "description": "Title for the team registration screen"
+  },
+  "selectTeamNameError": "Selecione um nome para o time!",
+  "@selectTeamNameError": {
+    "description": "Validation error when no team name is chosen"
+  },
+  "selectPlaceholder": "Selecione",
+  "@selectPlaceholder": {
+    "description": "Placeholder for dropdown menus"
+  },
+  "teamNameLabel": "Nome do Time",
+  "@teamNameLabel": {
+    "description": "Label for team name input field"
+  },
+  "playersLabel": "Jogadores",
+  "@playersLabel": {
+    "description": "General label for a list of players"
+  },
+  "teamRegisteredSuccess": "Time cadastrado com sucesso!",
+  "@teamRegisteredSuccess": {
+    "description": "Success message after creating a team"
+  },
+  "saveTeam": "Salvar Time",
+  "@saveTeam": {
+    "description": "Button label to save the team"
+  },
+  "endOfMatch": "Fim de partida",
+  "@endOfMatch": {
+    "description": "Title for the match completion screen or dialog"
+  },
+  "matchWonMessage": "O time [b]{teamName}[/b] venceu a partida por [b]{score}[/b]!\n\nConfirmar e ir para próxima partida?",
+  "@matchWonMessage": {
+    "description": "Congratulatory message after a match",
+    "placeholders": {
+      "teamName": {
+        "type": "String",
+        "example": "Team A"
+      },
+      "score": {
+        "type": "String",
+        "example": "15 - 10"
+      }
+    }
+  },
+  "noRevert": "Não, reverter!",
+  "@noRevert": {
+    "description": "Button to cancel match completion and revert score"
+  },
+  "yesConfirm": "Sim, confirmar!",
+  "@yesConfirm": {
+    "description": "Button to confirm match outcome"
+  },
+  "startNewMatchQuestion": "Deseja iniciar uma nova partida?",
+  "@startNewMatchQuestion": {
+    "description": "Interrogative message after a match ends"
+  },
+  "pointsToWinLabel": "Quantidade de pontos para vencer",
+  "@pointsToWinLabel": {
+    "description": "Label for the score limit setting"
+  },
+  "eliminateAtHalf": "Eliminar na metade?",
+  "@eliminateAtHalf": {
+    "description": "Label for the mercy rule setting"
+  },
+  "eliminateAtHalfDescription": "Elimina no {score} x 0.",
+  "@eliminateAtHalfDescription": {
+    "description": "Summary of the mercy rule score",
+    "placeholders": {
+      "score": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+  "ok": "Ok",
+  "@ok": {
+    "description": "Generic confirmation button label"
+  },
+  "eventSettingsTitle": "Configurações do Evento{status, select, finished{ (Finalizado)} other{}}",
+  "@eventSettingsTitle": {
+    "description": "Dynamic title for host event settings",
+    "placeholders": {
+      "status": {
+        "type": "String",
+        "example": "finished"
+      }
+    }
+  },
+  "nameLabel": "Nome",
+  "@nameLabel": {
+    "description": "General label for name input"
+  },
+  "eventNameLabel": "Nome do Evento",
+  "@eventNameLabel": {
+    "description": "Label for event name input"
+  },
+  "quantityLabel": "Quantidade",
+  "@quantityLabel": {
+    "description": "Generic label for numeric input hint"
+  },
+  "playersPerTeamLabel": "Quantidade de jogadores por time",
+  "@playersPerTeamLabel": {
+    "description": "Label for team size configuration"
+  },
+  "maxWinsInARowLabel": "Máximo de vitórias em sequência",
+  "@maxWinsInARowLabel": {
+    "description": "Label for win streak limit configuration"
+  },
+  "eliminateAtHalfSubtitle": "Elimina o time que estiver perdendo por {score} x 0.",
+  "@eliminateAtHalfSubtitle": {
+    "description": "Mercy rule description with dynamic score",
+    "placeholders": {
+      "score": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+  "balanceByGender": "Balancear por gênero?",
+  "@balanceByGender": {
+    "description": "Label for gender balance toggle"
+  },
+  "balanceByGenderSubtitle": "Mesma quantidade de homens e mulheres por time.",
+  "@balanceByGenderSubtitle": {
+    "description": "Explanatory text for gender balancing"
+  },
+  "balanceByLevel": "Balancear por nível?",
+  "@balanceByLevel": {
+    "description": "Label for skill level balance toggle"
+  },
+  "balanceByLevelSubtitle": "Mesma quantidade de jogadores por nível por time.",
+  "@balanceByLevelSubtitle": {
+    "description": "Explanatory text for level balancing"
+  },
+  "saveSettings": "Salvar configurações",
+  "@saveSettings": {
+    "description": "Button to persist configuration changes"
+  },
+  "registerPlayer": "Cadastrar Jogador",
+  "@registerPlayer": {
+    "description": "Title for the player creation view"
+  },
+  "editPlayer": "Editar Jogador",
+  "@editPlayer": {
+    "description": "Title for the player update view"
+  },
+  "playerNameRequired": "O nome do jogador é obrigatório!",
+  "@playerNameRequired": {
+    "description": "Validation error for missing player name"
+  },
+  "playerNameLabel": "Nome do jogador",
+  "@playerNameLabel": {
+    "description": "Input label for player name"
+  },
+  "playerNameHint": "Digite o nome do jogador",
+  "@playerNameHint": {
+    "description": "Input hint for player name"
+  },
+  "playerGenderRequired": "O gênero do jogador é obrigatório!",
+  "@playerGenderRequired": {
+    "description": "Validation error for missing gender"
+  },
+  "male": "Masculino",
+  "@male": {
+    "description": "Selection label for male gender"
+  },
+  "female": "Feminino",
+  "@female": {
+    "description": "Selection label for female gender"
+  },
+  "validateGenderError": "Falha ao validar gênero do jogador!",
+  "@validateGenderError": {
+    "description": "Error message when gender validation fails"
+  },
+  "playerLevelRequired": "O nível do jogador é obrigatório!",
+  "@playerLevelRequired": {
+    "description": "Validation error for missing skill level"
+  },
+  "validateLevelError": "Falha ao validar nível do jogador!",
+  "@validateLevelError": {
+    "description": "Error message when skill level validation fails"
+  },
+  "saveLabel": "Salvar",
+  "@saveLabel": {
+    "description": "Generic save button label"
+  },
+  "removeTeamQuestion": "Remover Time?",
+  "@removeTeamQuestion": {
+    "description": "Confirmation title for team deletion"
+  },
+  "cancel": "Cancelar",
+  "@cancel": {
+    "description": "Generic cancel button label"
+  },
+  "remove": "Remover",
+  "@remove": {
+    "description": "Generic remove button label"
+  },
+  "teamsLabel": "Times",
+  "@teamsLabel": {
+    "description": "General label for a list of teams"
+  },
+  "matchHistoryCount": "Histórico de Partidas ({count})",
+  "@matchHistoryCount": {
+    "description": "Title for the match history screen with count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "25"
+      }
+    }
+  },
+  "noMatchesFound": "Nenhuma partida encontrada",
+  "@noMatchesFound": {
+    "description": "Information message when the history is empty"
+  },
+  "pointReversed": "Ponto revertido",
+  "@pointReversed": {
+    "description": "Indication in a log that a point was undone"
+  },
+  "defaultEventName": "Evento do dia {date}",
+  "@defaultEventName": {
+    "description": "Default name generated for a new event",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "25/03/2026"
+      }
+    }
+  },
+  "balanceByGenderError": "Para gerar o evento balanceado por gênero, todos os jogadores devem ter um gênero definido!",
+  "@balanceByGenderError": {
+    "description": "Error message when trying to balance by gender without enough data"
+  },
+  "minTeamsError": "Não é possível gerar eventos com menos de 2 times!",
+  "@minTeamsError": {
+    "description": "Error message when there are too few players for even 2 teams"
+  },
+  "minTeamsSaveError": "O evento precisa de pelo menos 3 times para ser gerado!",
+  "@minTeamsSaveError": {
+    "description": "Restriction for saving an event with very few teams"
+  },
+  "invalidPlayerError": "Jogador inválido!",
+  "@invalidPlayerError": {
+    "description": "Error message for invalid player operations"
+  },
+  "noPlayersInListError": "Nenhum jogador encontrado na lista colada!",
+  "@noPlayersInListError": {
+    "description": "Error message for empty or malformed player import lists"
+  },
+  "minTeamsWarning": "O evento chegou a quantidade mínima de times!",
+  "@minTeamsWarning": {
+    "description": "Warning when trying to delete more teams than allowed"
+  },
+  "playerAlreadyInTeamError": "Jogador já cadastrado em outro time!",
+  "@playerAlreadyInTeamError": {
+    "description": "Error when adding a player who is already on a team"
+  },
+  "maxWinsInARowMessage": "O time [b]{teamName}[/b] alcançou o número máximo de vitórias em sequência [b]({maxWins})[/b].\n\nAgora dará lugar ao próximo time e voltará para a fila com prioridade para jogar a próxima partida!\n\nPróximo jogo:\n[b]{nextTeam1}[/b] vs. [b]{nextTeam2}[/b]!",
+  "@maxWinsInARowMessage": {
+    "description": "Message explaining the win streak rotation rule",
+    "placeholders": {
+      "teamName": {
+        "type": "String"
+      },
+      "maxWins": {
+        "type": "int"
+      },
+      "nextTeam1": {
+        "type": "String"
+      },
+      "nextTeam2": {
+        "type": "String"
+      }
+    }
+  },
+  "teamIncompleteError": "O time [b]{teamName}[/b] está incompleto e precisa de [b]{count}[/b] jogadores para jogar a próxima partida!",
+  "@teamIncompleteError": {
+    "description": "Error when a match cannot start due to missing players",
+    "placeholders": {
+      "teamName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shareEventError": "Erro ao compartilhar evento!",
+  "@shareEventError": {
+    "description": "Error message for failed share operations"
+  },
+  "teamNameTitle": "Time {name}",
+  "@teamNameTitle": {
+    "description": "Title displaying the team name",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "allPlayersMustHaveName": "Todos os jogadores devem ter um nome",
+  "@allPlayersMustHaveName": {
+    "description": "Validation error for player list names"
+  },
+  "allPlayersMustHaveGender": "Todos os jogadores devem ter um gênero definido",
+  "@allPlayersMustHaveGender": {
+    "description": "Validation error for player list genders"
+  },
+  "matchNameTitle": "Partida {name}",
+  "@matchNameTitle": {
+    "description": "Title displaying the match identifier",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeTeamConfirmation": "Tem certeza que deseja remover o time [b]{teamName}[/b] deste evento?\n\nEssa ação não poderá ser desfeita!",
+  "@removeTeamConfirmation": {
+    "description": "Warning message before removing a team",
+    "placeholders": {
+      "teamName": {
+        "type": "String"
+      }
+    }
+  },
+  "playersSwappedSuccess": "Jogadores trocados com sucesso!",
+  "@playersSwappedSuccess": {
+    "description": "Success notification after adjusting teams"
+  }
+}

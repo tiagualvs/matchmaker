@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/player_input_widget.dart';
@@ -13,7 +14,7 @@ class AddPlayerView extends AddPlayerViewModel {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Adicionar time'),
+        title: Text(L10n.of(context).addTeam),
         actions: switch (players.length != event.maxPlayerPerTeam) {
           true => [
             IconButton(
@@ -51,13 +52,13 @@ class AddPlayerView extends AddPlayerViewModel {
               crossAxisAlignment: .stretch,
               children: [
                 Text(
-                  'Cadastrar Time',
+                  L10n.of(context).registerTeam,
                   style: context.textTheme.titleMedium,
                 ),
                 DropdownMenuFormField<String>(
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Selecione um nome para o time!';
+                      return L10n.of(context).selectTeamNameError;
                     }
 
                     return null;
@@ -81,8 +82,8 @@ class AddPlayerView extends AddPlayerViewModel {
 
                     team = team.copyWith(name: value);
                   },
-                  hintText: 'Selecione',
-                  label: const Text('Nome do Time'),
+                  hintText: L10n.of(context).selectPlaceholder,
+                  label: Text(L10n.of(context).teamNameLabel),
                   inputDecorationTheme: context.theme.inputDecorationTheme
                       .copyWith(
                         floatingLabelBehavior: .always,
@@ -90,7 +91,7 @@ class AddPlayerView extends AddPlayerViewModel {
                 ),
                 if (players.isNotEmpty) ...[
                   Text(
-                    'Jogadores',
+                    L10n.of(context).playersLabel,
                     style: context.textTheme.titleMedium,
                   ),
                   for (final player in players) ...[
@@ -110,7 +111,7 @@ class AddPlayerView extends AddPlayerViewModel {
             true => null,
             false => () => save(
               onSuccess: () {
-                SnackBars.success('Time cadastrado com sucesso!');
+                SnackBars.success(L10n.of(context).teamRegisteredSuccess);
                 return Navigator.of(context).pop(team);
               },
               onError: (err) {
@@ -119,7 +120,7 @@ class AddPlayerView extends AddPlayerViewModel {
             ),
           },
           icon: const Icon(Symbols.save_rounded),
-          label: const Text('Salvar Time'),
+          label: Text(L10n.of(context).saveTeam),
         ),
       ),
     );
