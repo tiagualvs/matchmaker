@@ -20,7 +20,8 @@ abstract class TeamEntity with _$TeamEntity {
     required DateTime updatedAt,
   }) = _TeamEntity;
 
-  factory TeamEntity.fromJson(Map<String, dynamic> json) => _$TeamEntityFromJson(json);
+  factory TeamEntity.fromJson(Map<String, dynamic> json) =>
+      _$TeamEntityFromJson(json);
 
   static const List<String> names = <String>[
     'Aperreados',
@@ -80,5 +81,9 @@ abstract class TeamEntity with _$TeamEntity {
       createdAt: DateTime(0),
       updatedAt: DateTime(0),
     );
+  }
+
+  String get playersNames {
+    return players.map((player) => player.name).join(', ');
   }
 }
