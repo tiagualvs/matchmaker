@@ -80,18 +80,47 @@ class MatchView extends MatchViewModel {
         child: Material(
           color: Colors.blue,
           elevation: 0.0,
-          child: FittedBox(
-            child: Text(
-              firstTeamScore.toString(),
-              style: context.textTheme.displayLarge?.copyWith(
-                fontWeight: .bold,
-                color: switch (firstTeamByOneOrWon) {
-                  true => Colors.yellow,
-                  false => Colors.white,
-                },
-                // fontSize: 256.0,
+          child: Column(
+            children: [
+              Expanded(
+                child: FittedBox(
+                  child: Text(
+                    firstTeamScore.toString(),
+                    style: context.textTheme.displayLarge?.copyWith(
+                      fontWeight: .bold,
+                      shadows: [
+                        const Shadow(
+                          color: Colors.black26,
+                          offset: Offset(2, 2),
+                          blurRadius: 2,
+                        ),
+                      ],
+                      color: switch (firstTeamByOneOrWon) {
+                        true => Colors.yellow,
+                        false => Colors.white,
+                      },
+                      // fontSize: 256.0,
+                    ),
+                  ),
+                ),
               ),
-            ),
+              Text(
+                firstTeam.name,
+                textAlign: .center,
+                style: context.textTheme.titleLarge?.copyWith(
+                  fontWeight: .bold,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                firstTeam.playersNames,
+                textAlign: .center,
+                style: context.textTheme.bodyMedium?.copyWith(
+                  fontWeight: .normal,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -123,17 +152,46 @@ class MatchView extends MatchViewModel {
         child: Material(
           color: Colors.red,
           elevation: 0.0,
-          child: FittedBox(
-            child: Text(
-              secondTeamScore.toString(),
-              style: context.textTheme.displayLarge?.copyWith(
-                fontWeight: .bold,
-                color: switch (secondTeamByOneOrWon) {
-                  true => Colors.yellow,
-                  false => Colors.white,
-                },
+          child: Column(
+            children: [
+              Expanded(
+                child: FittedBox(
+                  child: Text(
+                    secondTeamScore.toString(),
+                    style: context.textTheme.displayLarge?.copyWith(
+                      fontWeight: .bold,
+                      shadows: [
+                        const Shadow(
+                          color: Colors.black26,
+                          offset: Offset(2, 2),
+                          blurRadius: 2,
+                        ),
+                      ],
+                      color: switch (secondTeamByOneOrWon) {
+                        true => Colors.yellow,
+                        false => Colors.white,
+                      },
+                    ),
+                  ),
+                ),
               ),
-            ),
+              Text(
+                secondTeam.name,
+                textAlign: .center,
+                style: context.textTheme.titleLarge?.copyWith(
+                  fontWeight: .bold,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                secondTeam.playersNames,
+                textAlign: .center,
+                style: context.textTheme.bodyMedium?.copyWith(
+                  fontWeight: .normal,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -184,21 +242,13 @@ class MatchView extends MatchViewModel {
                 },
               ),
               Positioned(
+                top: 16.0,
                 bottom: 16.0,
                 left: 16.0,
                 right: 16.0,
                 child: Row(
+                  mainAxisAlignment: .center,
                   children: [
-                    Expanded(
-                      child: Text(
-                        swapped ? secondTeam.name : firstTeam.name,
-                        textAlign: .center,
-                        style: context.textTheme.titleLarge?.copyWith(
-                          fontWeight: .bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
                     if (match.isDetached) ...[
                       FloatingActionButton(
                         heroTag: 'settings',
@@ -220,7 +270,9 @@ class MatchView extends MatchViewModel {
                                     );
                                   },
                                   decoration: InputDecoration(
-                                    labelText: L10n.of(context).pointsToWinLabel,
+                                    labelText: L10n.of(
+                                      context,
+                                    ).pointsToWinLabel,
                                     floatingLabelBehavior: .always,
                                   ),
                                 ),
@@ -260,16 +312,6 @@ class MatchView extends MatchViewModel {
                         child: const Icon(Icons.swap_horiz_rounded),
                       ),
                     ],
-                    Expanded(
-                      child: Text(
-                        swapped ? firstTeam.name : secondTeam.name,
-                        textAlign: .center,
-                        style: context.textTheme.titleLarge?.copyWith(
-                          fontWeight: .bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
