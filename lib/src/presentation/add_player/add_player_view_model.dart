@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/shared/injector.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
@@ -10,6 +11,8 @@ import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
 import 'add_player.dart';
 
 abstract class AddPlayerViewModel extends State<AddPlayer> {
+  late final L10n l10n = L10n.of(context);
+
   final EventsRepository _eventsRepository = Injector.instance.get();
   final TeamsRepository _teamsRepository = Injector.instance.get();
   final PlayersRepository _playersRepository = Injector.instance.get();
@@ -93,7 +96,7 @@ abstract class AddPlayerViewModel extends State<AddPlayer> {
       return setState(() {
         loading = false;
 
-        return onError?.call('Jogador já cadastrado em outro time!');
+        return onError?.call(l10n.playerAlreadyInTeamError);
       });
     }
 

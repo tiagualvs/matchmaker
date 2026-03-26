@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
@@ -18,7 +19,7 @@ class CreateEventView extends CreateEventViewModel {
       menus: [
         FloatingActionButtonMenuItem(
           icon: const Icon(Symbols.settings_rounded),
-          label: const Text('Configurações do evento'),
+          label: Text(L10n.of(context).eventSettings),
           onPressed: () async {
             final changedEvent = await showGeneralDialog<EventEntity>(
               context: context,
@@ -38,26 +39,26 @@ class CreateEventView extends CreateEventViewModel {
         if (event.teams.isNotEmpty) ...[
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.refresh_rounded),
-            label: const Text('Desfazer times'),
+            label: Text(L10n.of(context).undoTeams),
             onPressed: () => handleEventChanges(
               event.copyWith(teams: []),
             ),
           ),
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.shuffle_rounded),
-            label: const Text('Regerar times'),
+            label: Text(L10n.of(context).regenerateTeams),
             onPressed: () => handleGenerateTeams(
               onError: SnackBars.error,
             ),
           ),
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.save_rounded),
-            label: const Text('Salvar evento'),
+            label: Text(L10n.of(context).saveEvent),
             onPressed: () => handleSaveEvent(
               onSuccess: () {
                 Navigator.of(context).pop(true);
 
-                return SnackBars.success('Evento salvo com sucesso!');
+                return SnackBars.success(L10n.of(context).eventSavedSuccess);
               },
               onError: (error) {
                 return SnackBars.error(error);
@@ -68,7 +69,7 @@ class CreateEventView extends CreateEventViewModel {
         if (event.teams.isEmpty) ...[
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.groups_rounded),
-            label: const Text('Importar jogadores de lista'),
+            label: Text(L10n.of(context).importPlayersFromList),
             onPressed: () async {
               String? initialValue;
 
@@ -86,7 +87,7 @@ class CreateEventView extends CreateEventViewModel {
                           mainAxisSize: .min,
                           children: [
                             Text(
-                              'Importar Jogadores',
+                              L10n.of(context).importPlayers,
                               style: context.textTheme.titleMedium,
                             ),
                             TextFormField(
@@ -95,11 +96,11 @@ class CreateEventView extends CreateEventViewModel {
                               initialValue: initialValue,
                               onChanged: (value) =>
                                   setState(() => initialValue = value),
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 alignLabelWithHint: true,
                                 hintText:
                                     '1 - Fulano de Tal - H\n2 - Sicrano de Tal\n3 - Elma Maria - M',
-                                labelText: 'Lista de Jogadores',
+                                labelText: L10n.of(context).playerList,
                                 floatingLabelBehavior: .always,
                               ),
                             ),
@@ -112,7 +113,7 @@ class CreateEventView extends CreateEventViewModel {
                                   : () =>
                                         Navigator.of(context).pop(initialValue),
                               icon: const Icon(Symbols.upload_file_rounded),
-                              label: const Text('Importar'),
+                              label: Text(L10n.of(context).importLabel),
                             ),
                           ],
                         ),
@@ -132,7 +133,7 @@ class CreateEventView extends CreateEventViewModel {
           ),
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.person_add_rounded),
-            label: const Text('Adicionar jogador'),
+            label: Text(L10n.of(context).addPlayer),
             onPressed: () async {
               final player = await showModalBottomSheet<PlayerEntity>(
                 context: context,
@@ -156,7 +157,7 @@ class CreateEventView extends CreateEventViewModel {
         if (teams.isEmpty && players.isNotEmpty) ...[
           FloatingActionButtonMenuItem(
             icon: const Icon(Symbols.groups_rounded),
-            label: const Text('Gerar times'),
+            label: Text(L10n.of(context).generateTeams),
             onPressed: () => handleGenerateTeams(onError: SnackBars.error),
           ),
         ],
@@ -183,12 +184,12 @@ class CreateEventView extends CreateEventViewModel {
               ),
               const SizedBox(height: 16.0),
               Text(
-                'Nenhum time cadastrado no evento',
+                L10n.of(context).noTeamsRegistered,
                 textAlign: .center,
                 style: context.textTheme.titleMedium,
               ),
               Text(
-                'Adicione jogadores para criar times',
+                L10n.of(context).addPlayersToCreateTeams,
                 textAlign: .center,
                 style: context.textTheme.bodyMedium,
               ),
@@ -203,7 +204,7 @@ class CreateEventView extends CreateEventViewModel {
                 crossAxisAlignment: .stretch,
                 children: [
                   Text(
-                    'Jogadores (${players.length})',
+                    L10n.of(context).playersCount(players.length),
                     style: context.textTheme.titleMedium,
                   ),
                   for (final (index, player) in players.indexed) ...[
@@ -311,7 +312,7 @@ class CreateEventView extends CreateEventViewModel {
               crossAxisAlignment: .stretch,
               children: [
                 Text(
-                  'Times (${teams.length})',
+                  L10n.of(context).teamsCount(teams.length),
                   style: context.textTheme.titleMedium,
                 ),
                 for (final team in teams) ...[

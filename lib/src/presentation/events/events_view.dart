@@ -3,6 +3,7 @@ import 'dart:core' hide Match;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
 import 'package:matchmaker/src/presentation/create_event/create_event.dart';
 import 'package:matchmaker/src/presentation/event/event.dart';
@@ -18,12 +19,12 @@ class EventsView extends EventsViewModel {
       menus: [
         FloatingActionButtonMenuItem(
           icon: const Icon(Symbols.add_rounded),
-          label: const Text('Partida avulsa'),
+          label: Text(L10n.of(context).singleMatch),
           onPressed: () => Match.push(context),
         ),
         FloatingActionButtonMenuItem(
           icon: const Icon(Symbols.event_rounded),
-          label: const Text('Criar novo evento'),
+          label: Text(L10n.of(context).createNewEvent),
           onPressed: () async {
             await CreateEvent.push(context);
 
@@ -33,7 +34,7 @@ class EventsView extends EventsViewModel {
       ],
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Matchmaker'),
+          title: Text(L10n.of(context).appTitle),
         ),
         body: switch (loading) {
           true => const Center(child: CircularProgressIndicator()),
@@ -48,7 +49,7 @@ class EventsView extends EventsViewModel {
                   size: 92.0,
                 ),
                 Text(
-                  'Nenhum evento encontrado',
+                  L10n.of(context).noEventsFound,
                   textAlign: .center,
                   style: context.textTheme.titleMedium,
                 ),
@@ -79,11 +80,13 @@ class EventsView extends EventsViewModel {
                 title: Text(event.name),
                 subtitle: switch (event.ended && event.endedAt != null) {
                   true => Text(
-                    'Evento finalizado em ${DateFormat("dd 'de' MMM 'de' yyyy 'às' HH:mm").format(event.endedAt!)}',
+                    L10n.of(context).eventFinishedOn(
+                      DateFormat("dd 'de' MMM 'de' yyyy 'às' HH:mm").format(event.endedAt!),
+                    ),
                   ),
                   false => switch (currentMatch != null) {
                     true => Text('${currentMatch?.details}'),
-                    false => const Text('Nenhum jogo em andamento'),
+                    false => Text(L10n.of(context).noGameInProgress),
                   },
                 },
                 trailing: event.ended

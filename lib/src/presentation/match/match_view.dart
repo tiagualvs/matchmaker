@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/others/dialogs.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/others/text_span_builder.dart';
@@ -18,14 +19,14 @@ class MatchView extends MatchViewModel {
           builder: (context) {
             return AlertDialog(
               title: Text(
-                'Fim de partida',
+                L10n.of(context).endOfMatch,
                 style: context.textTheme.headlineMedium?.copyWith(
                   fontWeight: .bold,
                 ),
               ),
               content: Text.rich(
                 TextSpanBuilder.build(
-                  'O time [b]${team.name}[/b] venceu a partia por [b]$score[/b]!\n\nConfirmar e ir para próxima partida?',
+                  L10n.of(context).matchWonMessage(team.name, score),
                   normalStyle: context.textTheme.bodyLarge,
                   boldStyle: context.textTheme.bodyLarge?.copyWith(
                     fontWeight: .bold,
@@ -38,11 +39,11 @@ class MatchView extends MatchViewModel {
                   style: TextButton.styleFrom(
                     foregroundColor: context.colorScheme.error,
                   ),
-                  child: const Text('Não, reverter!'),
+                  child: Text(L10n.of(context).noRevert),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text('Sim, confirmar!'),
+                  child: Text(L10n.of(context).yesConfirm),
                 ),
               ],
             );
@@ -142,19 +143,19 @@ class MatchView extends MatchViewModel {
       if (match.ended && match.isDetached) {
         final confirm = await Dialogs.show(
           context,
-          title: 'Fim de partida',
-          content: 'Deseja iniciar uma nova partida?',
+          title: L10n.of(context).endOfMatch,
+          content: L10n.of(context).startNewMatchQuestion,
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               style: TextButton.styleFrom(
                 foregroundColor: context.colorScheme.error,
               ),
-              child: const Text('Não'),
+              child: Text(L10n.of(context).no),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Sim'),
+              child: Text(L10n.of(context).yes),
             ),
           ],
         );
@@ -207,7 +208,7 @@ class MatchView extends MatchViewModel {
                             constraints: const BoxConstraints(
                               minWidth: 480.0,
                             ),
-                            title: const Text('Configurações'),
+                            title: Text(L10n.of(context).settings),
                             content: Column(
                               children: [
                                 TextFormField(
@@ -218,9 +219,8 @@ class MatchView extends MatchViewModel {
                                           int.tryParse(value) ?? match.maxScore,
                                     );
                                   },
-                                  decoration: const InputDecoration(
-                                    labelText:
-                                        'Quantitade de pontos para vencer',
+                                  decoration: InputDecoration(
+                                    labelText: L10n.of(context).pointsToWinLabel,
                                     floatingLabelBehavior: .always,
                                   ),
                                 ),
@@ -228,9 +228,11 @@ class MatchView extends MatchViewModel {
                                   value: match.halfScoreToEliminate,
                                   contentPadding: .zero,
                                   materialTapTargetSize: .shrinkWrap,
-                                  title: const Text('Eliminar na metade?'),
+                                  title: Text(L10n.of(context).eliminateAtHalf),
                                   subtitle: Text(
-                                    'Elimina no ${(match.maxScore / 2).round()} x 0.',
+                                    L10n.of(context).eliminateAtHalfDescription(
+                                      (match.maxScore / 2).round(),
+                                    ),
                                   ),
                                   onChanged: (value) {
                                     match = match.copyWith(
@@ -243,7 +245,7 @@ class MatchView extends MatchViewModel {
                             actions: [
                               TextButton(
                                 onPressed: Navigator.of(context).pop,
-                                child: const Text('Ok'),
+                                child: Text(L10n.of(context).ok),
                               ),
                             ],
                           );

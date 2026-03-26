@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 
 class EventSettingsDialog extends StatefulWidget {
@@ -52,7 +53,7 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
             icon: const Icon(Icons.close_rounded),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          title: const Text('Configurações'),
+          title: Text(L10n.of(context).settings),
         ),
       },
       body: SingleChildScrollView(
@@ -63,7 +64,9 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
           mainAxisSize: .min,
           children: [
             Text(
-              'Configurações do Evento${event.ended ? ' (Finalizado)' : ''}',
+              L10n.of(context).eventSettingsTitle(
+                event.ended ? 'finished' : 'other',
+              ),
               textAlign: .start,
               style: context.textTheme.titleMedium,
             ),
@@ -74,9 +77,9 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
                 event.copyWith(name: value),
               ),
               enabled: !event.ended,
-              decoration: const InputDecoration(
-                hintText: 'Nome',
-                labelText: 'Nome do Evento',
+              decoration: InputDecoration(
+                hintText: L10n.of(context).nameLabel,
+                labelText: L10n.of(context).eventNameLabel,
                 floatingLabelBehavior: .always,
               ),
             ),
@@ -91,9 +94,9 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
                 );
               },
               enabled: !event.ended,
-              decoration: const InputDecoration(
-                hintText: 'Quantidade',
-                labelText: 'Quantidade de pontos para vencer',
+              decoration: InputDecoration(
+                hintText: L10n.of(context).quantityLabel,
+                labelText: L10n.of(context).pointsToWinLabel,
                 floatingLabelBehavior: .always,
               ),
             ),
@@ -108,9 +111,9 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
                   event.copyWith(maxPlayerPerTeam: int.parse(value)),
                 );
               },
-              decoration: const InputDecoration(
-                hintText: 'Quantidade',
-                labelText: 'Quantidade de jogadores por time',
+              decoration: InputDecoration(
+                hintText: L10n.of(context).quantityLabel,
+                labelText: L10n.of(context).playersPerTeamLabel,
                 floatingLabelBehavior: .always,
               ),
             ),
@@ -125,9 +128,9 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
                 );
               },
               enabled: !event.ended,
-              decoration: const InputDecoration(
-                hintText: 'Quantidade',
-                labelText: 'Máximo de vitórias em sequência',
+              decoration: InputDecoration(
+                hintText: L10n.of(context).quantityLabel,
+                labelText: L10n.of(context).maxWinsInARowLabel,
                 floatingLabelBehavior: .always,
               ),
             ),
@@ -135,9 +138,11 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
               value: event.halfScoreToEliminate,
               contentPadding: .zero,
               materialTapTargetSize: .shrinkWrap,
-              title: const Text('Eliminar na metade?'),
+              title: Text(L10n.of(context).eliminateAtHalf),
               subtitle: Text(
-                'Elimina o time que estiver perdendo por ${(event.maxScore / 2).round()} x 0.',
+                L10n.of(context).eliminateAtHalfSubtitle(
+                  (event.maxScore / 2).round(),
+                ),
               ),
               onChanged: event.ended
                   ? null
@@ -151,9 +156,9 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
               value: event.balancedByGender,
               contentPadding: .zero,
               materialTapTargetSize: .shrinkWrap,
-              title: const Text('Balancear por gênero?'),
-              subtitle: const Text(
-                'Mesma quantidade de homens e mulheres por time.',
+              title: Text(L10n.of(context).balanceByGender),
+              subtitle: Text(
+                L10n.of(context).balanceByGenderSubtitle,
               ),
               onChanged: event.teams.isEmpty && !event.ended
                   ? (value) {
@@ -167,9 +172,9 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
               value: event.balancedByLevel,
               contentPadding: .zero,
               materialTapTargetSize: .shrinkWrap,
-              title: const Text('Balancear por nível?'),
-              subtitle: const Text(
-                'Mesma quantidade de jogadores por nível por time.',
+              title: Text(L10n.of(context).balanceByLevel),
+              subtitle: Text(
+                L10n.of(context).balanceByLevelSubtitle,
               ),
               onChanged: event.teams.isEmpty && !event.ended
                   ? (value) {
@@ -192,7 +197,7 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
 
                 return Navigator.of(context).pop(event);
               },
-        label: const Text('Salvar configurações'),
+        label: Text(L10n.of(context).saveSettings),
         icon: const Icon(Icons.save_rounded),
       ),
     );

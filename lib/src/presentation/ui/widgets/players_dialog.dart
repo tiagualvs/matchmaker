@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 
@@ -56,11 +57,11 @@ class _PlayersDialogState extends State<PlayersDialog> {
 
   void handleGenerate() {
     if (players.any((player) => player.name.isEmpty)) {
-      return SnackBars.error('Todos os jogadores devem ter um nome');
+      return SnackBars.error(L10n.of(context).allPlayersMustHaveName);
     }
 
     if (players.any((player) => player.gender == PlayerGender.unknown)) {
-      return SnackBars.error('Todos os jogadores devem ter um gênero definido');
+      return SnackBars.error(L10n.of(context).allPlayersMustHaveGender);
     }
 
     return Navigator.of(context).pop<List<PlayerEntity>>(players);
@@ -70,7 +71,7 @@ class _PlayersDialogState extends State<PlayersDialog> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Jogadores (${players.length})'),
+        title: Text(L10n.of(context).playersCount(players.length)),
         actionsPadding: const .only(right: 16.0),
         actions: [
           PopupMenuButton<int>(
@@ -84,13 +85,13 @@ class _PlayersDialogState extends State<PlayersDialog> {
             },
             itemBuilder: (context) {
               return [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 1,
-                  child: Text('Gerar times'),
+                  child: Text(L10n.of(context).generateTeams),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 2,
-                  child: Text('Adicionar jogador'),
+                  child: Text(L10n.of(context).addPlayer),
                 ),
               ];
             },
@@ -110,7 +111,7 @@ class _PlayersDialogState extends State<PlayersDialog> {
               decoration: InputDecoration(
                 border: InputBorder.none,
                 alignLabelWithHint: true,
-                hintText: 'Nome do jogador',
+                hintText: L10n.of(context).playerNameHint,
                 suffix: PopupMenuButton<PlayerGender>(
                   constraints: const BoxConstraints(minWidth: 192.0),
                   icon: switch (player.gender) {
@@ -127,13 +128,13 @@ class _PlayersDialogState extends State<PlayersDialog> {
                   onSelected: (value) => handleChangePlayerGender(index, value),
                   itemBuilder: (context) {
                     return [
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: PlayerGender.male,
-                        child: Text('Masculino'),
+                        child: Text(L10n.of(context).male),
                       ),
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: PlayerGender.female,
-                        child: Text('Feminino'),
+                        child: Text(L10n.of(context).female),
                       ),
                     ];
                   },

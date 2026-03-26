@@ -6,7 +6,7 @@ import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
 import 'events.dart';
 
 abstract class EventsViewModel extends State<Events> {
-  late final EventsRepository _eventsRepository;
+  final EventsRepository _eventsRepository = Injector.instance.get();
 
   bool _loading = true;
 
@@ -19,8 +19,6 @@ abstract class EventsViewModel extends State<Events> {
   @override
   void initState() {
     super.initState();
-
-    _eventsRepository = Injector.instance.get();
 
     WidgetsBinding.instance.addPostFrameCallback((_) => getEventsList());
   }

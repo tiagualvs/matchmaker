@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/others/dialogs.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/others/text_span_builder.dart';
@@ -16,10 +17,10 @@ class TeamsView extends TeamsViewModel {
   void handleDeleteTeam(TeamEntity team) async {
     final confirm = await Dialogs.display(
       context,
-      title: const Text('Remover Time?'),
+      title: Text(L10n.of(context).removeTeamQuestion),
       content: Text.rich(
         TextSpanBuilder.build(
-          'Tem certeza que deseja remover o time [b]${team.name}[/b] deste evento?\n\nEssa ação não poderá ser desfeita!',
+          L10n.of(context).removeTeamConfirmation(team.name),
         ),
       ),
       actions: [
@@ -28,11 +29,11 @@ class TeamsView extends TeamsViewModel {
           style: TextButton.styleFrom(
             foregroundColor: context.colorScheme.error,
           ),
-          child: const Text('Cancelar'),
+          child: Text(L10n.of(context).cancel),
         ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Remover'),
+          child: Text(L10n.of(context).remove),
         ),
       ],
     );
@@ -69,7 +70,7 @@ class TeamsView extends TeamsViewModel {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Times'),
+        title: Text(L10n.of(context).teamsLabel),
         actions: [
           IconButton(
             onPressed: () async {
@@ -112,7 +113,7 @@ class TeamsView extends TeamsViewModel {
                         children: [
                           Expanded(
                             child: Text(
-                              'Time ${team.name}',
+                              L10n.of(context).teamNameTitle(team.name),
                               style: context.textTheme.titleMedium,
                             ),
                           ),
@@ -138,7 +139,7 @@ class TeamsView extends TeamsViewModel {
                               player,
                               details.data,
                               onSuccess: () => SnackBars.success(
-                                'Jogadores trocados com sucesso!',
+                                L10n.of(context).playersSwappedSuccess,
                               ),
                               onError: (err) => SnackBars.error(err),
                             );

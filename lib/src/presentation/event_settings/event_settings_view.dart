@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/event_settings_dialog.dart';
 
@@ -13,7 +14,7 @@ class EventSettingsView extends EventSettingsViewModel {
           icon: const Icon(Icons.arrow_back_ios_rounded),
           onPressed: Navigator.of(context).pop,
         ),
-        title: const Text('Configurações'),
+        title: Text(L10n.of(context).settings),
       ),
       body: switch (loading) {
         true => const Center(child: CircularProgressIndicator()),

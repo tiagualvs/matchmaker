@@ -1,0 +1,544 @@
+{
+  "@@locale": "en",
+  "appTitle": "Matchmaker",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "singleMatch": "Single match",
+  "@singleMatch": {
+    "description": "Label for the single match mode"
+  },
+  "createNewEvent": "Create new event",
+  "@createNewEvent": {
+    "description": "Button label to create a new event"
+  },
+  "noEventsFound": "No events found",
+  "@noEventsFound": {
+    "description": "Message displayed when no events are found in the list"
+  },
+  "eventFinishedOn": "Event finished on {date}",
+  "@eventFinishedOn": {
+    "description": "Summary of an event's completion date",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "2024-03-25"
+      }
+    }
+  },
+  "noGameInProgress": "No game in progress",
+  "@noGameInProgress": {
+    "description": "Information message when no game is active"
+  },
+  "eventSettings": "Event settings",
+  "@eventSettings": {
+    "description": "Label for event settings menu or screen"
+  },
+  "undoTeams": "Undo teams",
+  "@undoTeams": {
+    "description": "Action to revert the team generation"
+  },
+  "regenerateTeams": "Regenerate teams",
+  "@regenerateTeams": {
+    "description": "Action to regenerate teams for the event"
+  },
+  "saveEvent": "Save event",
+  "@saveEvent": {
+    "description": "Action to save the event details"
+  },
+  "eventSavedSuccess": "Event saved successfully!",
+  "@eventSavedSuccess": {
+    "description": "Success message when an event is saved"
+  },
+  "importPlayersFromList": "Import players from list",
+  "@importPlayersFromList": {
+    "description": "Action to import players from a raw text list"
+  },
+  "importPlayers": "Import Players",
+  "@importPlayers": {
+    "description": "Title for the import players dialog"
+  },
+  "playerList": "Player List",
+  "@playerList": {
+    "description": "Label for the text area where player names are pasted"
+  },
+  "importLabel": "Import",
+  "@importLabel": {
+    "description": "Button label to confirm import"
+  },
+  "addPlayer": "Add player",
+  "@addPlayer": {
+    "description": "Action to add a single player manually"
+  },
+  "generateTeams": "Generate teams",
+  "@generateTeams": {
+    "description": "Action to start the team distribution process"
+  },
+  "noTeamsRegistered": "No teams registered in the event",
+  "@noTeamsRegistered": {
+    "description": "Message shown when an event has no teams yet"
+  },
+  "addPlayersToCreateTeams": "Add players to create teams",
+  "@addPlayersToCreateTeams": {
+    "description": "Instructional message for the user to add players"
+  },
+  "playersCount": "Players ({count})",
+  "@playersCount": {
+    "description": "Label showing the number of players",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "teamsCount": "Teams ({count})",
+  "@teamsCount": {
+    "description": "Label showing the number of teams",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "playerMissing": "Player missing!",
+  "@playerMissing": {
+    "description": "Title for a dialog when there are not enough players"
+  },
+  "maxWinsReached": "Maximum wins reached!",
+  "@maxWinsReached": {
+    "description": "Title for a dialog when a team reaches the win limit"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "General settings label"
+  },
+  "matchHistory": "Match history",
+  "@matchHistory": {
+    "description": "Label for exploring past matches"
+  },
+  "adjustTeams": "Adjust teams",
+  "@adjustTeams": {
+    "description": "Label for the screen to manually adjust team members"
+  },
+  "endEvent": "End event",
+  "@endEvent": {
+    "description": "Action to finalize and close the current event"
+  },
+  "endEventQuestion": "End event?",
+  "@endEventQuestion": {
+    "description": "Confirmation question title for ending an event"
+  },
+  "endEventConfirmation": "Are you sure you want to end this event?\n\nAll ongoing matches will be canceled.{hasNoEndedMatches, select, true{\n\nThis event has no finished matches, so it will be completely deleted!} other{}}\n\nThis action cannot be undone!\n\nDo you want to proceed?",
+  "@endEventConfirmation": {
+    "description": "Warning message before ending an event",
+    "placeholders": {
+      "hasNoEndedMatches": {
+        "type": "String",
+        "example": "true"
+      }
+    }
+  },
+  "no": "No",
+  "@no": {
+    "description": "Generic negative response label"
+  },
+  "yes": "Yes",
+  "@yes": {
+    "description": "Generic positive response label"
+  },
+  "eventClosed": "Event closed",
+  "@eventClosed": {
+    "description": "Status or title indicating the event has ended"
+  },
+  "eventClosedSuccess": "The event was closed successfully!",
+  "@eventClosedSuccess": {
+    "description": "Success message after closing an event"
+  },
+  "currentMatch": "Current Match",
+  "@currentMatch": {
+    "description": "Section header for the active game"
+  },
+  "finalScore": "Final score",
+  "@finalScore": {
+    "description": "Header for the end-of-event leaderboard"
+  },
+  "team": "Team",
+  "@team": {
+    "description": "Label for a team"
+  },
+  "winsAbbreviation": "W",
+  "@winsAbbreviation": {
+    "description": "Abbreviation for Wins in a score table"
+  },
+  "lossesAbbreviation": "L",
+  "@lossesAbbreviation": {
+    "description": "Abbreviation for Defeats/Losses in a score table"
+  },
+  "nextGame": "Next Game",
+  "@nextGame": {
+    "description": "Label for the upcoming match"
+  },
+  "nextGameDescription": "Winner of {matchName} vs. {teamName}",
+  "@nextGameDescription": {
+    "description": "Description of the next match prerequisites",
+    "placeholders": {
+      "matchName": {
+        "type": "String",
+        "example": "Match 1"
+      },
+      "teamName": {
+        "type": "String",
+        "example": "Team Alpha"
+      }
+    }
+  },
+  "nextTeamsCount": "Next Teams ({count})",
+  "@nextTeamsCount": {
+    "description": "Label showing the size of the waitlist queue",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "addTeam": "Add team",
+  "@addTeam": {
+    "description": "Action to manually register a new team"
+  },
+  "registerTeam": "Register Team",
+  "@registerTeam": {
+    "description": "Title for the team registration screen"
+  },
+  "selectTeamNameError": "Select a name for the team!",
+  "@selectTeamNameError": {
+    "description": "Validation error when no team name is chosen"
+  },
+  "selectPlaceholder": "Select",
+  "@selectPlaceholder": {
+    "description": "Placeholder for dropdown menus"
+  },
+  "teamNameLabel": "Team Name",
+  "@teamNameLabel": {
+    "description": "Label for team name input field"
+  },
+  "playersLabel": "Players",
+  "@playersLabel": {
+    "description": "General label for a list of players"
+  },
+  "teamRegisteredSuccess": "Team registered successfully!",
+  "@teamRegisteredSuccess": {
+    "description": "Success message after creating a team"
+  },
+  "saveTeam": "Save Team",
+  "@saveTeam": {
+    "description": "Button label to save the team"
+  },
+  "endOfMatch": "End of match",
+  "@endOfMatch": {
+    "description": "Title for the match completion screen or dialog"
+  },
+  "matchWonMessage": "Team [b]{teamName}[/b] won the match by [b]{score}[/b]!\n\nConfirm and go to next match?",
+  "@matchWonMessage": {
+    "description": "Congratulatory message after a match",
+    "placeholders": {
+      "teamName": {
+        "type": "String",
+        "example": "Team A"
+      },
+      "score": {
+        "type": "String",
+        "example": "15 - 10"
+      }
+    }
+  },
+  "noRevert": "No, revert!",
+  "@noRevert": {
+    "description": "Button to cancel match completion and revert score"
+  },
+  "yesConfirm": "Yes, confirm!",
+  "@yesConfirm": {
+    "description": "Button to confirm match outcome"
+  },
+  "startNewMatchQuestion": "Do you want to start a new match?",
+  "@startNewMatchQuestion": {
+    "description": "Interrogative message after a match ends"
+  },
+  "pointsToWinLabel": "Amount of points to win",
+  "@pointsToWinLabel": {
+    "description": "Label for the score limit setting"
+  },
+  "eliminateAtHalf": "Eliminate at half?",
+  "@eliminateAtHalf": {
+    "description": "Label for the mercy rule setting"
+  },
+  "eliminateAtHalfDescription": "Eliminates at {score} x 0.",
+  "@eliminateAtHalfDescription": {
+    "description": "Summary of the mercy rule score",
+    "placeholders": {
+      "score": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+  "ok": "Ok",
+  "@ok": {
+    "description": "Generic confirmation button label"
+  },
+  "eventSettingsTitle": "Event Settings{status, select, finished{ (Finished)} other{}}",
+  "@eventSettingsTitle": {
+    "description": "Dynamic title for host event settings",
+    "placeholders": {
+      "status": {
+        "type": "String",
+        "example": "finished"
+      }
+    }
+  },
+  "nameLabel": "Name",
+  "@nameLabel": {
+    "description": "General label for name input"
+  },
+  "eventNameLabel": "Event Name",
+  "@eventNameLabel": {
+    "description": "Label for event name input"
+  },
+  "quantityLabel": "Quantity",
+  "@quantityLabel": {
+    "description": "Generic label for numeric input hint"
+  },
+  "playersPerTeamLabel": "Amount of players per team",
+  "@playersPerTeamLabel": {
+    "description": "Label for team size configuration"
+  },
+  "maxWinsInARowLabel": "Maximum wins in a row",
+  "@maxWinsInARowLabel": {
+    "description": "Label for win streak limit configuration"
+  },
+  "eliminateAtHalfSubtitle": "Eliminates the team that is losing by {score} x 0.",
+  "@eliminateAtHalfSubtitle": {
+    "description": "Mercy rule description with dynamic score",
+    "placeholders": {
+      "score": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+  "balanceByGender": "Balance by gender?",
+  "@balanceByGender": {
+    "description": "Label for gender balance toggle"
+  },
+  "balanceByGenderSubtitle": "Same amount of men and women per team.",
+  "@balanceByGenderSubtitle": {
+    "description": "Explanatory text for gender balancing"
+  },
+  "balanceByLevel": "Balance by level?",
+  "@balanceByLevel": {
+    "description": "Label for skill level balance toggle"
+  },
+  "balanceByLevelSubtitle": "Same amount of players per level per team.",
+  "@balanceByLevelSubtitle": {
+    "description": "Explanatory text for level balancing"
+  },
+  "saveSettings": "Save settings",
+  "@saveSettings": {
+    "description": "Button to persist configuration changes"
+  },
+  "registerPlayer": "Register Player",
+  "@registerPlayer": {
+    "description": "Title for the player creation view"
+  },
+  "editPlayer": "Edit Player",
+  "@editPlayer": {
+    "description": "Title for the player update view"
+  },
+  "playerNameRequired": "Player name is required!",
+  "@playerNameRequired": {
+    "description": "Validation error for missing player name"
+  },
+  "playerNameLabel": "Player name",
+  "@playerNameLabel": {
+    "description": "Input label for player name"
+  },
+  "playerNameHint": "Enter player name",
+  "@playerNameHint": {
+    "description": "Input hint for player name"
+  },
+  "playerGenderRequired": "Player gender is required!",
+  "@playerGenderRequired": {
+    "description": "Validation error for missing gender"
+  },
+  "male": "Male",
+  "@male": {
+    "description": "Selection label for male gender"
+  },
+  "female": "Female",
+  "@female": {
+    "description": "Selection label for female gender"
+  },
+  "validateGenderError": "Failed to validate player gender!",
+  "@validateGenderError": {
+    "description": "Error message when gender validation fails"
+  },
+  "playerLevelRequired": "Player level is required!",
+  "@playerLevelRequired": {
+    "description": "Validation error for missing skill level"
+  },
+  "validateLevelError": "Failed to validate player level!",
+  "@validateLevelError": {
+    "description": "Error message when skill level validation fails"
+  },
+  "saveLabel": "Save",
+  "@saveLabel": {
+    "description": "Generic save button label"
+  },
+  "removeTeamQuestion": "Remove Team?",
+  "@removeTeamQuestion": {
+    "description": "Confirmation title for team deletion"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Generic cancel button label"
+  },
+  "remove": "Remove",
+  "@remove": {
+    "description": "Generic remove button label"
+  },
+  "teamsLabel": "Teams",
+  "@teamsLabel": {
+    "description": "General label for a list of teams"
+  },
+  "matchHistoryCount": "Match History ({count})",
+  "@matchHistoryCount": {
+    "description": "Title for the match history screen with count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "25"
+      }
+    }
+  },
+  "noMatchesFound": "No matches found",
+  "@noMatchesFound": {
+    "description": "Information message when the history is empty"
+  },
+  "pointReversed": "Point reversed",
+  "@pointReversed": {
+    "description": "Indication in a log that a point was undone"
+  },
+  "defaultEventName": "Event of the day {date}",
+  "@defaultEventName": {
+    "description": "Default name generated for a new event",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "25/03/2026"
+      }
+    }
+  },
+  "balanceByGenderError": "To generate a gender-balanced event, all players must have a defined gender!",
+  "@balanceByGenderError": {
+    "description": "Error message when trying to balance by gender without enough data"
+  },
+  "minTeamsError": "It is not possible to generate events with less than 2 teams!",
+  "@minTeamsError": {
+    "description": "Error message when there are too few players for even 2 teams"
+  },
+  "minTeamsSaveError": "The event needs at least 3 teams to be generated!",
+  "@minTeamsSaveError": {
+    "description": "Restriction for saving an event with very few teams"
+  },
+  "invalidPlayerError": "Invalid player!",
+  "@invalidPlayerError": {
+    "description": "Error message for invalid player operations"
+  },
+  "noPlayersInListError": "No players found in the pasted list!",
+  "@noPlayersInListError": {
+    "description": "Error message for empty or malformed player import lists"
+  },
+  "minTeamsWarning": "The event has reached the minimum amount of teams!",
+  "@minTeamsWarning": {
+    "description": "Warning when trying to delete more teams than allowed"
+  },
+  "playerAlreadyInTeamError": "Player already registered in another team!",
+  "@playerAlreadyInTeamError": {
+    "description": "Error when adding a player who is already on a team"
+  },
+  "maxWinsInARowMessage": "Team [b]{teamName}[/b] reached the maximum number of consecutive wins [b]({maxWins})[/b].\n\nIt will now make room for the next team and return to the queue with priority for the next match!\n\nNext match:\n[b]{nextTeam1}[/b] vs. [b]{nextTeam2}[/b]!",
+  "@maxWinsInARowMessage": {
+    "description": "Message explaining the win streak rotation rule",
+    "placeholders": {
+      "teamName": {
+        "type": "String"
+      },
+      "maxWins": {
+        "type": "int"
+      },
+      "nextTeam1": {
+        "type": "String"
+      },
+      "nextTeam2": {
+        "type": "String"
+      }
+    }
+  },
+  "teamIncompleteError": "Team [b]{teamName}[/b] is incomplete and needs [b]{count}[/b] players to play the next match!",
+  "@teamIncompleteError": {
+    "description": "Error when a match cannot start due to missing players",
+    "placeholders": {
+      "teamName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shareEventError": "Error sharing event!",
+  "@shareEventError": {
+    "description": "Error message for failed share operations"
+  },
+  "teamNameTitle": "Team {name}",
+  "@teamNameTitle": {
+    "description": "Title displaying the team name",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "allPlayersMustHaveName": "All players must have a name",
+  "@allPlayersMustHaveName": {
+    "description": "Validation error for player list names"
+  },
+  "allPlayersMustHaveGender": "All players must have a gender defined",
+  "@allPlayersMustHaveGender": {
+    "description": "Validation error for player list genders"
+  },
+  "matchNameTitle": "Match {name}",
+  "@matchNameTitle": {
+    "description": "Title displaying the match identifier",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeTeamConfirmation": "Are you sure you want to remove team [b]{teamName}[/b] from this event?\n\nThis action cannot be undone!",
+  "@removeTeamConfirmation": {
+    "description": "Warning message before removing a team",
+    "placeholders": {
+      "teamName": {
+        "type": "String"
+      }
+    }
+  },
+  "playersSwappedSuccess": "Players swapped successfully!",
+  "@playersSwappedSuccess": {
+    "description": "Success notification after adjusting teams"
+  }
+}

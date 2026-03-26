@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
 import 'package:material_symbols_icons/material_symbols_icons.dart';
@@ -79,7 +80,7 @@ class _TeamCardWidgetState extends State<TeamCardWidget> {
           ),
         ),
         title: Text(
-          'Time ${widget.team.name}',
+          L10n.of(context).teamNameTitle(widget.team.name),
           style: context.textTheme.titleMedium,
         ),
         children: List.from(
