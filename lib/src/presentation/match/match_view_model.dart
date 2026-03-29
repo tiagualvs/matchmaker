@@ -2,18 +2,23 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:matchmaker/src/common/extensions/iterable_ext.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
+import 'package:matchmaker/src/common/shared/id.dart';
 import 'package:matchmaker/src/common/shared/injector.dart';
+import 'package:matchmaker/src/common/shared/timestamp.dart';
+import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
-import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
-import 'package:matchmaker/src/data/repositories/scores/scores_repository.dart';
+import 'package:matchmaker/src/data/services/shared_preferences/shared_preferences_service.dart';
 import 'package:matchmaker/src/presentation/match/match.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 abstract class MatchViewModel extends State<Match> {
-  final MatchesRepository _matchesRepository = Injector.instance.get();
-  final ScoresRepository _scoresRepository = Injector.instance.get();
+  L10n get l10n => L10n.of(context);
+
+  SharedPreferencesService get prefs => Injector.instance.get();
 
   @override
   void didChangeDependencies() {
@@ -43,7 +48,7 @@ abstract class MatchViewModel extends State<Match> {
     super.dispose();
   }
 
-  bool _loading = false;
+  final bool _loading = false;
 
   bool get loading => _loading;
 
@@ -55,7 +60,16 @@ abstract class MatchViewModel extends State<Match> {
 
   void toggleSwap() => setState(() => _swapped = !_swapped);
 
-  late MatchEntity _match = widget.match ?? MatchEntity.detached();
+  late final EventEntity _event =
+      prefs.find<EventEntity>((e) => e.id == widget.eventId) ??
+      EventEntity.empty();
+
+  late MatchEntity _match =
+      _event.matches.firstWhereOrNull((e) => e.id == widget.matchId) ??
+      MatchEntity.detached(
+        firstTeamName: l10n.detachedFirstTeamName,
+        secondTeamName: l10n.detachedSecondTeamName,
+      );
 
   MatchEntity get match => _match;
 
@@ -73,134 +87,99 @@ abstract class MatchViewModel extends State<Match> {
   bool get secondTeamByOneOrWon =>
       _match.secondTeamScoreByOne || _match.secondTeamWon;
 
-  set match(MatchEntity match) => setState(() {
-    _match = match;
-  });
-
-  Future<void> loadDependencies(
-    int matchId, {
-    void Function(String error)? onError,
-  }) async {
-    setState(() {
-      _loading = true;
-    });
-
-    if (matchId == -99) {
-      return setState(() {
-        _match = MatchEntity.detached();
-
-        _loading = false;
-      });
-    }
-
-    final result = await _matchesRepository.findOne(matchId);
-
-    return result.fold(
-      (value) {
-        return setState(() {
-          _match = value;
-
-          _loading = false;
-        });
-      },
-      (error) {
-        return setState(() {
-          _loading = false;
-
-          return onError?.call(error.toString());
-        });
-      },
-    );
-  }
-
   Future<void> reverseScore(
-    int teamId, {
+    String teamId, {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
+    final scores = _match.scores
+        .where((score) => score.teamId == teamId)
+        .toList();
+
+    if (scores.isEmpty) return;
+
     if (_match.isDetached) {
       return setState(() {
-        final scores = _match.scores.where((score) => score.teamId == teamId);
-
-        if (scores.isEmpty) return;
-
         _match = _match.copyWith(
           scores: List.from(_match.scores)..remove(scores.first),
         );
       });
     }
 
-    final scores = _match.scores.where(
-      (score) => score.teamId == teamId && !score.reversed,
-    );
-
-    if (scores.isEmpty) return;
+    if (Id.valid(teamId)) {
+      return onError?.call('Invalid team id');
+    }
 
     if (_writing) return;
 
     setState(() => _writing = true);
 
-    final scoreId = scores.first.id;
-
-    final result = await _scoresRepository.updateOne(scoreId, true);
-
-    return result.fold(
-      (score) async {
-        return setState(() {
-          _writing = false;
-
-          final index = _match.scores.indexWhere(
-            (element) => element.id == scoreId,
-          );
-
-          _match = _match.copyWith(
-            scores: List.from(_match.scores)
-              ..[index] = score
-              ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
-          );
-        });
-      },
-      (error) {
-        return setState(() {
-          _writing = false;
-
-          return onError?.call(error.toString());
-        });
-      },
+    final teamScores = _match.scores.where(
+      (score) => score.teamId == teamId && !score.reversed,
     );
+
+    if (teamScores.isEmpty) return;
+
+    final scoreId = teamScores.first.id;
+
+    final index = scores.indexWhere((e) => e.id == scoreId);
+
+    if (index == -1) return;
+
+    scores[index] = scores[index].copyWith(
+      reversed: true,
+      updatedAt: Timestamp.now(),
+    );
+
+    _match = _match.copyWith(
+      scores: scores,
+      updatedAt: Timestamp.now(),
+    );
+
+    final saved = await prefs.put<EventEntity>(
+      _event.copyWith(
+        matches: List.from(_event.matches)..[0] = _match,
+        updatedAt: Timestamp.now(),
+      ),
+    );
+
+    if (!saved) {
+      return setState(() {
+        _writing = false;
+
+        return onError?.call('Failed to save match');
+      });
+    }
+
+    return setState(() => _writing = false);
   }
 
   Future<void> incrementScore(
-    int teamId, {
+    String teamId, {
     required FutureOr<bool> Function(TeamEntity team, String score)
     confirmEndOfMatch,
     void Function(String error)? onError,
   }) async {
     if (_match.ended) return;
 
+    final score = ScoreEntity.create(
+      matchId: _match.id,
+      teamId: teamId,
+    );
+
     if (_match.isDetached) {
-      setState(() async {
-        _match = _match.copyWith(
-          scores: List.from(_match.scores)
-            ..add(
-              ScoreEntity(
-                id: _match.scores.length + 1,
-                matchId: _match.id,
-                teamId: teamId,
-                createdAt: DateTime.now(),
-                updatedAt: DateTime.now(),
-              ),
-            )
-            ..sort((a, b) => b.id.compareTo(a.id)),
-        );
-      });
+      _match = _match.copyWith(
+        scores: List.from(_match.scores)
+          ..add(score)
+          ..sort((a, b) => b.id.compareTo(a.id)),
+      );
+
+      setState(() {});
 
       if (_match.isTiedWhenByOne) {
-        setState(() {
-          _match = _match.copyWith(
-            maxScore: _match.maxScore + 1,
-          );
-        });
+        _match = _match.copyWith(
+          maxScore: _match.maxScore + 1,
+        );
       }
 
       if (_match.firstTeamWon || _match.secondTeamWon) {
@@ -212,54 +191,31 @@ abstract class MatchViewModel extends State<Match> {
             : '${_match.secondTeamScore} x ${_match.firstTeamScore}';
 
         if (!await confirmEndOfMatch(winner, currentScore)) {
-          setState(() {
-            _match = _match.copyWith(
-              scores: List.from(_match.scores)..removeLast(),
-            );
-          });
+          _match = _match.copyWith(
+            scores: List.from(_match.scores)..removeLast(),
+          );
         } else {
-          setState(() {
-            _match = _match.copyWith(ended: true);
-          });
+          _match = _match.copyWith(ended: true);
         }
       }
 
-      return;
+      return setState(() {});
     }
+
+    if (!Id.valid(teamId)) return onError?.call('Invalid team id');
 
     if (_writing) return;
 
-    setState(() => _writing = true);
-
-    final result0 = await _scoresRepository.insertOne(
-      InsertOneScoreParams(
-        matchId: _match.id,
-        teamId: teamId,
-      ),
-    );
-
-    if (result0.hasError) return onError?.call(result0.error.toString());
-
-    final score = result0.value;
-
     setState(() {
+      _writing = true;
+
       _match = _match.copyWith(
         scores: [score, ..._match.scores],
       );
     });
 
     if (_match.isTiedWhenByOne) {
-      final result = await _matchesRepository.updateOne(
-        _match.id,
-        UpdateOneMatchParams(maxScore: _match.maxScore + 1),
-      );
-
-      setState(() {
-        _match = result.fold(
-          (ok) => ok.copyWith(scores: _match.scores),
-          (_) => _match,
-        );
-      });
+      _match = _match.copyWith(maxScore: _match.maxScore + 1);
     }
 
     if (_match.firstTeamWon || _match.secondTeamWon) {
@@ -269,35 +225,31 @@ abstract class MatchViewModel extends State<Match> {
           : '${_match.secondTeamScore} x ${_match.firstTeamScore}';
 
       if (!await confirmEndOfMatch(winner, currentScore)) {
-        final deleteResult = await _scoresRepository.deleteOne(score.id);
+        return setState(() {
+          _writing = false;
 
-        return deleteResult.fold(
-          (_) {
-            return setState(() {
-              _writing = false;
-              _match = _match.copyWith(
-                scores: List.from(_match.scores)..remove(score),
-              );
-            });
-          },
-          (err) {
-            return onError?.call(err.toString());
-          },
-        );
+          _match = _match.copyWith(
+            scores: List.from(_match.scores)..remove(score),
+          );
+        });
       }
 
-      final result = await _matchesRepository.updateOne(
-        _match.id,
-        const UpdateOneMatchParams(ended: true),
-      );
-
-      setState(() {
-        _match = result.fold(
-          (ok) => ok.copyWith(scores: _match.scores),
-          (_) => _match,
-        );
-      });
+      _match = _match.copyWith(ended: true);
     }
+
+    final event = prefs.find<EventEntity>((e) => e.id == _match.eventId);
+
+    if (event == null) return;
+
+    final matches = List<MatchEntity>.from(event.matches);
+
+    final index = matches.indexWhere((m) => m.id == _match.id);
+
+    if (index == -1) return;
+
+    matches[index] = _match;
+
+    await prefs.put<EventEntity>(event.copyWith(matches: matches));
 
     setState(() => _writing = false);
   }
@@ -309,5 +261,15 @@ abstract class MatchViewModel extends State<Match> {
         scores: [],
       );
     });
+  }
+
+  void setMaxScore(int maxScore) {
+    _match = _match.copyWith(maxScore: maxScore);
+    setState(() {});
+  }
+
+  void setHalfScoreToEliminate(bool halfScoreToEliminate) {
+    _match = _match.copyWith(halfScoreToEliminate: halfScoreToEliminate);
+    setState(() {});
   }
 }

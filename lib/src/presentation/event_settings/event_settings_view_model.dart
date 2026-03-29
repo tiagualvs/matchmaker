@@ -1,70 +1,96 @@
 import 'package:flutter/material.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/shared/injector.dart';
+import 'package:matchmaker/src/common/shared/timestamp.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
-import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
-import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
+import 'package:matchmaker/src/data/services/shared_preferences/shared_preferences_service.dart';
 
 import 'event_settings.dart';
 
 abstract class EventSettingsViewModel extends State<EventSettings> {
-  final EventsRepository _eventsRepository = Injector.instance.get();
-  final MatchesRepository _matchesRepository = Injector.instance.get();
+  L10n get l10n => L10n.of(context);
+
+  SharedPreferencesService get prefs => Injector.instance.get();
 
   bool _loading = false;
 
   bool get loading => _loading;
 
-  late EventEntity _event = widget.event;
+  late EventEntity _event =
+      prefs.find<EventEntity>((e) => e.id == widget.eventId) ??
+      EventEntity.empty();
 
   EventEntity get event => _event;
-
-  set event(EventEntity event) => setState(() {
-    _event = event;
-  });
 
   Future<void> save({
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
+    setState(() => _loading = true);
+
+    final saved = await prefs.put<EventEntity>(
+      event.copyWith(updatedAt: Timestamp.now()),
+    );
+
+    if (!saved) {
+      return setState(() {
+        _loading = false;
+
+        return onError?.call(l10n.failedToSaveEventError);
+      });
+    }
+
+    return onSuccess?.call();
+  }
+
+  void setName(String name) {
     setState(() {
-      _loading = true;
+      _event = _event.copyWith(name: name);
     });
+  }
 
-    final result = await _eventsRepository.updateOne(
-      event.id,
-      UpdateOneEventParams(
-        name: event.name,
-        maxScore: event.maxScore,
-        halfScoreToEliminate: event.halfScoreToEliminate,
-        maxPlayerPerTeam: event.maxPlayerPerTeam,
-        balancedByGender: event.balancedByGender,
-        balancedByLevel: event.balancedByLevel,
-        maxWinsInARow: event.maxWinsInARow,
-      ),
-    );
+  void setMaxScore(int maxScore) {
+    setState(() {
+      _event = _event.copyWith(maxScore: maxScore);
+    });
+  }
 
-    return result.fold(
-      (event) async {
-        if (event.halfScoreToEliminate != event.halfScoreToEliminate) {
-          final result1 = await _matchesRepository.updateManyByEventId(
-            event.id,
-            UpdateOneMatchParams(
-              halfScoreToEliminate: event.halfScoreToEliminate,
-            ),
-          );
+  void setMaxPlayerPerTeam(int maxPlayerPerTeam) {
+    setState(() {
+      _event = _event.copyWith(maxPlayerPerTeam: maxPlayerPerTeam);
+    });
+  }
 
-          if (result1.hasError) return onError?.call(result1.error.toString());
-        }
+  void setMaxWinsInARow(int maxWinsInARow) {
+    setState(() {
+      _event = _event.copyWith(maxWinsInARow: maxWinsInARow);
+    });
+  }
 
-        return onSuccess?.call();
-      },
-      (error) {
-        return setState(() {
-          _loading = false;
+  void setHalfScoreToEliminate(bool halfScoreToEliminate) {
+    setState(() {
+      _event = _event.copyWith(
+        halfScoreToEliminate: halfScoreToEliminate,
+        matches: List.from(
+          _event.matches.map(
+            (m) => m.ended
+                ? m
+                : m.copyWith(halfScoreToEliminate: halfScoreToEliminate),
+          ),
+        ),
+      );
+    });
+  }
 
-          return onError?.call(error.toString());
-        });
-      },
-    );
+  void setBalancedByGender(bool balancedByGender) {
+    setState(() {
+      _event = _event.copyWith(balancedByGender: balancedByGender);
+    });
+  }
+
+  void setBalancedByLevel(bool balancedByLevel) {
+    setState(() {
+      _event = _event.copyWith(balancedByLevel: balancedByLevel);
+    });
   }
 }

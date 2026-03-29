@@ -1,98 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/shared/injector.dart';
+import 'package:matchmaker/src/common/shared/timestamp.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
-import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
-import 'package:matchmaker/src/data/repositories/players/players_repository.dart';
-import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
+import 'package:matchmaker/src/data/services/shared_preferences/shared_preferences_service.dart';
 
 import 'add_player.dart';
 
 abstract class AddPlayerViewModel extends State<AddPlayer> {
-  late final L10n l10n = L10n.of(context);
+  L10n get l10n => L10n.of(context);
 
-  final EventsRepository _eventsRepository = Injector.instance.get();
-  final TeamsRepository _teamsRepository = Injector.instance.get();
-  final PlayersRepository _playersRepository = Injector.instance.get();
+  SharedPreferencesService get prefs => Injector.instance.get();
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   bool loading = false;
 
-  late EventEntity _event = widget.event;
+  late EventEntity _event =
+      prefs.find<EventEntity>((e) => e.id == widget.eventId) ??
+      EventEntity.empty();
 
   EventEntity get event => _event;
 
-  set event(EventEntity event) => setState(() {
-    _event = event;
-  });
-
-  TeamEntity _team = TeamEntity.empty('');
+  late TeamEntity _team = TeamEntity.create(
+    eventId: _event.id,
+    name: '',
+    players: [],
+  );
 
   TeamEntity get team => _team;
 
-  set team(TeamEntity team) => setState(() {
-    _team = team;
-  });
-
   List<PlayerEntity> get players => _team.players;
-
-  Future<void> loadDependencies({
-    void Function()? onSuccess,
-    void Function(String error)? onError,
-  }) async {
-    final result = await _eventsRepository.findOne(event.id);
-
-    return result.fold(
-      (event) {
-        return setState(() {
-          _event = event;
-
-          loading = false;
-
-          return onSuccess?.call();
-        });
-      },
-      (error) {
-        return setState(() {
-          loading = false;
-
-          return onError?.call(error.toString());
-        });
-      },
-    );
-  }
 
   Future<void> handleInsertPlayer(
     PlayerEntity player, {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
-    setState(() {
-      loading = true;
-    });
+    setState(() => loading = true);
 
-    final result = await _playersRepository.insertOne(
-      InsertOnePlayerParams(
-        name: player.name,
-        gender: player.gender.value,
-        level: player.level.value,
-      ),
+    final existingPlayer = prefs.find<PlayerEntity>(
+      (p) => p.name == player.name,
     );
 
-    if (result.hasError) {
-      return setState(() {
-        loading = false;
+    if (existingPlayer == null) {
+      final saved = await prefs.put<PlayerEntity>(player);
 
-        return onError?.call(result.error.toString());
-      });
+      if (!saved) {
+        return setState(() {
+          loading = false;
+
+          return onError?.call(l10n.failedToSavePlayerError);
+        });
+      }
+    } else {
+      player = existingPlayer;
     }
 
-    final insertedPlayer = result.value;
-
-    if (_event.hasPlayer(insertedPlayer.id)) {
+    if (_event.hasPlayer(player.id)) {
       return setState(() {
         loading = false;
 
@@ -105,9 +72,10 @@ abstract class AddPlayerViewModel extends State<AddPlayer> {
 
       _team = _team.copyWith(
         players: [
-          insertedPlayer,
           ..._team.players,
+          player,
         ],
+        updatedAt: Timestamp.now(),
       );
 
       return onSuccess?.call();
@@ -121,46 +89,39 @@ abstract class AddPlayerViewModel extends State<AddPlayer> {
     if (formKey.currentState?.validate() ?? false) {
       setState(() => loading = true);
 
-      final result0 = await _teamsRepository.insertOne(
-        InsertOneTeamParams(
-          eventId: _event.id,
-          name: _team.name,
-          players: _team.players,
-        ),
+      _event = _event.copyWith(
+        teams: [
+          ..._event.teams,
+          _team,
+        ],
+        queue: [
+          ..._event.queue,
+          _team.id,
+        ],
+        updatedAt: Timestamp.now(),
       );
 
-      if (result0.hasError) {
+      final saved = await prefs.put<EventEntity>(_event);
+
+      if (!saved) {
         return setState(() {
           loading = false;
 
-          return onError?.call(result0.error.toString());
-        });
-      }
-
-      final insertedTeam = result0.value;
-
-      final result1 = await _eventsRepository.updateOne(
-        _event.id,
-        UpdateOneEventParams(
-          queue: [..._event.queue, insertedTeam.id],
-        ),
-      );
-
-      if (result1.hasError) {
-        return setState(() {
-          loading = false;
-
-          return onError?.call(result1.error.toString());
+          return onError?.call(l10n.failedToSaveEventError);
         });
       }
 
       return setState(() {
-        _team = insertedTeam;
-
         loading = false;
 
         return onSuccess?.call();
       });
     }
+  }
+
+  void setName(String name) {
+    setState(() {
+      _team = _team.copyWith(name: name);
+    });
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/extensions/num_ext.dart';
 
 class FloatingActionButtonMenuItem {
   final Widget icon;
@@ -14,16 +15,22 @@ class FloatingActionButtonMenuItem {
 }
 
 class FloatingActionButtonMenu extends StatefulWidget {
-  const FloatingActionButtonMenu({super.key, required this.child, required this.menus});
+  const FloatingActionButtonMenu({
+    super.key,
+    required this.child,
+    required this.menus,
+  });
 
   final Widget child;
   final List<FloatingActionButtonMenuItem> menus;
 
   @override
-  State<FloatingActionButtonMenu> createState() => _FloatingActionButtonMenuState();
+  State<FloatingActionButtonMenu> createState() =>
+      _FloatingActionButtonMenuState();
 }
 
-class _FloatingActionButtonMenuState extends State<FloatingActionButtonMenu> with SingleTickerProviderStateMixin {
+class _FloatingActionButtonMenuState extends State<FloatingActionButtonMenu>
+    with SingleTickerProviderStateMixin {
   late final AnimationController controller;
   late final Animation<double> animation;
   late final Animation<Offset> position;
@@ -43,9 +50,15 @@ class _FloatingActionButtonMenuState extends State<FloatingActionButtonMenu> wit
   @override
   void initState() {
     super.initState();
-    controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
     animation = Tween<double>(begin: 0.0, end: 1.0).animate(controller);
-    position = Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero).animate(controller);
+    position = Tween<Offset>(
+      begin: const Offset(0.0, 1.0),
+      end: Offset.zero,
+    ).animate(controller);
   }
 
   @override
@@ -77,7 +90,7 @@ class _FloatingActionButtonMenuState extends State<FloatingActionButtonMenu> wit
                 child: SlideTransition(
                   position: position,
                   child: Column(
-                    spacing: 16.0,
+                    spacing: 2.unit,
                     crossAxisAlignment: .end,
                     children: [
                       for (final menu in widget.menus) ...[
@@ -89,11 +102,14 @@ class _FloatingActionButtonMenuState extends State<FloatingActionButtonMenu> wit
                           },
                           icon: menu.icon,
                           label: menu.label,
-                          backgroundColor: context.colorScheme.onPrimaryContainer,
+                          backgroundColor:
+                              context.colorScheme.onPrimaryContainer,
                           foregroundColor: context.colorScheme.primaryContainer,
                         ),
                       ],
-                      SizedBox(height: MediaQuery.of(context).padding.bottom + 24.0),
+                      SizedBox(
+                        height: MediaQuery.of(context).padding.bottom + 24.0,
+                      ),
                     ],
                   ),
                 ),
@@ -106,7 +122,10 @@ class _FloatingActionButtonMenuState extends State<FloatingActionButtonMenu> wit
         true => null,
         false => FloatingActionButton(
           onPressed: toggleMenu,
-          child: AnimatedIcon(icon: AnimatedIcons.menu_close, progress: animation),
+          child: AnimatedIcon(
+            icon: AnimatedIcons.menu_close,
+            progress: animation,
+          ),
         ),
       },
     );

@@ -2,10 +2,12 @@ import 'dart:core' hide Match;
 
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/extensions/num_ext.dart';
 import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/others/dialogs.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/others/text_span_builder.dart';
+import 'package:matchmaker/src/common/shared/id.dart';
 import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
 import 'package:matchmaker/src/presentation/event_settings/event_settings.dart';
 import 'package:matchmaker/src/presentation/match/match.dart';
@@ -33,7 +35,7 @@ class EventView extends EventViewModel {
       actions: [
         TextButton(
           onPressed: Navigator.of(context).pop,
-            child: Text(L10n.of(context).ok),
+          child: Text(L10n.of(context).ok),
         ),
       ],
     );
@@ -56,7 +58,7 @@ class EventView extends EventViewModel {
       actions: [
         TextButton(
           onPressed: Navigator.of(context).pop,
-            child: Text(L10n.of(context).ok),
+          child: Text(L10n.of(context).ok),
         ),
       ],
     );
@@ -72,7 +74,7 @@ class EventView extends EventViewModel {
             icon: const Icon(Symbols.settings_rounded),
             label: Text(L10n.of(context).settings),
             onPressed: () async {
-              await EventSettings.push(context, event);
+              await EventSettings.push(context, event.id);
 
               return await reloadEvent(
                 onError: SnackBars.error,
@@ -85,7 +87,7 @@ class EventView extends EventViewModel {
             icon: const Icon(Symbols.list_rounded),
             label: Text(L10n.of(context).matchHistory),
             onPressed: () async {
-              await MatchHistory.push(context, event);
+              await MatchHistory.push(context, event.id);
 
               return await reloadEvent(
                 onError: SnackBars.error,
@@ -98,7 +100,7 @@ class EventView extends EventViewModel {
             icon: const Icon(Symbols.groups_rounded),
             label: Text(L10n.of(context).adjustTeams),
             onPressed: () async {
-              await Teams.push(context, event);
+              await Teams.push(context, event.id);
 
               return await reloadEvent(
                 onError: SnackBars.error,
@@ -114,25 +116,25 @@ class EventView extends EventViewModel {
               onPressed: () async {
                 final hasEndedMatches = event.endedMatches.isNotEmpty;
 
-                  final confirm = await Dialogs.display(
-                    context,
-                    title: Text(L10n.of(context).endEventQuestion),
-                    content: Text(
-                      L10n.of(context).endEventConfirmation(
-                        hasEndedMatches.toString(),
-                      ),
+                final confirm = await Dialogs.display(
+                  context,
+                  title: Text(L10n.of(context).endEventQuestion),
+                  content: Text(
+                    L10n.of(context).endEventConfirmation(
+                      hasEndedMatches.toString(),
                     ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: Text(L10n.of(context).no),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: Text(L10n.of(context).yes),
-                      ),
-                    ],
-                  );
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text(L10n.of(context).no),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: Text(L10n.of(context).yes),
+                    ),
+                  ],
+                );
 
                 if (confirm ?? false) {
                   return await endEvent(
@@ -194,9 +196,9 @@ class EventView extends EventViewModel {
               child: Material(
                 color: context.colorScheme.surface,
                 child: Padding(
-                  padding: const .all(16.0),
+                  padding: .all(2.unit),
                   child: Column(
-                    spacing: 16.0,
+                    spacing: 2.unit,
                     crossAxisAlignment: .stretch,
                     children: [
                       if (sharing) ...[
@@ -217,7 +219,11 @@ class EventView extends EventViewModel {
                         CurrentMatchWidget(
                           match: currentMatch!,
                           onTap: () async {
-                            await Match.push(context, currentMatch);
+                            await Match.push(
+                              context,
+                              event.id,
+                              currentMatch?.id ?? Id.max(),
+                            );
 
                             return await reloadEvent(
                               onError: SnackBars.error,
@@ -237,7 +243,7 @@ class EventView extends EventViewModel {
                           border: TableBorder.all(
                             color: context.colorScheme.surfaceContainerHighest,
                             width: 1.0,
-                            borderRadius: BorderRadius.circular(8.0),
+                            borderRadius: BorderRadius.circular(1.unit),
                           ),
                           columnWidths: const {
                             0: FixedColumnWidth(32.0),
@@ -259,7 +265,7 @@ class EventView extends EventViewModel {
                                 ].indexed.map(
                                   (item) => TableCell(
                                     child: Padding(
-                                      padding: const .all(8.0),
+                                      padding: .all(1.unit),
                                       child: Text(
                                         item.$2,
                                         textAlign: switch (item.$1 != 1) {
@@ -288,7 +294,7 @@ class EventView extends EventViewModel {
                                   ].indexed.map(
                                     (item) => TableCell(
                                       child: Padding(
-                                        padding: const .all(8.0),
+                                        padding: .all(1.unit),
                                         child: Text(
                                           item.$2,
                                           textAlign: switch (item.$1 != 1) {
@@ -341,8 +347,7 @@ class EventView extends EventViewModel {
                         style: context.textTheme.titleMedium,
                       ),
                       ListView.separated(
-                        separatorBuilder: (_, _) =>
-                            const SizedBox(height: 16.0),
+                        separatorBuilder: (_, _) => SizedBox(height: 2.unit),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: event.teams.length,

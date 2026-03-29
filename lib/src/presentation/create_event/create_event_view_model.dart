@@ -1,32 +1,28 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/string_ext.dart';
 import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/shared/injector.dart';
+import 'package:matchmaker/src/common/shared/timestamp.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
-import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
-import 'package:matchmaker/src/data/repositories/players/players_repository.dart';
+import 'package:matchmaker/src/data/services/shared_preferences/shared_preferences_service.dart';
 
 import 'create_event.dart';
 
 abstract class CreateEventViewModel extends State<CreateEvent> {
-  late final L10n l10n = L10n.of(context);
+  L10n get l10n => L10n.of(context);
 
-  final EventsRepository _eventsRepository = Injector.instance.get();
-  final PlayersRepository _playersRepository = Injector.instance.get();
+  SharedPreferencesService get prefs => Injector.instance.get();
 
   bool _loading = false;
 
   bool get loading => _loading;
 
-  late EventEntity _event = EventEntity.empty().copyWith(
-    name: l10n.defaultEventName(
-      DateFormat('dd/MM/yyyy').format(DateTime.now()),
-    ),
+  late EventEntity _event = EventEntity.create(
+    name: l10n.defaultEventName(Timestamp.now()),
   );
 
   EventEntity get event => _event;
@@ -62,7 +58,15 @@ abstract class CreateEventViewModel extends State<CreateEvent> {
 
     final randomTeamNames = List<String>.from(TeamEntity.names)..shuffle();
 
-    final teams = randomTeamNames.take(numTeams).map(TeamEntity.empty).toList();
+    final teams = randomTeamNames.take(numTeams).map(
+      (name) {
+        return TeamEntity.create(
+          eventId: _event.id,
+          name: name,
+          players: [],
+        );
+      },
+    ).toList();
 
     _players.shuffle();
 
@@ -244,31 +248,24 @@ abstract class CreateEventViewModel extends State<CreateEvent> {
 
     setState(() => _loading = true);
 
-    final result = await _eventsRepository.insertOne(
-      InsertOneEventParams(
-        name: _event.name,
-        maxScore: _event.maxScore,
-        halfScoreToEliminate: _event.halfScoreToEliminate,
-        maxPlayerPerTeam: _event.maxPlayerPerTeam,
-        balancedByGender: _event.balancedByGender,
-        balancedByLevel: _event.balancedByLevel,
-        maxWinsInARow: _event.maxWinsInARow,
-        teams: _event.teams,
-      ),
-    );
+    final nextMatch = event.nextMatch();
 
-    return result.fold(
-      (event) {
-        return onSuccess?.call();
-      },
-      (error) {
-        return setState(() {
-          _loading = false;
+    if (nextMatch != null) {
+      final (match, queue) = nextMatch;
 
-          return onError?.call(error.toString());
-        });
-      },
-    );
+      _event = _event.copyWith(
+        matches: [match],
+        queue: queue,
+      );
+    }
+
+    final saved = await prefs.put<EventEntity>(_event);
+
+    if (!saved) return onError?.call(l10n.failedToSaveEventError);
+
+    setState(() => _loading = false);
+
+    return onSuccess?.call();
   }
 
   Future<void> handleAddPlayer(
@@ -276,20 +273,12 @@ abstract class CreateEventViewModel extends State<CreateEvent> {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
-    final result = await _playersRepository.insertOne(
-      InsertOnePlayerParams(
-        name: player.name,
-        gender: player.gender.value,
-        level: player.level.value,
-      ),
-    );
-
-    if (result.hasError) return onError?.call(result.error.toString());
-
-    final insertedPlayer = result.value;
+    if (player.isNotEmpty && !player.isJoker) {
+      await prefs.put<PlayerEntity>(player);
+    }
 
     return setState(() {
-      _players = [insertedPlayer, ..._players]
+      _players = [player, ..._players]
         ..sort((a, b) => a.name.compareTo(b.name));
     });
   }
@@ -300,23 +289,16 @@ abstract class CreateEventViewModel extends State<CreateEvent> {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
-    if (player.id.isNegative) {
+    if (player.isEmpty || player.isJoker) {
       return onError?.call(l10n.invalidPlayerError);
     }
 
-    final result = await _playersRepository.updateOne(
-      player.id,
-      UpdateOnePlayerParams(
-        name: player.name,
-        gender: player.gender.value,
-        level: player.level.value,
-      ),
-    );
+    final saved = await prefs.put<PlayerEntity>(player);
 
-    if (result.hasError) return onError?.call(result.error.toString());
+    if (!saved) return onError?.call(l10n.failedToSavePlayerError);
 
     return setState(() {
-      _players[index] = result.value;
+      _players[index] = player;
     });
   }
 
@@ -328,22 +310,16 @@ abstract class CreateEventViewModel extends State<CreateEvent> {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
-    final regex = RegExp(r'(.+)-(.+)');
+    final prefixRegex = RegExp(r'^\s*\d+[\s.\-)]+');
 
     final names =
         list
             .split('\n')
             .where((line) => line.isNotEmpty)
-            .where(regex.hasMatch)
-            .map(
-              (line) => line
-                  .split('-')
-                  .skip(1)
-                  .map((part) => part.trim())
-                  .join('-')
-                  .trim(),
-            )
-            .where((line) => line.isNotEmpty)
+            .map((line) => line.trim())
+            .where((line) => prefixRegex.hasMatch(line))
+            .map((line) => line.replaceFirst(prefixRegex, '').trim())
+            .where((name) => name.isNotEmpty)
             .map(removeEmojis)
             .toList()
           ..sort((a, b) => a.compareTo(b));
@@ -358,45 +334,47 @@ abstract class CreateEventViewModel extends State<CreateEvent> {
       final match = RegExp(r'(.+)-(h|H|m|M)').firstMatch(name);
 
       if (match == null) {
-        final result = await _playersRepository.findOneByName(
-          name.toCapitalCase(),
+        final foundPlayer = prefs.find<PlayerEntity>(
+          (e) => e.name == name.toCapitalCase(),
         );
 
-        if (result.hasValue) {
-          _players.add(result.value);
+        if (foundPlayer != null) {
+          _players.add(foundPlayer);
         } else {
-          final result1 = await _playersRepository.insertOne(
-            InsertOnePlayerParams(
-              name: name.toCapitalCase(),
-              gender: PlayerGender.unknown.value,
-              level: PlayerLevel.basic.value,
-            ),
+          final newPlayer = PlayerEntity.create(
+            name: name.toCapitalCase(),
+            gender: PlayerGender.unknown,
+            level: PlayerLevel.basic,
           );
 
-          if (result1.hasError) return onError?.call(result1.error.toString());
+          final saved = await prefs.put<PlayerEntity>(newPlayer);
 
-          _players.add(result1.value);
+          if (!saved) return onError?.call(l10n.failedToSavePlayerError);
+
+          _players.add(newPlayer);
         }
       } else {
         final playerName = match.group(1)!.trim().toCapitalCase();
         final playerGender = match.group(2)!.trim();
 
-        final result = await _playersRepository.findOneByName(playerName);
+        final foundPlayer = prefs.find<PlayerEntity>(
+          (e) => e.name == playerName,
+        );
 
-        if (result.hasValue) {
-          _players.add(result.value);
+        if (foundPlayer != null) {
+          _players.add(foundPlayer);
         } else {
-          final result1 = await _playersRepository.insertOne(
-            InsertOnePlayerParams(
-              name: playerName,
-              gender: PlayerGender.fromValue(playerGender).value,
-              level: PlayerLevel.basic.value,
-            ),
+          final newPlayer = PlayerEntity.create(
+            name: playerName,
+            gender: PlayerGender.fromValue(playerGender),
+            level: PlayerLevel.basic,
           );
 
-          if (result1.hasError) return onError?.call(result1.error.toString());
+          final saved = await prefs.put<PlayerEntity>(newPlayer);
 
-          _players.add(result1.value);
+          if (!saved) return onError?.call(l10n.failedToSavePlayerError);
+
+          _players.add(newPlayer);
         }
       }
     }

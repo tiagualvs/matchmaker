@@ -7,8 +7,8 @@ part of 'team_entity.dart';
 // **************************************************************************
 
 _TeamEntity _$TeamEntityFromJson(Map<String, dynamic> json) => _TeamEntity(
-  id: (json['id'] as num).toInt(),
-  eventId: (json['eventId'] as num).toInt(),
+  id: json['id'] as String,
+  eventId: json['eventId'] as String,
   name: json['name'] as String,
   players: (json['players'] as List<dynamic>)
       .map((e) => PlayerEntity.fromJson(e as Map<String, dynamic>))

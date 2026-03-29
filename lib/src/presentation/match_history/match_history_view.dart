@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/extensions/num_ext.dart';
 import 'package:matchmaker/src/common/l10n/l10n.dart';
+import 'package:matchmaker/src/common/shared/id.dart';
 
 import 'match_history_view_model.dart';
 
@@ -34,28 +36,28 @@ class MatchHistoryView extends MatchHistoryViewModel {
           ],
         ),
         false => ListView.separated(
-          separatorBuilder: (_, _) => const SizedBox(height: 16.0),
-          padding: const .all(16.0),
+          separatorBuilder: (_, _) => SizedBox(height: 2.unit),
+          padding: .all(2.unit),
           itemCount: matches.length,
           itemBuilder: (context, index) {
             final match = matches[index];
 
             return ExpansionTile(
-              tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
-              childrenPadding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-              ).copyWith(bottom: 16.0),
+              tilePadding: EdgeInsets.symmetric(horizontal: 2.unit),
+              childrenPadding: EdgeInsets.symmetric(
+                horizontal: 2.unit,
+              ).copyWith(bottom: 2.unit),
               expandedCrossAxisAlignment: .stretch,
               backgroundColor: context.colorScheme.onPrimary,
               collapsedBackgroundColor: context.colorScheme.onPrimary,
               collapsedShape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: BorderRadius.circular(1.unit),
                 side: BorderSide(
                   color: context.colorScheme.surfaceContainerHighest,
                 ),
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: BorderRadius.circular(1.unit),
                 side: BorderSide(
                   color: context.colorScheme.surfaceContainerHighest,
                 ),
@@ -71,7 +73,7 @@ class MatchHistoryView extends MatchHistoryViewModel {
                   (score) {
                     String currentScore() {
                       final scores = match.scores
-                          .where((s) => s.id <= score.id && !s.reversed)
+                          .where((s) => Id.lte(s.id, score.id) && !s.reversed)
                           .toList();
 
                       final firstTeamScore = scores
@@ -100,11 +102,11 @@ class MatchHistoryView extends MatchHistoryViewModel {
                     }
 
                     return Container(
-                      padding: const .all(8.0),
-                      margin: const .only(bottom: 8.0),
+                      padding: .all(1.unit),
+                      margin: .only(bottom: 1.unit),
                       color: currentColor(),
                       child: Row(
-                        spacing: 8.0,
+                        spacing: 1.unit,
                         children: [
                           Expanded(
                             child: Text(

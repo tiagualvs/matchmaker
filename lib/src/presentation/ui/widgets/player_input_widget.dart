@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/extensions/num_ext.dart';
 import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -52,11 +53,11 @@ class _PlayerInputWidgetState extends State<PlayerInputWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: EdgeInsets.all(3.unit),
       child: Form(
         key: formKey,
         child: Column(
-          spacing: 16.0,
+          spacing: 2.unit,
           crossAxisAlignment: .stretch,
           mainAxisSize: .min,
           children: [
@@ -93,7 +94,7 @@ class _PlayerInputWidgetState extends State<PlayerInputWidget> {
                   return null;
                 },
                 errorBuilder: (context, errorText) => Padding(
-                  padding: const .symmetric(horizontal: 16.0),
+                  padding: .symmetric(horizontal: 2.unit),
                   child: Text(
                     errorText,
                     style: context.textTheme.bodySmall?.copyWith(
@@ -142,7 +143,8 @@ class _PlayerInputWidgetState extends State<PlayerInputWidget> {
                       if (field.hasError) ...[
                         field.widget.errorBuilder?.call(
                               context,
-                              field.errorText ?? L10n.of(context).validateGenderError,
+                              field.errorText ??
+                                  L10n.of(context).validateGenderError,
                             ) ??
                             const SizedBox(),
                       ],
@@ -163,7 +165,7 @@ class _PlayerInputWidgetState extends State<PlayerInputWidget> {
                   return null;
                 },
                 errorBuilder: (context, errorText) => Padding(
-                  padding: const .symmetric(horizontal: 16.0),
+                  padding: .symmetric(horizontal: 2.unit),
                   child: Text(
                     errorText,
                     style: context.textTheme.bodySmall?.copyWith(
@@ -210,7 +212,8 @@ class _PlayerInputWidgetState extends State<PlayerInputWidget> {
                       if (field.hasError) ...[
                         field.widget.errorBuilder?.call(
                               context,
-                              field.errorText ?? L10n.of(context).validateLevelError,
+                              field.errorText ??
+                                  L10n.of(context).validateLevelError,
                             ) ??
                             const SizedBox(),
                       ],
@@ -226,16 +229,21 @@ class _PlayerInputWidgetState extends State<PlayerInputWidget> {
                   return widget.onSave(
                     player?.copyWith(
                           name: controller.text,
-                          gender: widget.withGenderSelect ? gender.first : PlayerGender.unknown,
-                          level: widget.withLevelSelect ? level.first : PlayerLevel.basic,
+                          gender: widget.withGenderSelect
+                              ? gender.first
+                              : PlayerGender.unknown,
+                          level: widget.withLevelSelect
+                              ? level.first
+                              : PlayerLevel.basic,
                         ) ??
-                        PlayerEntity(
-                          id: -1,
+                        PlayerEntity.create(
                           name: controller.text,
-                          gender: widget.withGenderSelect ? gender.first : PlayerGender.unknown,
-                          level: widget.withLevelSelect ? level.first : PlayerLevel.basic,
-                          createdAt: DateTime.now(),
-                          updatedAt: DateTime.now(),
+                          gender: widget.withGenderSelect
+                              ? gender.first
+                              : PlayerGender.unknown,
+                          level: widget.withLevelSelect
+                              ? level.first
+                              : PlayerLevel.basic,
                         ),
                   );
                 }

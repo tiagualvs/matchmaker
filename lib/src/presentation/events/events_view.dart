@@ -3,6 +3,7 @@ import 'dart:core' hide Match;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/extensions/num_ext.dart';
 import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
 import 'package:matchmaker/src/presentation/create_event/create_event.dart';
@@ -20,7 +21,7 @@ class EventsView extends EventsViewModel {
         FloatingActionButtonMenuItem(
           icon: const Icon(Symbols.add_rounded),
           label: Text(L10n.of(context).singleMatch),
-          onPressed: () => Match.push(context),
+          onPressed: () => Match.detached(context),
         ),
         FloatingActionButtonMenuItem(
           icon: const Icon(Symbols.event_rounded),
@@ -57,8 +58,8 @@ class EventsView extends EventsViewModel {
             ),
           ),
           false => ListView.separated(
-            separatorBuilder: (_, _) => const SizedBox(height: 16.0),
-            padding: const .all(16.0),
+            separatorBuilder: (_, _) => SizedBox(height: 2.unit),
+            padding: .all(2.unit),
             itemCount: events.length,
             itemBuilder: (context, index) {
               final event = events[index];
@@ -66,14 +67,14 @@ class EventsView extends EventsViewModel {
 
               return ListTile(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: BorderRadius.circular(1.unit),
                   side: BorderSide(
                     color: context.colorScheme.surfaceContainerHighest,
                   ),
                 ),
                 tileColor: context.colorScheme.onPrimary,
                 onTap: () async {
-                  await Event.push(context, event);
+                  await Event.push(context, event.id);
 
                   await getEventsList();
                 },
@@ -81,7 +82,9 @@ class EventsView extends EventsViewModel {
                 subtitle: switch (event.ended && event.endedAt != null) {
                   true => Text(
                     L10n.of(context).eventFinishedOn(
-                      DateFormat("dd 'de' MMM 'de' yyyy 'às' HH:mm").format(event.endedAt!),
+                      DateFormat(
+                        "dd 'de' MMM 'de' yyyy 'às' HH:mm",
+                      ).format(event.endedAt!),
                     ),
                   ),
                   false => switch (currentMatch != null) {

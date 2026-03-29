@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/shared/injector.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
-import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
+import 'package:matchmaker/src/data/services/shared_preferences/shared_preferences_service.dart';
 
 import 'events.dart';
 
 abstract class EventsViewModel extends State<Events> {
-  final EventsRepository _eventsRepository = Injector.instance.get();
+  SharedPreferencesService get prefs => Injector.instance.get();
 
   bool _loading = true;
 
@@ -26,25 +26,16 @@ abstract class EventsViewModel extends State<Events> {
   Future<void> getEventsList({
     void Function(String error)? onError,
   }) async {
-    setState(() {
-      _loading = true;
+    setState(() => _loading = true);
+
+    final events = prefs.findMany<EventEntity>()
+      ..sort(
+        (a, b) => b.createdAt.compareTo(a.createdAt),
+      );
+
+    return setState(() {
+      _loading = false;
+      _events = events;
     });
-
-    final result = await _eventsRepository.findMany();
-
-    return result.fold(
-      (events) {
-        return setState(() {
-          _loading = false;
-          _events = events;
-        });
-      },
-      (error) {
-        return setState(() {
-          _loading = false;
-          return onError?.call(error.toString());
-        });
-      },
-    );
   }
 }

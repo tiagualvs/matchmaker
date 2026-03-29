@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ScoreEntity {
 
- int get id; int get matchId; int get teamId; bool get reversed; DateTime get createdAt; DateTime get updatedAt;
+ String get id; String get matchId; String get teamId; bool get reversed; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of ScoreEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ScoreEntityCopyWith<$Res>  {
   factory $ScoreEntityCopyWith(ScoreEntity value, $Res Function(ScoreEntity) _then) = _$ScoreEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, int matchId, int teamId, bool reversed, DateTime createdAt, DateTime updatedAt
+ String id, String matchId, String teamId, bool reversed, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -68,9 +68,9 @@ class _$ScoreEntityCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? matchId = null,Object? teamId = null,Object? reversed = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,matchId: null == matchId ? _self.matchId : matchId // ignore: cast_nullable_to_non_nullable
-as int,teamId: null == teamId ? _self.teamId : teamId // ignore: cast_nullable_to_non_nullable
-as int,reversed: null == reversed ? _self.reversed : reversed // ignore: cast_nullable_to_non_nullable
+as String,matchId: null == matchId ? _self.matchId : matchId // ignore: cast_nullable_to_non_nullable
+as String,teamId: null == teamId ? _self.teamId : teamId // ignore: cast_nullable_to_non_nullable
+as String,reversed: null == reversed ? _self.reversed : reversed // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
@@ -158,7 +158,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int matchId,  int teamId,  bool reversed,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String matchId,  String teamId,  bool reversed,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ScoreEntity() when $default != null:
 return $default(_that.id,_that.matchId,_that.teamId,_that.reversed,_that.createdAt,_that.updatedAt);case _:
@@ -179,7 +179,7 @@ return $default(_that.id,_that.matchId,_that.teamId,_that.reversed,_that.created
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int matchId,  int teamId,  bool reversed,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String matchId,  String teamId,  bool reversed,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _ScoreEntity():
 return $default(_that.id,_that.matchId,_that.teamId,_that.reversed,_that.createdAt,_that.updatedAt);case _:
@@ -199,7 +199,7 @@ return $default(_that.id,_that.matchId,_that.teamId,_that.reversed,_that.created
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int matchId,  int teamId,  bool reversed,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String matchId,  String teamId,  bool reversed,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ScoreEntity() when $default != null:
 return $default(_that.id,_that.matchId,_that.teamId,_that.reversed,_that.createdAt,_that.updatedAt);case _:
@@ -217,9 +217,9 @@ class _ScoreEntity extends ScoreEntity {
   const _ScoreEntity({required this.id, required this.matchId, required this.teamId, this.reversed = false, required this.createdAt, required this.updatedAt}): super._();
   factory _ScoreEntity.fromJson(Map<String, dynamic> json) => _$ScoreEntityFromJson(json);
 
-@override final  int id;
-@override final  int matchId;
-@override final  int teamId;
+@override final  String id;
+@override final  String matchId;
+@override final  String teamId;
 @override@JsonKey() final  bool reversed;
 @override final  DateTime createdAt;
 @override final  DateTime updatedAt;
@@ -257,7 +257,7 @@ abstract mixin class _$ScoreEntityCopyWith<$Res> implements $ScoreEntityCopyWith
   factory _$ScoreEntityCopyWith(_ScoreEntity value, $Res Function(_ScoreEntity) _then) = __$ScoreEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, int matchId, int teamId, bool reversed, DateTime createdAt, DateTime updatedAt
+ String id, String matchId, String teamId, bool reversed, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -277,9 +277,9 @@ class __$ScoreEntityCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? matchId = null,Object? teamId = null,Object? reversed = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_ScoreEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,matchId: null == matchId ? _self.matchId : matchId // ignore: cast_nullable_to_non_nullable
-as int,teamId: null == teamId ? _self.teamId : teamId // ignore: cast_nullable_to_non_nullable
-as int,reversed: null == reversed ? _self.reversed : reversed // ignore: cast_nullable_to_non_nullable
+as String,matchId: null == matchId ? _self.matchId : matchId // ignore: cast_nullable_to_non_nullable
+as String,teamId: null == teamId ? _self.teamId : teamId // ignore: cast_nullable_to_non_nullable
+as String,reversed: null == reversed ? _self.reversed : reversed // ignore: cast_nullable_to_non_nullable
 as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,

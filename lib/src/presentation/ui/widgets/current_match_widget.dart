@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/extensions/num_ext.dart';
 import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/pulse_animation_widget.dart';
 
 class CurrentMatchWidget extends StatelessWidget {
-  const CurrentMatchWidget({super.key, required this.match, required this.onTap});
+  const CurrentMatchWidget({
+    super.key,
+    required this.match,
+    required this.onTap,
+  });
 
   final MatchEntity match;
   final VoidCallback onTap;
@@ -16,11 +21,11 @@ class CurrentMatchWidget extends StatelessWidget {
       type: .transparency,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8.0),
+        borderRadius: BorderRadius.circular(1.unit),
         child: Card(
           margin: .zero,
           child: Column(
-            spacing: 8.0,
+            spacing: 1.unit,
             crossAxisAlignment: .stretch,
             children: [
               Stack(
@@ -46,15 +51,17 @@ class CurrentMatchWidget extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    bottom: 16.0,
-                    left: 16.0,
-                    right: 16.0,
+                    bottom: 2.unit,
+                    left: 2.unit,
+                    right: 2.unit,
                     child: Row(
                       spacing: 4.0,
                       children: [
                         Text(
                           L10n.of(context).matchNameTitle(match.name),
-                          style: context.textTheme.titleMedium?.copyWith(fontWeight: .bold),
+                          style: context.textTheme.titleMedium?.copyWith(
+                            fontWeight: .bold,
+                          ),
                         ),
                         const PulseAnimationWidget(runningColor: Colors.green),
                       ],
@@ -63,7 +70,7 @@ class CurrentMatchWidget extends StatelessWidget {
                 ],
               ),
               Row(
-                spacing: 16.0,
+                spacing: 2.unit,
                 mainAxisAlignment: .center,
                 children: [
                   Column(
@@ -80,10 +87,10 @@ class CurrentMatchWidget extends StatelessWidget {
                           fontWeight: .bold,
                           shadows: match.firstTeamScoreByOne
                               ? [
-                                  const BoxShadow(
+                                  BoxShadow(
                                     color: Colors.yellow,
-                                    spreadRadius: 8.0,
-                                    blurRadius: 16.0,
+                                    spreadRadius: 1.unit,
+                                    blurRadius: 2.unit,
                                     blurStyle: .outer,
                                   ),
                                 ]
@@ -110,10 +117,10 @@ class CurrentMatchWidget extends StatelessWidget {
                           fontWeight: .bold,
                           shadows: match.secondTeamScoreByOne
                               ? [
-                                  const BoxShadow(
+                                  BoxShadow(
                                     color: Colors.yellow,
-                                    spreadRadius: 8.0,
-                                    blurRadius: 16.0,
+                                    spreadRadius: 1.unit,
+                                    blurRadius: 2.unit,
                                     blurStyle: .outer,
                                   ),
                                 ]

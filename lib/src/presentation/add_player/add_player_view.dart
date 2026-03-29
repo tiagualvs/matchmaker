@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/extensions/num_ext.dart';
 import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -24,7 +26,7 @@ class AddPlayerView extends AddPlayerViewModel {
                   return PlayerInputWidget(
                     withLevelSelect: false,
                     onSave: (player) async {
-                      Navigator.of(context).pop();
+                      context.pop();
 
                       return await handleInsertPlayer(
                         player,
@@ -43,11 +45,11 @@ class AddPlayerView extends AddPlayerViewModel {
       body: switch (loading) {
         true => const Center(child: CircularProgressIndicator()),
         false => SingleChildScrollView(
-          padding: const .all(24.0),
+          padding: .all(3.unit),
           child: Form(
             key: formKey,
             child: Column(
-              spacing: 16.0,
+              spacing: 2.unit,
               mainAxisSize: .min,
               crossAxisAlignment: .stretch,
               children: [
@@ -65,7 +67,7 @@ class AddPlayerView extends AddPlayerViewModel {
                   },
                   initialSelection: team.name,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
-                  width: MediaQuery.sizeOf(context).width - 48.0,
+                  width: MediaQuery.sizeOf(context).width - 41.unit,
                   dropdownMenuEntries: List.from(
                     TeamEntity.names
                         .where(
@@ -80,7 +82,7 @@ class AddPlayerView extends AddPlayerViewModel {
                   onSelected: (value) {
                     if (value == null) return;
 
-                    team = team.copyWith(name: value);
+                    return setName(value);
                   },
                   hintText: L10n.of(context).selectPlaceholder,
                   label: Text(L10n.of(context).teamNameLabel),
@@ -104,7 +106,7 @@ class AddPlayerView extends AddPlayerViewModel {
         ),
       },
       bottomNavigationBar: Padding(
-        padding: const .all(24.0),
+        padding: .all(3.unit),
         child: FilledButton.icon(
           key: const ValueKey('TeamAddPage.saveButton'),
           onPressed: switch (team.players.isEmpty) {
@@ -112,7 +114,7 @@ class AddPlayerView extends AddPlayerViewModel {
             false => () => save(
               onSuccess: () {
                 SnackBars.success(L10n.of(context).teamRegisteredSuccess);
-                return Navigator.of(context).pop(team);
+                return context.pop();
               },
               onError: (err) {
                 return SnackBars.error(err);

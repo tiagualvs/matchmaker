@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:matchmaker/src/data/entities/event_entity.dart';
+import 'package:go_router/go_router.dart';
 
 import 'teams_view.dart';
 
 class Teams extends StatefulWidget {
-  const Teams({super.key, required this.event});
+  final String eventId;
 
-  final EventEntity event;
+  const Teams({super.key, required this.eventId});
 
-  static const String path = '/teams';
+  static const String path = '/events/:eventId/teams';
 
-  static Future<T?> push<T>(BuildContext context, EventEntity event) async {
-    return Navigator.of(context).pushNamed(path, arguments: event);
+  static const String name = 'teams';
+
+  static Future<T?> push<T>(BuildContext context, String eventId) async {
+    return context.pushNamed(name, pathParameters: {'eventId': eventId});
   }
 
   @override

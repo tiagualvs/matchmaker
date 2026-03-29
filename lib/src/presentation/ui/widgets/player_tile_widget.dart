@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/extensions/num_ext.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -18,14 +19,17 @@ class PlayerTileWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      spacing: 8.0,
+      spacing: 1.unit,
       children: [
         if (showGender) ...[
           SizedBox(
-            width: 24.0,
+            width: 3.unit,
             child: switch (player.gender) {
               PlayerGender.male => const Icon(Symbols.male, color: Colors.blue),
-              PlayerGender.female => const Icon(Symbols.female, color: Colors.pink),
+              PlayerGender.female => const Icon(
+                Symbols.female,
+                color: Colors.pink,
+              ),
               _ => const Icon(Symbols.agender),
             },
           ),

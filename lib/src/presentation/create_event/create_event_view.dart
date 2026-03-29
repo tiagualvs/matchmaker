@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/extensions/num_ext.dart';
 import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/common/widgets/floating_action_button_menu.dart';
@@ -80,9 +82,9 @@ class CreateEventView extends CreateEventViewModel {
                   return StatefulBuilder(
                     builder: (context, setState) {
                       return Padding(
-                        padding: const EdgeInsets.all(24.0),
+                        padding: EdgeInsets.all(3.unit),
                         child: Column(
-                          spacing: 16.0,
+                          spacing: 2.unit,
                           crossAxisAlignment: .stretch,
                           mainAxisSize: .min,
                           children: [
@@ -110,8 +112,7 @@ class CreateEventView extends CreateEventViewModel {
                               ),
                               onPressed: initialValue == null
                                   ? null
-                                  : () =>
-                                        Navigator.of(context).pop(initialValue),
+                                  : () => context.pop(initialValue),
                               icon: const Icon(Symbols.upload_file_rounded),
                               label: Text(L10n.of(context).importLabel),
                             ),
@@ -182,7 +183,7 @@ class CreateEventView extends CreateEventViewModel {
                 size: 64.0,
                 color: context.colorScheme.primary,
               ),
-              const SizedBox(height: 16.0),
+              SizedBox(height: 2.unit),
               Text(
                 L10n.of(context).noTeamsRegistered,
                 textAlign: .center,
@@ -198,9 +199,9 @@ class CreateEventView extends CreateEventViewModel {
           false when teams.isEmpty && players.isNotEmpty =>
             SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(3.unit),
               child: Column(
-                spacing: 16.0,
+                spacing: 2.unit,
                 crossAxisAlignment: .stretch,
                 children: [
                   Text(
@@ -212,8 +213,8 @@ class CreateEventView extends CreateEventViewModel {
                       clipBehavior: .antiAlias,
                       color: context.colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(8.0),
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(1.unit),
                         ),
                         side: BorderSide(
                           width: 0.5,
@@ -241,15 +242,12 @@ class CreateEventView extends CreateEventViewModel {
                           );
                         },
                         child: Padding(
-                          padding:
-                              const EdgeInsets.symmetric(
-                                vertical: 4.0,
-                                horizontal: 16.0,
-                              ).copyWith(
-                                right: 0.0,
-                              ),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 0.5.unit,
+                            horizontal: 2.unit,
+                          ).copyWith(right: 0.unit),
                           child: Row(
-                            spacing: 16.0,
+                            spacing: 2.unit,
                             children: [
                               Material(
                                 shape: const CircleBorder(),
@@ -306,9 +304,9 @@ class CreateEventView extends CreateEventViewModel {
             ),
           false when teams.isNotEmpty => SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.all(24.0),
+            padding: EdgeInsets.all(3.unit),
             child: Column(
-              spacing: 16.0,
+              spacing: 2.unit,
               crossAxisAlignment: .stretch,
               children: [
                 Text(

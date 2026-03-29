@@ -8,7 +8,7 @@ part of 'player_entity.dart';
 
 _PlayerEntity _$PlayerEntityFromJson(Map<String, dynamic> json) =>
     _PlayerEntity(
-      id: (json['id'] as num).toInt(),
+      id: json['id'] as String,
       name: json['name'] as String,
       gender:
           $enumDecodeNullable(_$PlayerGenderEnumMap, json['gender']) ??

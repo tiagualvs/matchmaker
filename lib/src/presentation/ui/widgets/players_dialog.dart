@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:matchmaker/src/common/extensions/num_ext.dart';
 import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
@@ -72,10 +73,10 @@ class _PlayersDialogState extends State<PlayersDialog> {
     return Scaffold(
       appBar: AppBar(
         title: Text(L10n.of(context).playersCount(players.length)),
-        actionsPadding: const .only(right: 16.0),
+        actionsPadding: .only(right: 2.unit),
         actions: [
           PopupMenuButton<int>(
-            constraints: const BoxConstraints(minWidth: 196.0),
+            constraints: BoxConstraints(minWidth: 24.5.unit),
             onSelected: (value) async {
               return switch (value) {
                 1 => handleGenerate(),
@@ -113,7 +114,7 @@ class _PlayersDialogState extends State<PlayersDialog> {
                 alignLabelWithHint: true,
                 hintText: L10n.of(context).playerNameHint,
                 suffix: PopupMenuButton<PlayerGender>(
-                  constraints: const BoxConstraints(minWidth: 192.0),
+                  constraints: BoxConstraints(minWidth: 24.unit),
                   icon: switch (player.gender) {
                     PlayerGender.male => const Icon(
                       Icons.male,

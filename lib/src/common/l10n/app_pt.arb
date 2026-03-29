@@ -435,8 +435,9 @@
     "description": "Default name generated for a new event",
     "placeholders": {
       "date": {
-        "type": "String",
-        "example": "25/03/2026"
+        "type": "DateTime",
+        "format": "dd/MM/yyyy",
+        "isCustomDateFormat": true
       }
     }
   },
@@ -540,5 +541,25 @@
   "playersSwappedSuccess": "Jogadores trocados com sucesso!",
   "@playersSwappedSuccess": {
     "description": "Success notification after adjusting teams"
+  },
+  "detachedFirstTeamName": "Time A",
+  "@detachedFirstTeamName": {
+    "description": "Default name for the first team in a detached match"
+  },
+  "detachedSecondTeamName": "Time B",
+  "@detachedSecondTeamName": {
+    "description": "Default name for the second team in a detached match"
+  },
+  "failedToSaveEventError": "Falha ao salvar evento!",
+  "@failedToSaveEventError": {
+    "description": "Error message for failed event save operations"
+  },
+  "failedToSavePlayerError": "Falha ao salvar jogador!",
+  "@failedToSavePlayerError": {
+    "description": "Error message for failed player save operations"
+  },
+  "maxPlayersPerTeamError": "O número máximo de jogadores por time foi atingido!",
+  "@maxPlayersPerTeamError": {
+    "description": "Error message for max players per team"
   }
 }

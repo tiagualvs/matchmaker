@@ -7,6 +7,8 @@ class Events extends StatefulWidget {
 
   static const String path = '/';
 
+  static const String name = 'events';
+
   @override
   State<Events> createState() => EventsView();
 }

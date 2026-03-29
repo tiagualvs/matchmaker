@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/extensions/num_ext.dart';
 import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/others/dialogs.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
@@ -235,17 +237,17 @@ class MatchView extends MatchViewModel {
           false => Stack(
             children: [
               Row(
-                spacing: 16.0,
+                spacing: 2.unit,
                 children: switch (swapped) {
                   true => [secondTeamWidget, firstTeamWidget],
                   false => [firstTeamWidget, secondTeamWidget],
                 },
               ),
               Positioned(
-                top: 16.0,
-                bottom: 16.0,
-                left: 16.0,
-                right: 16.0,
+                top: 2.unit,
+                bottom: 2.unit,
+                left: 2.unit,
+                right: 2.unit,
                 child: Row(
                   mainAxisAlignment: .center,
                   children: [
@@ -259,40 +261,51 @@ class MatchView extends MatchViewModel {
                               minWidth: 480.0,
                             ),
                             title: Text(L10n.of(context).settings),
-                            content: Column(
-                              children: [
-                                TextFormField(
-                                  initialValue: match.maxScore.toString(),
-                                  onChanged: (value) {
-                                    match = match.copyWith(
-                                      maxScore:
-                                          int.tryParse(value) ?? match.maxScore,
-                                    );
-                                  },
-                                  decoration: InputDecoration(
-                                    labelText: L10n.of(
-                                      context,
-                                    ).pointsToWinLabel,
-                                    floatingLabelBehavior: .always,
-                                  ),
-                                ),
-                                SwitchListTile(
-                                  value: match.halfScoreToEliminate,
-                                  contentPadding: .zero,
-                                  materialTapTargetSize: .shrinkWrap,
-                                  title: Text(L10n.of(context).eliminateAtHalf),
-                                  subtitle: Text(
-                                    L10n.of(context).eliminateAtHalfDescription(
-                                      (match.maxScore / 2).round(),
+                            content: StatefulBuilder(
+                              builder: (context, setState) {
+                                return Column(
+                                  children: [
+                                    TextFormField(
+                                      initialValue: match.maxScore.toString(),
+                                      keyboardType: .number,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly,
+                                      ],
+                                      onChanged: (value) {
+                                        setMaxScore(int.parse(value));
+
+                                        setState(() {});
+                                      },
+                                      decoration: InputDecoration(
+                                        labelText: L10n.of(
+                                          context,
+                                        ).pointsToWinLabel,
+                                        floatingLabelBehavior: .always,
+                                      ),
                                     ),
-                                  ),
-                                  onChanged: (value) {
-                                    match = match.copyWith(
-                                      halfScoreToEliminate: value,
-                                    );
-                                  },
-                                ),
-                              ],
+                                    SwitchListTile(
+                                      value: match.halfScoreToEliminate,
+                                      contentPadding: .zero,
+                                      materialTapTargetSize: .shrinkWrap,
+                                      title: Text(
+                                        L10n.of(context).eliminateAtHalf,
+                                      ),
+                                      subtitle: Text(
+                                        L10n.of(
+                                          context,
+                                        ).eliminateAtHalfDescription(
+                                          (match.maxScore / 2).round(),
+                                        ),
+                                      ),
+                                      onChanged: (value) {
+                                        setHalfScoreToEliminate(value);
+
+                                        setState(() {});
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
                             ),
                             actions: [
                               TextButton(
