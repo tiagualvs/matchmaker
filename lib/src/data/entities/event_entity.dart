@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:matchmaker/src/common/shared/id.dart';
+import 'package:matchmaker/src/common/shared/timestamp.dart';
 import 'package:matchmaker/src/data/entities/match_entity.dart';
-import 'package:matchmaker/src/data/entities/player_entity.dart';
-import 'package:matchmaker/src/data/entities/score_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
-import 'package:matchmaker/src/data/services/database/app_database.dart';
+import 'package:matchmaker/src/data/services/shared_preferences/shared_preferences_service.dart';
 
 part 'event_entity.freezed.dart';
 part 'event_entity.g.dart';
@@ -15,11 +15,11 @@ abstract class EventEntity with _$EventEntity {
   const EventEntity._();
 
   const factory EventEntity({
-    required int id,
+    required String id,
     required String name,
     @Default([]) List<TeamEntity> teams,
     @Default([]) List<MatchEntity> matches,
-    @Default([]) List<int> queue,
+    @Default([]) List<String> queue,
     @Default(12) int maxScore,
     @Default(4) int maxPlayerPerTeam,
     @Default(true) bool balancedByGender,
@@ -32,199 +32,109 @@ abstract class EventEntity with _$EventEntity {
     DateTime? endedAt,
   }) = _EventEntity;
 
-  factory EventEntity.fromJson(Map<String, dynamic> json) => _$EventEntityFromJson(json);
+  factory EventEntity.fromJson(Map<String, dynamic> json) =>
+      _$EventEntityFromJson(json);
 
-  factory EventEntity.fromDrift(EventData data) {
+  factory EventEntity.create({
+    required String name,
+    int maxScore = 12,
+    int maxPlayerPerTeam = 4,
+    bool balancedByGender = true,
+    bool balancedByLevel = true,
+    int maxWinsInARow = 0,
+    bool halfScoreToEliminate = false,
+  }) {
     return EventEntity(
-      id: data.id,
-      name: data.name,
-      maxScore: data.maxScore,
-      maxPlayerPerTeam: data.maxPlayerPerTeam,
-      balancedByGender: data.balancedByGender,
-      balancedByLevel: data.balancedByLevel,
-      maxWinsInARow: data.maxWinsInARow,
-      teams: [],
-      matches: [],
-      queue: data.queue.split(',').map((id) => int.parse(id)).toList(),
-      halfScoreToEliminate: data.halfScoreToEliminate,
-      ended: data.ended,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      endedAt: data.endedAt,
+      id: Id.generate(),
+      name: name,
+      maxScore: maxScore,
+      maxPlayerPerTeam: maxPlayerPerTeam,
+      balancedByGender: balancedByGender,
+      balancedByLevel: balancedByLevel,
+      maxWinsInARow: maxWinsInARow,
+      halfScoreToEliminate: halfScoreToEliminate,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
     );
   }
 
-  factory EventEntity.withAllData(EventWithAllDataData data) {
-    final teams = List<TeamEntity>.from(
-      (json.decode(data.teams) as List).map(
-        (source) => TeamEntity(
-          id: source['id'] as int,
-          eventId: source['eventId'] as int,
-          name: source['name'] as String,
-          players: List.from(
-            (source['players'] as List).map(
-              (player) => PlayerEntity(
-                id: player['id'] as int,
-                name: player['name'] as String,
-                gender: PlayerGender.fromValue(player['gender'] as String),
-                level: PlayerLevel.fromValue(player['level'] as String),
-                createdAt: DateTime.parse(player['createdAt'] as String),
-                updatedAt: DateTime.parse(player['updatedAt'] as String),
-              ),
-            ),
-          ),
-          createdAt: DateTime.parse(source['createdAt'] as String),
-          updatedAt: DateTime.parse(source['updatedAt'] as String),
-        ),
-      ),
-    );
-
-    final matches = List<MatchEntity>.from(
-      (json.decode(data.matches) as List).map(
-        (source) {
-          return MatchEntity(
-            id: source['id'] as int,
-            eventId: source['eventId'] as int,
-            name: source['name'] as String,
-            firstTeam: teams.firstWhere((team) => team.id == source['firstTeamId'] as int),
-            secondTeam: teams.firstWhere((team) => team.id == source['secondTeamId'] as int),
-            scores: List.from(
-              (source['scores'] as List).map(
-                (score) => ScoreEntity(
-                  id: score['id'] as int,
-                  matchId: score['matchId'] as int,
-                  teamId: score['teamId'] as int,
-                  reversed: score['reversed'] == 1,
-                  createdAt: DateTime.parse(score['createdAt'] as String).toLocal(),
-                  updatedAt: DateTime.parse(score['updatedAt'] as String).toLocal(),
-                ),
-              ),
-            )..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
-            maxScore: source['maxScore'] as int,
-            halfScoreToEliminate: source['halfScoreToEliminate'] == 1,
-            ended: source['ended'] == 1,
-            createdAt: DateTime.parse(source['createdAt'] as String).toLocal(),
-            updatedAt: DateTime.parse(source['updatedAt'] as String).toLocal(),
-          );
-        },
-      ),
-    )..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
+  factory EventEntity.empty() {
     return EventEntity(
-      id: data.id,
-      name: data.name,
-      maxScore: data.maxScore,
-      maxPlayerPerTeam: data.maxPlayerPerTeam,
-      balancedByGender: data.balancedByGender,
-      balancedByLevel: data.balancedByLevel,
-      maxWinsInARow: data.maxWinsInARow,
-      teams: teams,
-      matches: matches,
-      queue: data.queue.split(',').map((id) => int.parse(id)).toList(),
-      halfScoreToEliminate: data.halfScoreToEliminate,
-      ended: data.ended,
-      createdAt: DateTime.parse(data.createdAt).toLocal(),
-      updatedAt: DateTime.parse(data.updatedAt).toLocal(),
-      endedAt: switch (data.endedAt.isEmpty) {
-        true => null,
-        false => DateTime.parse(data.endedAt),
-      },
+      id: Id.min(),
+      name: '',
+      createdAt: Timestamp.min(),
+      updatedAt: Timestamp.min(),
     );
   }
 
-  factory EventEntity.withLastMatch(EventWithLastMatchData data) {
-    return EventEntity(
-      id: data.id,
-      name: data.name,
-      maxScore: data.maxScore,
-      maxPlayerPerTeam: data.maxPlayerPerTeam,
-      balancedByGender: data.balancedByGender,
-      balancedByLevel: data.balancedByLevel,
-      maxWinsInARow: data.maxWinsInARow,
-      teams: [],
-      matches: List.from(
-        (json.decode(data.matches) as List).map(
-          (src) {
-            final firstTeamSource = src['firstTeam'];
-            final secondTeamSource = src['secondTeam'];
+  (MatchEntity match, List<String> queue)? nextMatch() {
+    if (ended) return (matches.first, queue);
 
-            return MatchEntity(
-              id: src['id'] as int,
-              eventId: data.id,
-              name: src['name'] as String,
-              firstTeam: TeamEntity(
-                id: firstTeamSource['id'] as int,
-                eventId: data.id,
-                name: firstTeamSource['name'] as String,
-                players: List.from(
-                  (firstTeamSource['players'] as List).map(
-                    (player) => PlayerEntity(
-                      id: player['id'] as int,
-                      name: player['name'] as String,
-                      gender: PlayerGender.fromValue(player['gender'] as String),
-                      level: PlayerLevel.fromValue(player['level'] as String),
-                      createdAt: DateTime.parse(player['createdAt'] as String),
-                      updatedAt: DateTime.parse(player['updatedAt'] as String),
-                    ),
-                  ),
-                ),
-                createdAt: DateTime.parse(firstTeamSource['createdAt'] as String),
-                updatedAt: DateTime.parse(firstTeamSource['updatedAt'] as String),
-              ),
-              secondTeam: TeamEntity(
-                id: secondTeamSource['id'] as int,
-                eventId: data.id,
-                name: secondTeamSource['name'] as String,
-                players: List.from(
-                  (secondTeamSource['players'] as List).map(
-                    (player) => PlayerEntity(
-                      id: player['id'] as int,
-                      name: player['name'] as String,
-                      gender: PlayerGender.fromValue(player['gender'] as String),
-                      level: PlayerLevel.fromValue(player['level'] as String),
-                      createdAt: DateTime.parse(player['createdAt'] as String),
-                      updatedAt: DateTime.parse(player['updatedAt'] as String),
-                    ),
-                  ),
-                ),
-                createdAt: DateTime.parse(secondTeamSource['createdAt'] as String),
-                updatedAt: DateTime.parse(secondTeamSource['updatedAt'] as String),
-              ),
+    if (matches.isEmpty) {
+      final match = MatchEntity.create(
+        eventId: id,
+        name: '#1',
+        firstTeam: teams[0],
+        secondTeam: teams[1],
+        maxScore: maxScore,
+        halfScoreToEliminate: halfScoreToEliminate,
+      );
 
-              scores: List.from(
-                (src['scores'] as List).map(
-                  (score) => ScoreEntity(
-                    id: score['id'] as int,
-                    matchId: score['matchId'] as int,
-                    teamId: score['teamId'] as int,
-                    reversed: score['reversed'] == 1,
-                    createdAt: DateTime.parse(score['createdAt'] as String),
-                    updatedAt: DateTime.parse(score['updatedAt'] as String),
-                  ),
-                ),
-              ),
-              maxScore: src['maxScore'] as int,
-              halfScoreToEliminate: src['halfScoreToEliminate'] == 1,
-              createdAt: DateTime.parse(src['createdAt'] as String),
-              updatedAt: DateTime.parse(src['updatedAt'] as String),
-            );
-          },
-        ),
-      ),
-      queue: data.queue.split(',').map((id) => int.parse(id)).toList(),
-      halfScoreToEliminate: data.halfScoreToEliminate,
-      ended: data.ended,
-      createdAt: DateTime.parse(data.createdAt),
-      updatedAt: DateTime.parse(data.updatedAt),
-      endedAt: switch (data.endedAt.isEmpty) {
-        true => null,
-        false => DateTime.parse(data.endedAt),
-      },
+      return (match, teams.skip(2).map((team) => team.id).toList());
+    }
+
+    if (currentMatch != null) return null;
+
+    if (lastEndedMatch == null) return null;
+
+    final lastWinner = lastEndedMatch?.winner;
+
+    final lastLoser = lastEndedMatch?.loser;
+
+    if (lastWinner == null) return null;
+
+    if (lastLoser == null) return null;
+
+    if (teamWithMaxWinsInARow() != null) {
+      final match = MatchEntity.create(
+        eventId: id,
+        name: (matches.length + 1).toString(),
+        firstTeam: queueTeams[0],
+        secondTeam: queueTeams[1],
+        maxScore: maxScore,
+        halfScoreToEliminate: halfScoreToEliminate,
+      );
+
+      return (match, [lastWinner.id, ...queue.sublist(2), lastLoser.id]);
+    }
+
+    final firstTeam = lastWinner == lastEndedMatch?.firstTeam
+        ? lastWinner
+        : queueTeams[0];
+
+    final secondTeam = lastWinner == lastEndedMatch?.secondTeam
+        ? lastWinner
+        : queueTeams[0];
+
+    final match = MatchEntity.create(
+      eventId: id,
+      name: (matches.length + 1).toString(),
+      firstTeam: firstTeam,
+      secondTeam: secondTeam,
+      maxScore: maxScore,
+      halfScoreToEliminate: halfScoreToEliminate,
     );
+
+    return (match, [...queue.sublist(1), lastLoser.id]);
   }
 
-  (TeamEntity first, TeamEntity second, List<TeamEntity> queue)? nextMatchData() {
+  (TeamEntity first, TeamEntity second, List<TeamEntity> queue)?
+  nextMatchData() {
     if (ended) return null;
+
+    if (matches.isEmpty) {
+      return (teams[0], teams[1], queueTeams.skip(2).toList());
+    }
 
     if (currentMatch != null) return null;
 
@@ -264,7 +174,9 @@ abstract class EventEntity with _$EventEntity {
   TeamEntity lastWinner() {
     if (lastEndedMatch == null) throw Exception('No last ended match');
 
-    if (lastEndedMatch?.winner == null) throw Exception('No winner in last ended match');
+    if (lastEndedMatch?.winner == null) {
+      throw Exception('No winner in last ended match');
+    }
 
     return lastEndedMatch!.winner!;
   }
@@ -278,7 +190,10 @@ abstract class EventEntity with _$EventEntity {
 
     if (lastWinner == null) return null;
 
-    final ids = endedMatches.map((match) => match.winner?.id ?? -1).where((id) => !id.isNegative);
+    final ids = endedMatches
+        .map((match) => match.winner?.id)
+        .whereType<String>()
+        .where((id) => Id.valid(id));
 
     if (ids.length < maxWinsInARow) return null;
 
@@ -289,11 +204,14 @@ abstract class EventEntity with _$EventEntity {
     return lastWinner;
   }
 
-  List<TeamEntity> get queueTeams => queue.map((id) => teams.firstWhere((team) => team.id == id)).toList();
+  List<TeamEntity> get queueTeams =>
+      queue.map((id) => teams.firstWhere((team) => team.id == id)).toList();
 
-  List<MatchEntity> get endedMatches => matches.where((match) => match.ended).toList();
+  List<MatchEntity> get endedMatches =>
+      matches.where((match) => match.ended).toList();
 
-  List<MatchEntity> get notEndedMatches => matches.where((match) => !match.ended).toList();
+  List<MatchEntity> get notEndedMatches =>
+      matches.where((match) => !match.ended).toList();
 
   MatchEntity? get currentMatch {
     if (notEndedMatches.isEmpty) return null;
@@ -307,11 +225,11 @@ abstract class EventEntity with _$EventEntity {
     return endedMatches.first;
   }
 
-  int teamWins(int teamId) {
+  int teamWins(String teamId) {
     return endedMatches.where((match) => match.winner?.id == teamId).length;
   }
 
-  int teamLosses(int teamId) {
+  int teamLosses(String teamId) {
     return endedMatches.where((match) => match.loser?.id == teamId).length;
   }
 
@@ -322,26 +240,41 @@ abstract class EventEntity with _$EventEntity {
       final bWins = teamWins(b.id);
       final bLosses = teamLosses(b.id);
 
-      return bWins.compareTo(aWins) == 0 ? aLosses.compareTo(bLosses) : bWins.compareTo(aWins);
+      return bWins.compareTo(aWins) == 0
+          ? aLosses.compareTo(bLosses)
+          : bWins.compareTo(aWins);
     });
   }
 
-  bool get isEmpty => id.isNegative;
+  bool get isEmpty => id == Id.min();
 
   bool get isNotEmpty => !isEmpty;
 
-  bool get hasIncompleteTeams => teams.any((team) => team.players.length != maxPlayerPerTeam);
+  bool get hasIncompleteTeams =>
+      teams.any((team) => team.players.length != maxPlayerPerTeam);
 
-  bool hasPlayer(int playerId) {
-    return teams.any((team) => team.players.any((player) => player.id == playerId));
+  bool hasPlayer(String playerId) {
+    return teams.any(
+      (team) => team.players.any((player) => player.id == playerId),
+    );
   }
 
-  factory EventEntity.empty() {
-    return EventEntity(
-      id: -1,
-      name: '',
-      createdAt: DateTime(0),
-      updatedAt: DateTime(0),
-    );
+  static SharedPreferencesEncoder<EventEntity> encoder() => _EventEncoder();
+}
+
+class _EventEncoder extends SharedPreferencesEncoder<EventEntity> {
+  @override
+  EventEntity? decode(String source) {
+    return EventEntity.fromJson(json.decode(source));
+  }
+
+  @override
+  String encode(EventEntity value) {
+    return json.encode(value.toJson());
+  }
+
+  @override
+  String identifier(EventEntity value) {
+    return value.id;
   }
 }

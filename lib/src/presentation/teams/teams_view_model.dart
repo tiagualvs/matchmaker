@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/shared/injector.dart';
+import 'package:matchmaker/src/common/shared/timestamp.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
-import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
-import 'package:matchmaker/src/data/repositories/players/players_repository.dart';
-import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
+import 'package:matchmaker/src/data/services/shared_preferences/shared_preferences_service.dart';
 
 import 'teams.dart';
 
 abstract class TeamsViewModel extends State<Teams> {
-  late final L10n l10n = L10n.of(context);
+  L10n get l10n => L10n.of(context);
 
-  final EventsRepository _eventsRepository = Injector.instance.get();
-  final PlayersRepository _playersRepository = Injector.instance.get();
-  final TeamsRepository _teamsRepository = Injector.instance.get();
+  SharedPreferencesService get prefs => Injector.instance.get();
 
   @override
   void initState() {
@@ -26,11 +23,13 @@ abstract class TeamsViewModel extends State<Teams> {
 
   bool loading = false;
 
-  late EventEntity _event = widget.event;
+  late EventEntity _event =
+      prefs.find<EventEntity>((e) => e.id == widget.eventId) ??
+      EventEntity.empty();
 
   EventEntity get event => _event;
 
-  List<TeamEntity> _teams = [];
+  late List<TeamEntity> _teams = _event.teams;
 
   List<TeamEntity> get teams => _teams;
 
@@ -101,26 +100,19 @@ abstract class TeamsViewModel extends State<Teams> {
 
     sourceTeams[firstTeamIndex] = firstTeam.copyWith(
       players: List.from(firstTeam.players)..[firstPlayerIndex] = secondPlayer,
+      updatedAt: Timestamp.now(),
     );
 
     sourceTeams[secondTeamIndex] = secondTeam.copyWith(
       players: List.from(secondTeam.players)..[secondPlayerIndex] = firstPlayer,
+      updatedAt: Timestamp.now(),
     );
 
-    final result = await _teamsRepository.swapPlayers(
-      SwapPlayersParams(
-        firstTeamId: firstTeam.id,
-        secondTeamId: secondTeam.id,
-        firstPlayerId: firstPlayer.id,
-        secondPlayerId: secondPlayer.id,
-      ),
-    );
+    _event = _event.copyWith(teams: sourceTeams, updatedAt: Timestamp.now());
 
-    if (result.hasError) {
-      return setState(() {
-        return onError?.call(result.error.toString());
-      });
-    }
+    final saved = await prefs.put<EventEntity>(_event);
+
+    if (!saved) return onError?.call(l10n.failedToSaveEventError);
 
     return setState(() {
       _teams = sourceTeams;
@@ -130,7 +122,7 @@ abstract class TeamsViewModel extends State<Teams> {
   }
 
   Future<void> deleteTeam(
-    int teamId, {
+    String teamId, {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
@@ -141,24 +133,13 @@ abstract class TeamsViewModel extends State<Teams> {
       return onError?.call(l10n.minTeamsWarning);
     }
 
-    final result0 = await _teamsRepository.deleteOne(teamId);
+    _teams.removeWhere((team) => team.id == teamId);
 
-    if (result0.hasError) {
-      setState(() => loading = false);
-      return onError?.call(result0.error.toString());
-    }
+    _event = _event.copyWith(teams: _teams, updatedAt: Timestamp.now());
 
-    final result1 = await _eventsRepository.updateOne(
-      event.id,
-      UpdateOneEventParams(
-        queue: List.from(event.queue)..removeWhere((id) => id == teamId),
-      ),
-    );
+    final saved = await prefs.put<EventEntity>(_event);
 
-    if (result1.hasError) {
-      setState(() => loading = false);
-      return onError?.call(result1.error.toString());
-    }
+    if (!saved) return onError?.call(l10n.failedToSaveEventError);
 
     return setState(() {
       loading = false;
@@ -171,57 +152,37 @@ abstract class TeamsViewModel extends State<Teams> {
 
   Future<void> insertPlayer(
     int index,
-    int teamId,
+    String teamId,
     PlayerEntity player, {
     void Function()? onSuccess,
     void Function(String error)? onError,
   }) async {
     setState(() => loading = true);
 
-    final result0 = await _playersRepository.insertOne(
-      InsertOnePlayerParams(
-        name: player.name,
-        gender: player.gender.value,
-        level: player.level.value,
-      ),
-    );
-
-    if (result0.hasError) {
-      setState(() => loading = false);
-      return onError?.call(result0.error.toString());
-    }
-
-    final insertedPlayer = result0.value;
-
-    if (event.hasPlayer(insertedPlayer.id)) {
-      setState(() => loading = false);
-      return onError?.call(l10n.playerAlreadyInTeamError);
-    }
-
-    final result1 = await _teamsRepository.insertPlayer(
-      teamId,
-      insertedPlayer.id,
-    );
-
-    if (result1.hasError) {
-      setState(() => loading = false);
-      return onError?.call(result1.error.toString());
-    }
-
-    final teamIndex = teams.indexWhere((team) => team.id == teamId);
+    final teamIndex = _teams.indexWhere((team) => team.id == teamId);
 
     if (teamIndex == -1) return;
 
-    teams[teamIndex] = teams[teamIndex].copyWith(
-      players: [...teams[teamIndex].players]..[index] = insertedPlayer,
+    if (_teams[teamIndex].players.length == _event.maxPlayerPerTeam) {
+      setState(() => loading = false);
+      return onError?.call(l10n.maxPlayersPerTeamError);
+    }
+
+    _teams[teamIndex] = _teams[teamIndex].copyWith(
+      players: List.from(_teams[teamIndex].players)..[index] = player,
+      updatedAt: Timestamp.now(),
     );
+
+    _event = _event.copyWith(teams: _teams, updatedAt: Timestamp.now());
+
+    final saved = await prefs.put<EventEntity>(_event);
+
+    if (!saved) return onError?.call(l10n.failedToSaveEventError);
 
     return setState(() {
       loading = false;
 
-      _event = event.copyWith(teams: teams);
-
-      onSuccess?.call();
+      return onSuccess?.call();
     });
   }
 }

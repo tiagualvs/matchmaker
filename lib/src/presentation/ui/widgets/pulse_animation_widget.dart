@@ -1,10 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:matchmaker/src/common/extensions/num_ext.dart';
 
-final testing =
-    const bool.fromEnvironment('dart.vm.product') == false &&
-    Platform.environment['FLUTTER_TEST'] == 'true';
+const testing = bool.fromEnvironment('FLUTTER_TEST');
 
 class PulseAnimationWidget extends StatefulWidget {
   const PulseAnimationWidget({
@@ -63,7 +60,7 @@ class _PulseAnimationWidgetState extends State<PulseAnimationWidget>
         child: Icon(
           Icons.circle,
           color: widget.running ? widget.runningColor : widget.stopedColor,
-          size: 16.0,
+          size: 2.unit,
         ),
       ),
     );

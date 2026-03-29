@@ -31,7 +31,7 @@
             "program": "integration_test",
             "toolArgs": [
                 "--dart-define",
-                "TESTING=true"
+                "FLUTTER_TEST=true"
             ],
             "args": [
                 "--flavor",

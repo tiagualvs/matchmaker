@@ -635,7 +635,7 @@ abstract class L10n {
   ///
   /// In en, this message translates to:
   /// **'Event of the day {date}'**
-  String defaultEventName(String date);
+  String defaultEventName(DateTime date);
 
   /// Error message when trying to balance by gender without enough data
   ///
@@ -737,6 +737,36 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'Players swapped successfully!'**
   String get playersSwappedSuccess;
+
+  /// Default name for the first team in a detached match
+  ///
+  /// In en, this message translates to:
+  /// **'Team A'**
+  String get detachedFirstTeamName;
+
+  /// Default name for the second team in a detached match
+  ///
+  /// In en, this message translates to:
+  /// **'Team B'**
+  String get detachedSecondTeamName;
+
+  /// Error message for failed event save operations
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save event!'**
+  String get failedToSaveEventError;
+
+  /// Error message for failed player save operations
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save player!'**
+  String get failedToSavePlayerError;
+
+  /// Error message for max players per team
+  ///
+  /// In en, this message translates to:
+  /// **'The max number of players per team has been reached!'**
+  String get maxPlayersPerTeamError;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

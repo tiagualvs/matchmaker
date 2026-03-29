@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PlayerEntity {
 
- int get id; String get name; PlayerGender get gender; PlayerLevel get level; DateTime get createdAt; DateTime get updatedAt;
+ String get id; String get name; PlayerGender get gender; PlayerLevel get level; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of PlayerEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $PlayerEntityCopyWith<$Res>  {
   factory $PlayerEntityCopyWith(PlayerEntity value, $Res Function(PlayerEntity) _then) = _$PlayerEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, PlayerGender gender, PlayerLevel level, DateTime createdAt, DateTime updatedAt
+ String id, String name, PlayerGender gender, PlayerLevel level, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -68,7 +68,7 @@ class _$PlayerEntityCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? gender = null,Object? level = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,gender: null == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable
 as PlayerGender,level: null == level ? _self.level : level // ignore: cast_nullable_to_non_nullable
 as PlayerLevel,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -158,7 +158,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  PlayerGender gender,  PlayerLevel level,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  PlayerGender gender,  PlayerLevel level,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlayerEntity() when $default != null:
 return $default(_that.id,_that.name,_that.gender,_that.level,_that.createdAt,_that.updatedAt);case _:
@@ -179,7 +179,7 @@ return $default(_that.id,_that.name,_that.gender,_that.level,_that.createdAt,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  PlayerGender gender,  PlayerLevel level,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  PlayerGender gender,  PlayerLevel level,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _PlayerEntity():
 return $default(_that.id,_that.name,_that.gender,_that.level,_that.createdAt,_that.updatedAt);case _:
@@ -199,7 +199,7 @@ return $default(_that.id,_that.name,_that.gender,_that.level,_that.createdAt,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  PlayerGender gender,  PlayerLevel level,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  PlayerGender gender,  PlayerLevel level,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _PlayerEntity() when $default != null:
 return $default(_that.id,_that.name,_that.gender,_that.level,_that.createdAt,_that.updatedAt);case _:
@@ -217,7 +217,7 @@ class _PlayerEntity extends PlayerEntity {
   const _PlayerEntity({required this.id, required this.name, this.gender = PlayerGender.unknown, this.level = PlayerLevel.basic, required this.createdAt, required this.updatedAt}): super._();
   factory _PlayerEntity.fromJson(Map<String, dynamic> json) => _$PlayerEntityFromJson(json);
 
-@override final  int id;
+@override final  String id;
 @override final  String name;
 @override@JsonKey() final  PlayerGender gender;
 @override@JsonKey() final  PlayerLevel level;
@@ -257,7 +257,7 @@ abstract mixin class _$PlayerEntityCopyWith<$Res> implements $PlayerEntityCopyWi
   factory _$PlayerEntityCopyWith(_PlayerEntity value, $Res Function(_PlayerEntity) _then) = __$PlayerEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, PlayerGender gender, PlayerLevel level, DateTime createdAt, DateTime updatedAt
+ String id, String name, PlayerGender gender, PlayerLevel level, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -277,7 +277,7 @@ class __$PlayerEntityCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? gender = null,Object? level = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_PlayerEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,gender: null == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable
 as PlayerGender,level: null == level ? _self.level : level // ignore: cast_nullable_to_non_nullable
 as PlayerLevel,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/extensions/num_ext.dart';
 import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/data/entities/player_entity.dart';
 import 'package:matchmaker/src/data/entities/team_entity.dart';
@@ -62,19 +63,21 @@ class _TeamCardWidgetState extends State<TeamCardWidget> {
       data: context.theme.copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
         controller: controller,
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
-        childrenPadding: const EdgeInsets.symmetric(horizontal: 16.0).copyWith(bottom: 16.0),
+        tilePadding: EdgeInsets.symmetric(horizontal: 2.unit),
+        childrenPadding: EdgeInsets.symmetric(
+          horizontal: 2.unit,
+        ).copyWith(bottom: 2.unit),
         expandedCrossAxisAlignment: .stretch,
         backgroundColor: context.colorScheme.onPrimary,
         collapsedBackgroundColor: context.colorScheme.onPrimary,
         collapsedShape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
+          borderRadius: BorderRadius.circular(1.unit),
           side: BorderSide(
             color: context.colorScheme.surfaceContainerHighest,
           ),
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
+          borderRadius: BorderRadius.circular(1.unit),
           side: BorderSide(
             color: context.colorScheme.surfaceContainerHighest,
           ),
@@ -86,16 +89,22 @@ class _TeamCardWidgetState extends State<TeamCardWidget> {
         children: List.from(
           widget.team.players.map(
             (player) => Padding(
-              padding: const .only(bottom: 8.0),
+              padding: .only(bottom: 1.unit),
               child: Row(
-                spacing: 8.0,
+                spacing: 1.unit,
                 children: [
                   if (widget.showGenders) ...[
                     SizedBox(
-                      width: 24.0,
+                      width: 3.unit,
                       child: switch (player.gender) {
-                        PlayerGender.male => const Icon(Symbols.male, color: Colors.blue),
-                        PlayerGender.female => const Icon(Symbols.female, color: Colors.pink),
+                        PlayerGender.male => const Icon(
+                          Symbols.male,
+                          color: Colors.blue,
+                        ),
+                        PlayerGender.female => const Icon(
+                          Symbols.female,
+                          color: Colors.pink,
+                        ),
                         _ => const Icon(Symbols.agender),
                       },
                     ),
@@ -108,20 +117,10 @@ class _TeamCardWidgetState extends State<TeamCardWidget> {
                     ),
                   ),
                   if (widget.showLevels) ...[
-                    switch (player.level) {
-                      PlayerLevel.basic => const Text(
-                        '⭐',
-                        textAlign: .end,
-                      ),
-                      PlayerLevel.intermediate => const Text(
-                        '⭐⭐',
-                        textAlign: .end,
-                      ),
-                      PlayerLevel.advanced => const Text(
-                        '⭐⭐⭐',
-                        textAlign: .end,
-                      ),
-                    },
+                    Text(
+                      player.level.emoji,
+                      textAlign: .end,
+                    ),
                   ],
                 ],
               ),

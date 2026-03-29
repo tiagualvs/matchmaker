@@ -7,9 +7,9 @@ part of 'score_entity.dart';
 // **************************************************************************
 
 _ScoreEntity _$ScoreEntityFromJson(Map<String, dynamic> json) => _ScoreEntity(
-  id: (json['id'] as num).toInt(),
-  matchId: (json['matchId'] as num).toInt(),
-  teamId: (json['teamId'] as num).toInt(),
+  id: json['id'] as String,
+  matchId: json['matchId'] as String,
+  teamId: json['teamId'] as String,
   reversed: json['reversed'] as bool? ?? false,
   createdAt: DateTime.parse(json['createdAt'] as String),
   updatedAt: DateTime.parse(json['updatedAt'] as String),

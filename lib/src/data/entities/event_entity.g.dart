@@ -7,7 +7,7 @@ part of 'event_entity.dart';
 // **************************************************************************
 
 _EventEntity _$EventEntityFromJson(Map<String, dynamic> json) => _EventEntity(
-  id: (json['id'] as num).toInt(),
+  id: json['id'] as String,
   name: json['name'] as String,
   teams:
       (json['teams'] as List<dynamic>?)
@@ -20,9 +20,7 @@ _EventEntity _$EventEntityFromJson(Map<String, dynamic> json) => _EventEntity(
           .toList() ??
       const [],
   queue:
-      (json['queue'] as List<dynamic>?)
-          ?.map((e) => (e as num).toInt())
-          .toList() ??
+      (json['queue'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
   maxScore: (json['maxScore'] as num?)?.toInt() ?? 12,
   maxPlayerPerTeam: (json['maxPlayerPerTeam'] as num?)?.toInt() ?? 4,

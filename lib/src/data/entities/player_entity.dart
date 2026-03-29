@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:matchmaker/src/data/services/database/app_database.dart';
+import 'package:matchmaker/src/common/shared/id.dart';
+import 'package:matchmaker/src/common/shared/timestamp.dart';
+import 'package:matchmaker/src/data/services/shared_preferences/shared_preferences_service.dart';
 
 part 'player_entity.freezed.dart';
 part 'player_entity.g.dart';
@@ -50,7 +54,7 @@ abstract class PlayerEntity with _$PlayerEntity {
   const PlayerEntity._();
 
   const factory PlayerEntity({
-    required int id,
+    required String id,
     required String name,
     @Default(PlayerGender.unknown) PlayerGender gender,
     @Default(PlayerLevel.basic) PlayerLevel level,
@@ -58,33 +62,27 @@ abstract class PlayerEntity with _$PlayerEntity {
     required DateTime updatedAt,
   }) = _PlayerEntity;
 
-  factory PlayerEntity.fromJson(Map<String, dynamic> json) => _$PlayerEntityFromJson(json);
+  factory PlayerEntity.fromJson(Map<String, dynamic> json) =>
+      _$PlayerEntityFromJson(json);
 
-  factory PlayerEntity.fromDrift(PlayerData data) {
+  factory PlayerEntity.create({
+    required String name,
+    required PlayerGender gender,
+    required PlayerLevel level,
+  }) {
     return PlayerEntity(
-      id: data.id,
-      name: data.name,
-      gender: PlayerGender.fromValue(data.gender),
-      level: PlayerLevel.fromValue(data.level),
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    );
-  }
-
-  factory PlayerEntity.fromSupabase(Map<String, dynamic> data) {
-    return PlayerEntity(
-      id: data['id'] as int,
-      name: data['name'] as String,
-      gender: PlayerGender.fromValue(data['gender'] as String),
-      level: PlayerLevel.fromValue(data['level'] as String),
-      createdAt: DateTime.parse(data['created_at'] as String),
-      updatedAt: DateTime.parse(data['updated_at'] as String),
+      id: Id.generate(),
+      name: name,
+      gender: gender,
+      level: level,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
     );
   }
 
   factory PlayerEntity.empty(String name, PlayerGender gender) {
     return PlayerEntity(
-      id: -1,
+      id: Id.min(),
       name: name,
       gender: gender,
       createdAt: DateTime(0),
@@ -94,7 +92,7 @@ abstract class PlayerEntity with _$PlayerEntity {
 
   factory PlayerEntity.joker(int index, PlayerGender gender) {
     return PlayerEntity(
-      id: -99,
+      id: Id.max(),
       name: switch (gender) {
         PlayerGender.male => 'Jogador Coringa',
         PlayerGender.female => 'Jogadora Coringa',
@@ -106,11 +104,32 @@ abstract class PlayerEntity with _$PlayerEntity {
     );
   }
 
-  bool get isJoker => id == -99;
+  bool get isEmpty => id == Id.min();
+
+  bool get isNotEmpty => !isEmpty;
+
+  bool get isJoker => id == Id.max();
 
   bool get isWoman => gender == PlayerGender.female;
 
   bool get isMan => gender == PlayerGender.male;
 
   bool get isUnknown => gender == PlayerGender.unknown;
+
+  static SharedPreferencesEncoder<PlayerEntity> encoder() => _PlayerEncoder();
+}
+
+class _PlayerEncoder extends SharedPreferencesEncoder<PlayerEntity> {
+  @override
+  String identifier(PlayerEntity value) => value.id;
+
+  @override
+  PlayerEntity? decode(String source) {
+    return PlayerEntity.fromJson(json.decode(source));
+  }
+
+  @override
+  String encode(PlayerEntity value) {
+    return json.encode(value.toJson());
+  }
 }

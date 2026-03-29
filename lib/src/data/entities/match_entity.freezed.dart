@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$MatchEntity {
 
- int get id; int get eventId; String get name; TeamEntity get firstTeam; TeamEntity get secondTeam; List<ScoreEntity> get scores; int get maxScore; bool get halfScoreToEliminate; bool get ended; DateTime get createdAt; DateTime get updatedAt; DateTime? get endedAt;
+ String get id; String get eventId; String get name; TeamEntity get firstTeam; TeamEntity get secondTeam; List<ScoreEntity> get scores; int get maxScore; bool get halfScoreToEliminate; bool get ended; DateTime get createdAt; DateTime get updatedAt; DateTime? get endedAt;
 /// Create a copy of MatchEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $MatchEntityCopyWith<$Res>  {
   factory $MatchEntityCopyWith(MatchEntity value, $Res Function(MatchEntity) _then) = _$MatchEntityCopyWithImpl;
 @useResult
 $Res call({
- int id, int eventId, String name, TeamEntity firstTeam, TeamEntity secondTeam, List<ScoreEntity> scores, int maxScore, bool halfScoreToEliminate, bool ended, DateTime createdAt, DateTime updatedAt, DateTime? endedAt
+ String id, String eventId, String name, TeamEntity firstTeam, TeamEntity secondTeam, List<ScoreEntity> scores, int maxScore, bool halfScoreToEliminate, bool ended, DateTime createdAt, DateTime updatedAt, DateTime? endedAt
 });
 
 
@@ -68,8 +68,8 @@ class _$MatchEntityCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? eventId = null,Object? name = null,Object? firstTeam = null,Object? secondTeam = null,Object? scores = null,Object? maxScore = null,Object? halfScoreToEliminate = null,Object? ended = null,Object? createdAt = null,Object? updatedAt = null,Object? endedAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
-as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,firstTeam: null == firstTeam ? _self.firstTeam : firstTeam // ignore: cast_nullable_to_non_nullable
 as TeamEntity,secondTeam: null == secondTeam ? _self.secondTeam : secondTeam // ignore: cast_nullable_to_non_nullable
 as TeamEntity,scores: null == scores ? _self.scores : scores // ignore: cast_nullable_to_non_nullable
@@ -182,7 +182,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int eventId,  String name,  TeamEntity firstTeam,  TeamEntity secondTeam,  List<ScoreEntity> scores,  int maxScore,  bool halfScoreToEliminate,  bool ended,  DateTime createdAt,  DateTime updatedAt,  DateTime? endedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String eventId,  String name,  TeamEntity firstTeam,  TeamEntity secondTeam,  List<ScoreEntity> scores,  int maxScore,  bool halfScoreToEliminate,  bool ended,  DateTime createdAt,  DateTime updatedAt,  DateTime? endedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MatchEntity() when $default != null:
 return $default(_that.id,_that.eventId,_that.name,_that.firstTeam,_that.secondTeam,_that.scores,_that.maxScore,_that.halfScoreToEliminate,_that.ended,_that.createdAt,_that.updatedAt,_that.endedAt);case _:
@@ -203,7 +203,7 @@ return $default(_that.id,_that.eventId,_that.name,_that.firstTeam,_that.secondTe
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int eventId,  String name,  TeamEntity firstTeam,  TeamEntity secondTeam,  List<ScoreEntity> scores,  int maxScore,  bool halfScoreToEliminate,  bool ended,  DateTime createdAt,  DateTime updatedAt,  DateTime? endedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String eventId,  String name,  TeamEntity firstTeam,  TeamEntity secondTeam,  List<ScoreEntity> scores,  int maxScore,  bool halfScoreToEliminate,  bool ended,  DateTime createdAt,  DateTime updatedAt,  DateTime? endedAt)  $default,) {final _that = this;
 switch (_that) {
 case _MatchEntity():
 return $default(_that.id,_that.eventId,_that.name,_that.firstTeam,_that.secondTeam,_that.scores,_that.maxScore,_that.halfScoreToEliminate,_that.ended,_that.createdAt,_that.updatedAt,_that.endedAt);case _:
@@ -223,7 +223,7 @@ return $default(_that.id,_that.eventId,_that.name,_that.firstTeam,_that.secondTe
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int eventId,  String name,  TeamEntity firstTeam,  TeamEntity secondTeam,  List<ScoreEntity> scores,  int maxScore,  bool halfScoreToEliminate,  bool ended,  DateTime createdAt,  DateTime updatedAt,  DateTime? endedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String eventId,  String name,  TeamEntity firstTeam,  TeamEntity secondTeam,  List<ScoreEntity> scores,  int maxScore,  bool halfScoreToEliminate,  bool ended,  DateTime createdAt,  DateTime updatedAt,  DateTime? endedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _MatchEntity() when $default != null:
 return $default(_that.id,_that.eventId,_that.name,_that.firstTeam,_that.secondTeam,_that.scores,_that.maxScore,_that.halfScoreToEliminate,_that.ended,_that.createdAt,_that.updatedAt,_that.endedAt);case _:
@@ -241,8 +241,8 @@ class _MatchEntity extends MatchEntity {
   const _MatchEntity({required this.id, required this.eventId, required this.name, required this.firstTeam, required this.secondTeam, final  List<ScoreEntity> scores = const [], required this.maxScore, required this.halfScoreToEliminate, this.ended = false, required this.createdAt, required this.updatedAt, this.endedAt}): _scores = scores,super._();
   factory _MatchEntity.fromJson(Map<String, dynamic> json) => _$MatchEntityFromJson(json);
 
-@override final  int id;
-@override final  int eventId;
+@override final  String id;
+@override final  String eventId;
 @override final  String name;
 @override final  TeamEntity firstTeam;
 @override final  TeamEntity secondTeam;
@@ -293,7 +293,7 @@ abstract mixin class _$MatchEntityCopyWith<$Res> implements $MatchEntityCopyWith
   factory _$MatchEntityCopyWith(_MatchEntity value, $Res Function(_MatchEntity) _then) = __$MatchEntityCopyWithImpl;
 @override @useResult
 $Res call({
- int id, int eventId, String name, TeamEntity firstTeam, TeamEntity secondTeam, List<ScoreEntity> scores, int maxScore, bool halfScoreToEliminate, bool ended, DateTime createdAt, DateTime updatedAt, DateTime? endedAt
+ String id, String eventId, String name, TeamEntity firstTeam, TeamEntity secondTeam, List<ScoreEntity> scores, int maxScore, bool halfScoreToEliminate, bool ended, DateTime createdAt, DateTime updatedAt, DateTime? endedAt
 });
 
 
@@ -313,8 +313,8 @@ class __$MatchEntityCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? eventId = null,Object? name = null,Object? firstTeam = null,Object? secondTeam = null,Object? scores = null,Object? maxScore = null,Object? halfScoreToEliminate = null,Object? ended = null,Object? createdAt = null,Object? updatedAt = null,Object? endedAt = freezed,}) {
   return _then(_MatchEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
-as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,firstTeam: null == firstTeam ? _self.firstTeam : firstTeam // ignore: cast_nullable_to_non_nullable
 as TeamEntity,secondTeam: null == secondTeam ? _self.secondTeam : secondTeam // ignore: cast_nullable_to_non_nullable
 as TeamEntity,scores: null == scores ? _self._scores : scores // ignore: cast_nullable_to_non_nullable

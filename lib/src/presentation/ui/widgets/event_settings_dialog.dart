@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/extensions/num_ext.dart';
 import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/data/entities/event_entity.dart';
 
@@ -57,9 +58,9 @@ class _EventSettingsDialogState extends State<EventSettingsDialog> {
         ),
       },
       body: SingleChildScrollView(
-        padding: const .all(16.0),
+        padding: .all(2.unit),
         child: Column(
-          spacing: 16.0,
+          spacing: 2.unit,
           crossAxisAlignment: .stretch,
           mainAxisSize: .min,
           children: [

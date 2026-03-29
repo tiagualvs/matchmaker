@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:matchmaker/src/data/entities/event_entity.dart';
+import 'package:go_router/go_router.dart';
 
 import 'match_history_view.dart';
 
 class MatchHistory extends StatefulWidget {
-  const MatchHistory({super.key, required this.event});
+  final String eventId;
 
-  final EventEntity event;
+  const MatchHistory({super.key, required this.eventId});
 
-  static const String path = '/match-history';
+  static const String path = '/events/:eventId/match-history';
 
-  static Future<T?> push<T>(BuildContext context, EventEntity event) async {
-    return Navigator.of(context).pushNamed(path, arguments: event);
+  static const String name = 'match-history';
+
+  static Future<T?> push<T>(BuildContext context, String eventId) async {
+    return context.pushNamed(name, pathParameters: {'eventId': eventId});
   }
 
   @override

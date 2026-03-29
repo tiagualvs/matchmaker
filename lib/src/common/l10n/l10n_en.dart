@@ -315,8 +315,14 @@ class L10nEn extends L10n {
   String get pointReversed => 'Point reversed';
 
   @override
-  String defaultEventName(String date) {
-    return 'Event of the day $date';
+  String defaultEventName(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat(
+      'dd/MM/yyyy',
+      localeName,
+    );
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Event of the day $dateString';
   }
 
   @override
@@ -387,4 +393,20 @@ class L10nEn extends L10n {
 
   @override
   String get playersSwappedSuccess => 'Players swapped successfully!';
+
+  @override
+  String get detachedFirstTeamName => 'Team A';
+
+  @override
+  String get detachedSecondTeamName => 'Team B';
+
+  @override
+  String get failedToSaveEventError => 'Failed to save event!';
+
+  @override
+  String get failedToSavePlayerError => 'Failed to save player!';
+
+  @override
+  String get maxPlayersPerTeamError =>
+      'The max number of players per team has been reached!';
 }

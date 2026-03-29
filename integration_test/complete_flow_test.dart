@@ -1,20 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:intl/intl.dart';
 import 'package:matchmaker/src/app_widget.dart';
+import 'package:matchmaker/src/common/l10n/l10n.dart';
+import 'package:matchmaker/src/common/l10n/l10n_en.dart';
 import 'package:matchmaker/src/common/shared/injector.dart';
-import 'package:matchmaker/src/data/repositories/events/events_local_repository.dart';
-import 'package:matchmaker/src/data/repositories/events/events_repository.dart';
-import 'package:matchmaker/src/data/repositories/matches/matches_local_repository.dart';
-import 'package:matchmaker/src/data/repositories/matches/matches_repository.dart';
-import 'package:matchmaker/src/data/repositories/players/players_local_repository.dart';
-import 'package:matchmaker/src/data/repositories/players/players_repository.dart';
-import 'package:matchmaker/src/data/repositories/scores/scores_local_repository.dart';
-import 'package:matchmaker/src/data/repositories/scores/scores_repository.dart';
-import 'package:matchmaker/src/data/repositories/teams/teams_local_repository.dart';
-import 'package:matchmaker/src/data/repositories/teams/teams_repository.dart';
-import 'package:matchmaker/src/data/services/database/app_database.dart';
+import 'package:matchmaker/src/data/entities/event_entity.dart';
+import 'package:matchmaker/src/data/entities/player_entity.dart';
+import 'package:matchmaker/src/data/services/shared_preferences/shared_preferences_service.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/current_match_widget.dart';
 import 'package:matchmaker/src/presentation/ui/widgets/team_card_widget.dart';
 
@@ -47,32 +40,36 @@ String get playersAsRawList => players.indexed
     .map((e) => '${e.$1 + 1} - ${e.$2.split(':').first}')
     .join('\n');
 
-final eventName =
-    'Evento do dia ${DateFormat('dd/MM/yyyy').format(DateTime.now())}';
-
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  setUpAll(() {
-    Injector.instance.batch(
-      (i) => i
-        ..set<AppDatabase>(AppDatabase.testing())
-        ..set<EventsRepository>(EventsLocalRepository(i.get()))
-        ..set<MatchesRepository>(MatchesLocalRepository(i.get()))
-        ..set<PlayersRepository>(PlayersLocalRepository(i.get()))
-        ..set<ScoresRepository>(ScoresLocalRepository(i.get()))
-        ..set<TeamsRepository>(TeamsLocalRepository(i.get())),
-    );
+  late final L10n l10n;
+  late final String eventName;
+
+  setUpAll(() async {
+    // await initializeDateFormatting('en');
+    l10n = L10nEn();
+
+    Injector.instance.batch((i) async {
+      final prefs = await SharedPreferencesService.test(
+        encoders: {
+          PlayerEntity.encoder(),
+          EventEntity.encoder(),
+        },
+      );
+
+      i.lazySet<SharedPreferencesService>(() => prefs);
+    });
   });
 
   Future<void> enterOnEventsPageWithEmptyState(WidgetTester tester) async {
-    final eventsPageAppBar = find.appBarWithTextTitle('Matchmaker');
+    final eventsPageAppBar = find.appBarWithTextTitle(l10n.appTitle);
 
     expect(eventsPageAppBar, findsOneWidget);
 
     await tester.pumpAndSettle();
 
-    final eventsPageEmptyState = find.text('Nenhum evento encontrado');
+    final eventsPageEmptyState = find.text(l10n.noEventsFound);
 
     expect(eventsPageEmptyState, findsOneWidget);
 
@@ -86,11 +83,11 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Partida avulsa'), findsOneWidget);
+    expect(find.text(l10n.singleMatch), findsOneWidget);
 
-    expect(find.text('Criar novo evento'), findsOneWidget);
+    expect(find.text(l10n.createNewEvent), findsOneWidget);
 
-    await tester.tap(find.text('Criar novo evento'));
+    await tester.tap(find.text(l10n.createNewEvent));
 
     await tester.pumpAndSettle();
   }
@@ -100,7 +97,7 @@ void main() {
 
     expect(createEventPageAppBar, findsOneWidget);
 
-    final createEventEmptyState = find.text('Nenhum time cadastrado no evento');
+    final createEventEmptyState = find.text(l10n.noTeamsRegistered);
 
     expect(createEventEmptyState, findsOneWidget);
 
@@ -114,17 +111,17 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Configurações do evento'), findsOneWidget);
+    expect(find.text(l10n.eventSettings), findsOneWidget);
 
-    expect(find.text('Importar jogadores de lista'), findsOneWidget);
+    expect(find.text(l10n.importPlayersFromList), findsOneWidget);
 
-    expect(find.text('Adicionar jogador'), findsOneWidget);
+    expect(find.text(l10n.addPlayer), findsOneWidget);
 
-    await tester.tap(find.text('Importar jogadores de lista'));
+    await tester.tap(find.text(l10n.importPlayersFromList));
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Importar Jogadores'), findsOneWidget);
+    expect(find.text(l10n.importPlayers), findsOneWidget);
 
     await tester.tap(find.byType(TextFormField));
 
@@ -142,7 +139,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Jogadores (20)'), findsOneWidget);
+    expect(find.text(l10n.playersCount(20)), findsOneWidget);
 
     final playersSingleChildScrollView = find.byType(SingleChildScrollView);
 
@@ -172,16 +169,16 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('Editar Jogador'), findsOneWidget);
+      expect(find.text(l10n.editPlayer), findsOneWidget);
 
-      expect(find.text('Masculino'), findsOneWidget);
+      expect(find.text(l10n.male), findsOneWidget);
 
-      expect(find.text('Feminino'), findsOneWidget);
+      expect(find.text(l10n.female), findsOneWidget);
 
       if (gender == 'm') {
-        await tester.tap(find.text('Feminino'));
+        await tester.tap(find.text(l10n.female));
       } else if (gender == 'h') {
-        await tester.tap(find.text('Masculino'));
+        await tester.tap(find.text(l10n.male));
       }
 
       await tester.pumpAndSettle();
@@ -205,21 +202,21 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Configurações do evento'), findsOneWidget);
+    expect(find.text(l10n.eventSettings), findsOneWidget);
 
-    expect(find.text('Importar jogadores de lista'), findsOneWidget);
+    expect(find.text(l10n.importPlayersFromList), findsOneWidget);
 
-    expect(find.text('Adicionar jogador'), findsOneWidget);
+    expect(find.text(l10n.addPlayer), findsOneWidget);
 
-    expect(find.text('Gerar times'), findsOneWidget);
+    expect(find.text(l10n.generateTeams), findsOneWidget);
 
-    await tester.tap(find.text('Gerar times'));
+    await tester.tap(find.text(l10n.generateTeams));
 
     await tester.pumpAndSettle();
 
     final teamsSingleChildScrollView = find.byType(SingleChildScrollView);
 
-    expect(find.text('Times (5)'), findsOneWidget);
+    expect(find.text(l10n.teamsCount(5)), findsOneWidget);
 
     expect(teamsSingleChildScrollView, findsOneWidget);
 
@@ -233,23 +230,25 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Configurações do evento'), findsOneWidget);
+    expect(find.text(l10n.eventSettings), findsOneWidget);
 
-    expect(find.text('Desfazer times'), findsOneWidget);
+    expect(find.text(l10n.undoTeams), findsOneWidget);
 
-    expect(find.text('Regerar times'), findsOneWidget);
+    expect(find.text(l10n.regenerateTeams), findsOneWidget);
 
-    expect(find.text('Salvar evento'), findsOneWidget);
+    expect(find.text(l10n.saveEvent), findsOneWidget);
 
-    await tester.tap(find.text('Configurações do evento'));
+    await tester.tap(find.text(l10n.eventSettings));
 
     await tester.pumpAndSettle();
 
-    expect(find.appBarWithTextTitle('Configurações'), findsOneWidget);
+    expect(find.appBarWithTextTitle(l10n.settings), findsOneWidget);
+
+    expect(find.text(l10n.eventSettingsTitle('other')), findsOneWidget);
 
     expect(
       find.ancestor(
-        of: find.text('Nome do Evento'),
+        of: find.text(l10n.eventNameLabel),
         matching: find.byType(TextFormField),
       ),
       findsOneWidget,
@@ -257,7 +256,7 @@ void main() {
 
     expect(
       find.ancestor(
-        of: find.text('Quantidade de pontos para vencer'),
+        of: find.text(l10n.pointsToWinLabel),
         matching: find.byType(TextFormField),
       ),
       findsOneWidget,
@@ -265,31 +264,31 @@ void main() {
 
     expect(
       find.ancestor(
-        of: find.text('Quantidade de jogadores por time'),
+        of: find.text(l10n.playersPerTeamLabel),
         matching: find.byType(TextFormField),
       ),
       findsOneWidget,
     );
 
     final maxWinsInARowInput = find.ancestor(
-      of: find.text('Máximo de vitórias em sequência'),
+      of: find.text(l10n.maxWinsInARowLabel),
       matching: find.byType(TextFormField),
     );
 
     expect(maxWinsInARowInput, findsOneWidget);
 
     expect(
-      find.switchListTile('Eliminar na metade?', false),
+      find.switchListTile(l10n.eliminateAtHalf, false),
       findsOneWidget,
     );
 
     expect(
-      find.switchListTile('Balancear por gênero?', true),
+      find.switchListTile(l10n.balanceByGender, true),
       findsOneWidget,
     );
 
     expect(
-      find.switchListTile('Balancear por nível?', true),
+      find.switchListTile(l10n.balanceByLevel, true),
       findsOneWidget,
     );
 
@@ -299,16 +298,16 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    await tester.tap(find.switchListTile('Eliminar na metade?', false));
+    await tester.tap(find.switchListTile(l10n.eliminateAtHalf, false));
 
     await tester.pumpAndSettle();
 
     expect(
-      find.switchListTile('Eliminar na metade?', true),
+      find.switchListTile(l10n.eliminateAtHalf, true),
       findsOneWidget,
     );
 
-    final saveButton = find.text('Salvar configurações');
+    final saveButton = find.text(l10n.saveSettings);
 
     expect(saveButton, findsOneWidget);
 
@@ -324,21 +323,21 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Configurações do evento'), findsOneWidget);
+    expect(find.text(l10n.eventSettings), findsOneWidget);
 
-    expect(find.text('Desfazer times'), findsOneWidget);
+    expect(find.text(l10n.undoTeams), findsOneWidget);
 
-    expect(find.text('Regerar times'), findsOneWidget);
+    expect(find.text(l10n.regenerateTeams), findsOneWidget);
 
-    expect(find.text('Salvar evento'), findsOneWidget);
+    expect(find.text(l10n.saveEvent), findsOneWidget);
 
-    await tester.tap(find.text('Salvar evento'));
+    await tester.tap(find.text(l10n.saveEvent));
 
     await tester.pumpAndSettle();
   }
 
   Future<void> enterOnEventsPageWithLoadedState(WidgetTester tester) async {
-    final eventsPageAppBar = find.appBarWithTextTitle('Matchmaker');
+    final eventsPageAppBar = find.appBarWithTextTitle(l10n.appTitle);
 
     expect(eventsPageAppBar, findsOneWidget);
 
@@ -353,8 +352,7 @@ void main() {
 
       if (title is! Text) return false;
 
-      return title.data ==
-          'Evento do dia ${DateFormat('dd/MM/yyyy').format(DateTime.now())}';
+      return title.data == eventName;
     });
 
     expect(eventTile, findsOneWidget);
@@ -365,9 +363,7 @@ void main() {
   }
 
   Future<void> enterOnEventPageWithLoadedState(WidgetTester tester) async {
-    final eventPageAppBar = find.appBarWithTextTitle(
-      'Evento do dia ${DateFormat('dd/MM/yyyy').format(DateTime.now())}',
-    );
+    final eventPageAppBar = find.appBarWithTextTitle(eventName);
 
     expect(eventPageAppBar, findsOneWidget);
 
@@ -424,7 +420,9 @@ void main() {
   testWidgets(
     'Complete flow: create an event, add 12 players, create teams and start the match!',
     (tester) async {
-      await tester.pumpWidget(const AppWidget());
+      await tester.pumpWidget(const AppWidget.test());
+
+      eventName = l10n.defaultEventName(DateTime.now());
 
       await tester.pumpAndSettle();
 

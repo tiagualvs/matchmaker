@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:matchmaker/src/common/extensions/build_context_ext.dart';
+import 'package:matchmaker/src/common/extensions/num_ext.dart';
 import 'package:matchmaker/src/common/l10n/l10n.dart';
 import 'package:matchmaker/src/common/others/dialogs.dart';
 import 'package:matchmaker/src/common/others/snack_bars.dart';
@@ -46,12 +48,12 @@ class TeamsView extends TeamsViewModel {
     }
   }
 
-  Future<void> handleInsertPlayer(int index, int teamId) async {
+  Future<void> handleInsertPlayer(int index, String teamId) async {
     final player = await showModalBottomSheet<PlayerEntity>(
       context: context,
       isScrollControlled: true,
       builder: (context) => PlayerInputWidget(
-        onSave: (value) => Navigator.of(context).pop(value),
+        onSave: context.pop,
         withLevelSelect: false,
       ),
     );
@@ -76,7 +78,7 @@ class TeamsView extends TeamsViewModel {
             onPressed: () async {
               if (loading) return;
 
-              final team = await AddPlayer.push<TeamEntity>(context, event);
+              final team = await AddPlayer.push<TeamEntity>(context, event.id);
 
               return teamsNormalizer(team);
             },
@@ -89,26 +91,26 @@ class TeamsView extends TeamsViewModel {
           child: CircularProgressIndicator(),
         ),
         false => ListView.separated(
-          separatorBuilder: (_, _) => const SizedBox(height: 16.0),
-          padding: const .all(24.0),
+          separatorBuilder: (_, _) => SizedBox(height: 2.unit),
+          padding: .all(3.unit),
           itemCount: teams.length,
           itemBuilder: (context, i) {
             final team = teams[i];
 
             return Material(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: BorderRadius.circular(1.unit),
                 side: BorderSide(
                   color: context.colorScheme.surfaceContainerHighest,
                 ),
               ),
               child: Padding(
-                padding: const .symmetric(vertical: 16.0),
+                padding: .symmetric(vertical: 2.unit),
                 child: Column(
                   crossAxisAlignment: .stretch,
                   children: [
                     Padding(
-                      padding: const .only(left: 16.0),
+                      padding: .only(left: 2.unit),
                       child: Row(
                         children: [
                           Expanded(
@@ -209,9 +211,9 @@ class TeamsView extends TeamsViewModel {
         width: MediaQuery.sizeOf(context).width - 48,
         child: IntrinsicHeight(
           child: Padding(
-            padding: const .symmetric(horizontal: 16.0),
+            padding: .symmetric(horizontal: 2.unit),
             child: Row(
-              spacing: 8.0,
+              spacing: 1.unit,
               children: [
                 const Icon(Symbols.drag_indicator_rounded),
                 Expanded(child: PlayerTileWidget(player: player)),
